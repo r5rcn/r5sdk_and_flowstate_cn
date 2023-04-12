@@ -1,0 +1,392 @@
+global function ClObituary_Init
+
+global function Obituary
+global function Obituary_GetEntityInfo
+global function Obituary_Print_Localized
+global function Obituary_SetEnabled
+global function Obituary_SetIndexOffset
+global function Obituary_SetHorizontalOffset
+global function ShouldShowObituaryLineForPlayer
+
+const NUM_OBITUARY_LINES    = 4
+const obituaryTextBoxWidth  = 500
+const obituaryTextBoxHeight = 20
+const defaultCharacterWidth = 5
+
+struct ObituaryData
+{
+	float startTime
+	var	rui
+}
+
+struct
+{
+	array<ObituaryData>	obituaryQueue = []
+	bool obituariesEnabled = true
+	int indexOffest      = 0
+	int horizontalOffset = 0
+} file
+
+struct ObitEntityInfo
+{
+	string displayName    = ""
+	vector displayColor   = OBITUARY_COLOR_WEAPON
+	string petDisplayName = ""
+}
+
+global struct ObitStringData
+{
+	string attackerName            = ""
+	string attackerPetName         = ""
+	string victimName              = ""
+	string victimPetName           = ""
+	string weaponLocalizedName     = ""
+	string attackerLocalizedString = "#OBIT_PLAYER_STRING"
+	string victimLocalizedString   = "#OBIT_PLAYER_STRING"
+	string weaponLocalizedString   = "#OBIT_BRACKETED_STRING"
+}
+
+void function ClObituary_Init()
+{
+}
+
+void function EntitiesDidLoad()
+{
+}
+
+ObitEntityInfo function Obituary_GetEntityInfo( entity ent, int damageSourceId, bool isAttacker )
+{
+	ObitEntityInfo info
+
+	if ( !IsValid( ent ) )
+	{
+		string name = GetAttackerDisplayNamesDamageSourceId( damageSourceId )
+		info.displayColor = GetKeyColor( COLORID_ENEMY )
+		info.displayName = name
+
+		return info
+	}
+
+	AttackerDisplayNameStruct names = GetAttackerDisplayNamesFromClassname( ent, isAttacker )
+	info.displayName = names.attackerName
+	info.petDisplayName = names.attackerPetName
+
+	entity localPlayer = GetLocalClientPlayer()
+
+	info.displayColor = localPlayer.GetTeam() == ent.GetTeam() ? GetPlayerInfoColor( ent ) : <255, 255, 255>//
+
+	return info
+}
+
+
+void function Obituary( entity attacker, string attackerClass, entity victim, int scriptDamageType, int damageSourceId, int obitFlags, bool victimIsOwnedTitan = false, bool forceDisplay = false )
+{
+	if ( GetConVarInt( "hud_setting_showObituary" ) == 0 )
+		return
+
+	bool isHeadShot = (obitFlags & OBIT_FLAG_HEADSHOT) > 0
+	bool isDownShot = (obitFlags & OBIT_FLAG_DOWNED) > 0
+
+	if ( !forceDisplay )
+	{
+		if ( victim.IsPlayer() )
+		{
+			if ( !OBITUARY_ENABLED_PLAYERS )
+				return
+		}
+		else if ( victim.IsTitan() )
+		{
+			if ( !OBITUARY_ENABLED_NPC_TITANS )
+				return
+		}
+		else
+		{
+			if ( !OBITUARY_ENABLED_NPC )
+				return
+		}
+	}
+
+	if ( damageSourceId == eDamageSourceId.round_end )
+		return
+
+	/***************************************************************/
+	/***************************************************************/
+	/***************************************************************/
+
+	bool isRelatedAttacker = (victim.GetTeam() == GetLocalClientPlayer().GetTeam())
+	ObitEntityInfo attackerInfo = Obituary_GetEntityInfo( attacker, damageSourceId, isRelatedAttacker )
+	ObitEntityInfo victimInfo = Obituary_GetEntityInfo( victim, damageSourceId, false )
+	bool isDeathSuicide = IsSuicide( attacker, victim, damageSourceId )
+
+	//
+	if ( isDeathSuicide && victim.IsNPC() )
+		return
+
+	string sourceDisplayName = ""
+
+	bool isMainWeapon = false
+	string damageRef = GetRefFromDamageSourceID( damageSourceId )
+	if ( SURVIVAL_Loot_IsRefValid( damageRef ) )
+	{
+		LootData lootData = SURVIVAL_Loot_GetLootDataByRef( damageRef )
+		isMainWeapon = lootData.lootType == eLootType.MAINWEAPON
+	}
+
+	sourceDisplayName = GetObitFromDamageSourceID( damageSourceId )
+
+	/***************************************************************/
+	/***************************************************************/
+	/***************************************************************/
+
+	bool printDebugInfo = false
+	string debugSourceDisplayName = sourceDisplayName
+
+	if ( sourceDisplayName == "" )
+	{
+		debugSourceDisplayName = GetObitFromDamageSourceID( eDamageSourceId.damagedef_unknownBugIt )
+		printDebugInfo = true
+	}
+
+	if ( attackerInfo.displayName == "" )
+	{
+		printDebugInfo = true
+	}
+
+	if ( victimInfo.displayName == "" )
+	{
+		printDebugInfo = true
+	}
+
+	if ( printDebugInfo )
+	{
+		printt( "------------------------------------------" )
+		printt( " FULL OBITUARY INFO COULD NOT BE RESOLVED " )
+		printt( "    attacker:", attacker )
+		if ( IsValid( attacker ) )
+		{
+			printt( "    attacker classname:", attacker.GetNetworkedClassName() )
+			entity attackerOwner = attacker.GetOwner()
+			printt( "    attackerOwner:", attackerOwner )
+			if ( IsValid( attackerOwner ) )
+				printt( "    attackerOwner classname:", attackerOwner.GetNetworkedClassName() )
+		}
+		printt( "    victim:", victim )
+		if ( IsValid( victim ) )
+		{
+			printt( "    victim classname:", victim.GetNetworkedClassName() )
+			entity victimOwner = victim.GetOwner()
+			printt( "    victimOwner:", victimOwner )
+			if ( IsValid( victimOwner ) )
+				printt( "    victimOwner classname:", victimOwner.GetNetworkedClassName() )
+		}
+		printt( "    scriptDamageType:", scriptDamageType )
+		printt( "    damageSourceId:", damageSourceId )
+		printt( "    sourceDisplayName:", debugSourceDisplayName )
+		printt( "------------------------------------------" )
+	}
+
+	/***************************************************************/
+	/***************************************************************/
+	/***************************************************************/
+
+	if ( isDeathSuicide )
+	{
+		attackerInfo.displayName = ""
+		attackerInfo.displayColor = victimInfo.displayColor
+	}
+
+	asset weaponIcon = GetObitImageFromDamageSourceID( damageSourceId )
+
+	string attackerString
+	string weaponString
+	string victimString
+
+	if ( attackerInfo.petDisplayName != "" )
+	{
+		attackerString = Localize( "#OBIT_PLAYER_CONTROLLED_AI_STRING", attackerInfo.displayName, Localize( attackerInfo.petDisplayName ) )
+	}
+	else
+	{
+		attackerString = Localize( "#OBIT_PLAYER_STRING", attackerInfo.displayName )
+	}
+
+	if ( victimInfo.petDisplayName != "" )
+	{
+		victimString = Localize( "#OBIT_PLAYER_CONTROLLED_AI_STRING", victimInfo.displayName, Localize( victimInfo.petDisplayName ) )
+	}
+	else
+	{
+		victimString = Localize( "#OBIT_PLAYER_STRING", victimInfo.displayName )
+	}
+
+	string localizedObit = Localize( "#OBIT_ENT_WEAPON_ENT", attackerString, Localize( sourceDisplayName ), victimString )
+
+	float backgroundAlpha = (attacker == GetLocalClientPlayer() || victim == GetLocalClientPlayer()) ? 0.5 : 0.0
+
+	bool shouldShowForVictim = (IsValid( victim ) && victim.IsPlayer() && ShouldShowObituaryLineForPlayer( victim ) )
+	bool shouldShowForAttacker = (IsValid( attacker ) && attacker.IsPlayer() && ShouldShowObituaryLineForPlayer( attacker ) )
+	if ( !shouldShowForVictim && !shouldShowForAttacker )
+		return
+
+	asset modifierIcon = $""
+	if ( isDownShot )
+		modifierIcon = $"rui/hud/obituary/obituary_downed"
+	else if ( isHeadShot )
+		modifierIcon = $"rui/hud/obituary/obituary_headshot"
+
+	if ( weaponIcon == $"" )
+		Obituary_Print_Localized( localizedObit, attackerInfo.displayColor, victimInfo.displayColor, <255,255,255>, <0, 0, 0>, 0 )
+	else
+		Obituary_Print_PlayerDeath( attackerString, weaponIcon, modifierIcon, victimString, attackerInfo.displayColor, victimInfo.displayColor, <255, 255, 255>, isMainWeapon )
+
+	if ( GetCurrentPlaylistVarBool( "enabled_killstreak_obituary", false ) )
+		ShowKillStreakObituary(attacker, victim, attackerInfo, victimInfo)
+}
+
+void function ShowKillStreakObituary(entity attacker, entity victim, ObitEntityInfo attackerInfo, ObitEntityInfo victimInfo)
+{
+	//Killstreak
+	if(attacker.IsPlayer() && attackerInfo.displayName != "")
+	{
+		attacker.p.killstreak++
+
+		if(attacker.p.killstreak >= 5)
+			attacker.p.isonkillstreak = true
+
+		if(attacker.p.killstreak == 5 || attacker.p.killstreak == 10 || attacker.p.killstreak == 15 || attacker.p.killstreak == 20 || attacker.p.killstreak == 25 || attacker.p.killstreak == 30|| attacker.p.killstreak == 35|| attacker.p.killstreak == 40|| attacker.p.killstreak == 45|| attacker.p.killstreak == 50)
+			Obituary_Print_Localized( Localize( "#PLAYER_KILLSTREAK", attackerInfo.displayName , attacker.p.killstreak), <255,100,100>, <255,100,100>, <255,255,255>, <0, 0, 0>, 0 )
+	}
+	
+	//Death Check
+	if(victim.p.isonkillstreak)
+	{
+		if(attacker.IsPlayer() && attackerInfo.displayName != "")
+			Obituary_Print_Localized( Localize( "#PLAYER_ENDED_KILLSTREAK", attackerInfo.displayName , victimInfo.displayName), <255,100,100>, <255,100,100>, <255,255,255>, <0, 0, 0>, 0 )
+		else
+			Obituary_Print_Localized( Localize( "#PLAYER_ENDED_OWN_KILLSTREAK", victimInfo.displayName), <255,100,100>, <255,100,100>, <255,255,255>, <0, 0, 0>, 0 )
+	}
+
+	//Reset victim
+	if(victim.IsPlayer() && victimInfo.displayName != "")
+	{
+		victim.p.killstreak = 0
+		victim.p.isonkillstreak = false
+	}
+}
+
+
+bool function ShouldShowObituaryLineForPlayer( entity player )
+{
+	if ( !IsValid( player ) )
+		return false
+	if ( !IsValid( GetLocalClientPlayer() ) )
+		return false
+
+	int playerTeam = player.GetTeam()
+	int localTeam = GetLocalClientPlayer().GetTeam()
+	bool onlyTeammates = GetCurrentPlaylistVarBool( "obituary_only_teammates", false )
+	if ( onlyTeammates )
+	{
+		if ( IsEnemyTeam( playerTeam, localTeam ) )
+			return false
+	}
+
+	return true
+}
+
+
+void function Obituary_Print_Localized( string localizedPrint, vector altColor1 = <255,255,255>, vector altColor2 = <255,255,255>, vector altColor3 = <255,255,255>, vector backgroundColor = <255,255,255>, float backgroundAlpha = 0.0 )
+{
+	if ( !file.obituariesEnabled )
+		return
+
+	var rui = CreatePermanentCockpitPostFXRui( $"ui/obituary_crawl_localized.rpak" )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "updateTime", Time() )
+	RuiSetFloat( rui, "duration", OBITUARY_DURATION )
+
+	RuiSetString( rui, "obitString", localizedPrint )
+
+	RuiSetFloat3( rui, "string1Color", SrgbToLinear( altColor1 / 255.0 ) )
+	RuiSetFloat3( rui, "string2Color", SrgbToLinear( altColor2 / 255.0 ) )
+	RuiSetFloat3( rui, "string3Color", SrgbToLinear( altColor3 / 255.0 ) )
+
+	ObituaryData newObituary
+	newObituary.rui = rui
+	newObituary.startTime = Time()
+	file.obituaryQueue.insert( 0, newObituary )
+
+	UpdateObituaryQueue()
+}
+
+
+void function Obituary_Print_PlayerDeath( string attackerString, asset weaponIcon, asset modifierIcon, string victimString, vector attackerColor = <255,255,255>, vector victimColor = <255,255,255>, vector weaponColor = <255,255,255>, bool tempIsMainWeapon = false )
+{
+	if ( !file.obituariesEnabled )
+		return
+
+	var rui = CreatePermanentCockpitPostFXRui( $"ui/obituary_crawl_player_death.rpak" )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "updateTime", Time() )
+	RuiSetFloat( rui, "duration", OBITUARY_DURATION )
+
+	RuiSetString( rui, "attackerString", attackerString )
+	RuiSetString( rui, "victimString", victimString )
+	RuiSetImage( rui, "weaponIcon", weaponIcon )
+	RuiSetImage( rui, "modifierIcon", modifierIcon )
+
+	RuiSetFloat3( rui, "attackerColor", SrgbToLinear( attackerColor / 255.0 ) )
+	RuiSetFloat3( rui, "victimColor", SrgbToLinear( victimColor / 255.0 ) )
+	RuiSetFloat3( rui, "weaponColor", SrgbToLinear( weaponColor / 255.0 ) )
+
+	RuiSetBool( rui, "tempIsMainWeapon", tempIsMainWeapon )
+	RuiSetBool( rui, "tempHasModifier", modifierIcon != $"" )
+
+	ObituaryData newObituary
+	newObituary.rui = rui
+	newObituary.startTime = Time()
+	file.obituaryQueue.insert( 0, newObituary )
+
+	UpdateObituaryQueue()
+}
+
+
+void function UpdateObituaryQueue()
+{
+	const int EXTRA_OFFSET = 0
+
+	for ( int index = file.obituaryQueue.len() - 1; index >= 0; index-- )
+	{
+		ObituaryData obitData = file.obituaryQueue[index]
+
+		if ( Time() - obitData.startTime >= OBITUARY_DURATION || index > 20 )
+		{
+			RuiDestroy( obitData.rui )
+			file.obituaryQueue.remove( index )
+			continue
+		}
+
+		RuiSetInt( obitData.rui, "offset", (EXTRA_OFFSET + index + file.indexOffest) )
+		RuiSetInt( obitData.rui, "horizontalOffset", file.horizontalOffset  )
+		RuiSetGameTime( obitData.rui, "updateTime", Time() )
+	}
+}
+
+void function Obituary_SetEnabled( bool state )
+{
+	file.obituariesEnabled = state
+}
+
+void function Obituary_SetIndexOffset( int offset )
+{
+	file.indexOffest = offset
+
+	UpdateObituaryQueue()
+}
+
+void function Obituary_SetHorizontalOffset( int offset )
+{
+	file.horizontalOffset = offset
+
+	UpdateObituaryQueue()
+}

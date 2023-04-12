@@ -1,0 +1,21 @@
+#base "npc_dummie_combat.txt"
+npc_dummie_mirage
+{
+	TraverseAnimType				spectre
+	title							Mirage
+
+	DefaultModelName				"mdl/Humans/class/medium/combat_dummie_mirage.rmdl"
+
+	headshotFX 						"P_headshot_human"
+    GibModel0                       "mdl/gibs/human_gibs.rmdl"
+	Health							100
+
+	PainOnHeavyDamageThreshold		32
+	PainOnRepeatDamageThreshold		70
+
+//////////////////////
+	chancetohit_spread_ontarget		15.0
+	disableMeleeExecution		0
+//////////////////////
+
+}

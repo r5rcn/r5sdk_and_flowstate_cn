@@ -1,0 +1,193 @@
+untyped
+
+global function ClassWallrun_Init
+
+global function Wallrun_AddPlayer
+global function Wallrun_OnPlayerSpawn
+global function Wallrun_OnPlayerDeath
+global function Wallrun_PlayerTookDamage
+global function Wallrun_EnforceWeaponDefaults
+//global function Wallrun_CreateCopyOfPilotModel
+
+function ClassWallrun_Init()
+{
+
+	// Make weapons less effective when playing at higher difficulty.
+	level.lethalityMods <- {}
+}
+
+function Wallrun_AddPlayer( player )
+{
+	player.playerClassData[level.pilotClass] <- {}
+}
+
+
+function Wallrun_EnforceWeaponDefaults( player )
+{
+	if ( player.playerClassData[ level.pilotClass ].primaryWeapon )
+	{
+		// settings already exist
+		return
+	}
+
+	player.playerClassData[ level.pilotClass ].primaryWeapon = "mp_weapon_r97"
+	player.playerClassData[ level.pilotClass ].secondaryWeapon = "mp_weapon_sniper"
+
+	local offhandWeaponTable = {}
+	offhandWeaponTable[0] <- { weapon = "mp_weapon_frag_grenade", mods = [] }
+	offhandWeaponTable[1] <- { weapon = "mp_ability_heal", mods = [] }
+
+	player.playerClassData[ level.pilotClass ].offhandWeapons = offhandWeaponTable
+	player.playerClassData[ level.pilotClass ].playerSetFile = DEFAULT_PILOT_SETTINGS
+}
+
+
+function Wallrun_OnPlayerSpawn( player )
+{
+}
+
+
+function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
+{
+	if ( IsDemigod( player ) )
+	{
+		EntityDemigod_TryAdjustDamageInfo( player, damageInfo )
+		return
+	}
+
+	AdjustDamageForRodeoPlayers( player, damageInfo, attacker )
+
+	//Super dumb headshots gamemode
+	if(GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && attacker != player)
+	{
+		DamageInfo_SetDamage( damageInfo, 420.0)
+		return 0.0
+	}
+	else if(GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && !IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && attacker != player)
+	{
+		DamageInfo_SetDamage( damageInfo, 0.0)
+		return 0.0
+	}
+	
+	//Helmets fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
+		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
+		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
+		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" )
+		switch(data.ref){
+			case "helmet_pickup_lv4_abilities":
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+				break
+			case "helmet_pickup_lv3":
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 ))*headshotMultiplier))
+				break
+			case "helmet_pickup_lv2":
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 ))*headshotMultiplier))
+				break
+			case "helmet_pickup_lv1":				
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 ))*headshotMultiplier))
+				break
+		}
+	}
+	
+	if ( player.GetShieldHealthMax() > 0 && !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
+	{
+		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )
+		return shieldDamage
+	}
+
+	return 0.0
+}
+
+function AdjustDamageForRodeoPlayers( entity player, var damageInfo, entity attacker )
+{
+	if ( player == attacker )
+		return
+}
+
+
+function ShouldAdjustDamageForRodeoPlayer( damageInfo )
+{
+	int sourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	switch( sourceID )
+	{
+		case eDamageSourceId.rodeo_trap:
+		case eDamageSourceId.mp_titanweapon_vortex_shield:
+		case eDamageSourceId.mp_titanweapon_vortex_shield_ion:
+		case eDamageSourceId.mp_titanability_smoke:
+		case eDamageSourceId.mp_weapon_satchel:	//added so that rodeoing players are no longer invulnerable to their satchels when detonated by Titan's smoke
+			return false
+
+		default:
+			return true
+	}
+}
+
+
+function Wallrun_OnPlayerDeath( entity player, damageInfo )
+{
+	if ( IsValidHeadShot( damageInfo, player ) )
+	{
+		int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+		local soundAlias
+		if ( damageType & DF_SHOTGUN )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_1P" )
+			soundAlias = "Flesh.Shotgun.BulletImpact_Headshot_3P_vs_3P"
+		}
+		else if ( damageType & damageTypes.bullet || damageType & DF_BULLET )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Flesh.Light.BulletImpact_Headshot_3P_vs_1P" )
+			soundAlias = "Flesh.Light.BulletImpact_Headshot_3P_vs_3P"
+		}
+		else if ( damageType & damageTypes.largeCaliber ||  damageType & DF_GIB  )
+		{
+			EmitSoundOnEntityOnlyToPlayer( player, player, "Flesh.Heavy.BulletImpact_Headshot_3P_vs_1P" )
+			soundAlias = "Flesh.Heavy.BulletImpact_Headshot_3P_vs_3P"
+		}
+
+		if ( soundAlias )
+		{
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+			array<entity> pilotArray = GetPlayerArray()
+			//Iterating because we need to not play this sound on 2 pilots and the function only allows for 1. Performance difference is negligible according to Eric M between this and adding a specific code function.
+			foreach ( pilot in pilotArray )
+			{
+				if ( !IsValid( pilot ) )
+					continue
+
+				if ( pilot == player || pilot == attacker )
+					continue
+
+				EmitSoundOnEntityOnlyToPlayer( player, pilot, soundAlias )
+			}
+		}
+	}
+}
+
+
+//entity function Wallrun_CreateCopyOfPilotModel( entity player )
+//{
+	//const string PLAYER_SETTINGS_FIELD = "bodymodel"
+
+	// asset modelName
+	// if ( player.IsTitan() )
+	// {
+	// 	modelName = GetPlayerSettingsAssetForClassName( player.s.storedPlayerSettings, PLAYER_SETTINGS_FIELD )
+	// }
+	// else
+	// {
+	// 	modelName = player.GetPlayerSettingsAsset( PLAYER_SETTINGS_FIELD )
+	// }
+
+	//entity model = CreatePropDynamic( modelName )
+
+	//SetTeam( model, player.GetTeam() )
+
+	//model.SetSkin( 0 )
+
+	//RandomizeHead( model )
+
+	//return model
+//}

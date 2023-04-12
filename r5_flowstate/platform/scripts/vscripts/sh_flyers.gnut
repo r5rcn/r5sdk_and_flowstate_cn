@@ -1,0 +1,252 @@
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+untyped
+
+global function ShFlyers_Init
+global function IsCagedFlyer
+global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+global const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
+global const asset FX_FLYER_GLOW2 = $"P_flyer_glow"
+
+#if CLIENT
+global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
+const asset FX_FLYER_GLOW = $"P_flyer_glow"
+#endif
+
+struct
+{
+array< entity > cagedFlyers 
+} file
+
+void function ShFlyers_Init()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	PrecacheModel( FLYER_MODEL )
+	PrecacheParticleSystem( DEATHBOX_DROP_FX )
+	PrecacheParticleSystem( FX_FLYER_GLOW2 )
+
+	#if SERVER
+		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_flyer_with_corpse", SVFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf184256", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf185661", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf185657", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf184256", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf149993", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf149990", SVCagedFlyerCreationCallback )
+	#endif
+}
+
+#if SERVER
+void function CagedFlyerAnimation(entity flyer) //idle
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	float idleLength = flyer.GetSequenceDuration( "fl_perched_idle" )
+	float idleLookLength = flyer.GetSequenceDuration( "fl_perched_idle_look" )
+		while( true )
+		{
+			if(IsValid(flyer)) flyer.Anim_Play( "fl_perched_idle" )
+			wait idleLength
+			if(IsValid(flyer)) {flyer.Anim_Stop()
+			flyer.Anim_Play( "fl_perched_idle_look" )}
+			wait idleLookLength
+			if(IsValid(flyer)) flyer.Anim_Stop()	
+		}
+}
+
+
+void function CagedFlyerAudios(entity flyer)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	if(IsValid(flyer)){
+	entity entity2 = CreateScriptMover( flyer.GetOrigin() )
+	entity2.SetParent(flyer)
+	entity2.DisableHibernation()
+
+	if(IsValid(flyer)) flyer.Anim_Play( "fl_perched_scream" )
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_MediumScream" )
+	wait 0.5 
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_Vocal_QuickScream" )
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_Slam" )
+	wait 0.5 
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_MediumScream" )
+	wait 0.8 
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_LongScream" )
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_JumpLand" )
+	wait 1.2
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_HeadShake" )
+	wait 0.5 
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_Breath" )
+	wait 0.5 
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_BiteBars" )}
+}
+
+void function CreateCagedFlyerTrigger(entity flyer)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 370 )
+	trigger.SetAboveHeight( 50 )
+	trigger.SetBelowHeight( 50 )
+	trigger.SetOrigin( flyer.GetOrigin() )
+	DispatchSpawn( trigger )
+	trigger.SearchForNewTouchingEntity()
+		while ( IsValid(flyer) )
+		{
+			array<entity> touchingEnts = trigger.GetTouchingEntities()
+			foreach( touchingEnt in touchingEnts  )
+			{
+				if( touchingEnt.IsPlayer() )
+				{
+					printt("Flyers DEBUG - Caged flyer trigger is being touched")
+					thread CagedFlyerAudios(flyer)
+					wait 6
+				}
+			}
+			wait 0.01
+		}
+	trigger.Destroy()
+}
+void function SVCagedFlyerCreationCallback( entity flyer )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+		if(IsValid(flyer)) flyer.Destroy()
+		// flyer.SetOrigin(flyer.GetOrigin() + < 0, 0, 0> )
+		// flyer.kv.fadedist = 14000
+		// flyer.kv.rendercolor = "255 255 255"
+		// flyer.kv.modelscale = 1
+		// flyer.kv.solid = 6
+		// flyer.SetValueForModelKey( FLYER_MODEL.tolower() )
+		// flyer.SetMaxHealth( 100 )
+		// flyer.SetHealth( 100 )
+		// flyer.SetDamageNotifications( true )
+		// flyer.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+		// AddEntityCallback_OnDamaged( flyer, CagedFlyer_OnDamaged) 
+		// thread CagedFlyerAnimation(flyer)
+		// thread CreateCagedFlyerTrigger (flyer)
+}
+void function CagedFlyer_OnDamaged(entity ent, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	float damage = DamageInfo_GetDamage( damageInfo )
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	float flyerNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if (flyerNextHealth > 0 && IsValid(ent)){
+		ent.SetHealth(flyerNextHealth)
+	} else if (IsValid(ent)){
+	thread PlayDyingFlyerAnim(ent)
+	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.kv.solid = 0
+	ent.SetOwner( attacker )
+	ent.kv.teamnumber = attacker.GetTeam()
+	}
+}
+
+void function PlayDyingFlyerAnim(entity flyer)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	float deathLength = flyer.GetSequenceDuration( "fl_perched_death" )
+	if(IsValid(flyer)){
+		flyer.Anim_Play( "fl_perched_death" )
+		flyer.Signal("OnDeath")
+		}
+	wait deathLength
+	if(IsValid(flyer)){
+		flyer.Anim_Stop()
+		flyer.Destroy()
+		}
+}
+
+void function SVFlyerCreationCallback( entity flyer )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	flyer.Destroy() //Removes t-posing flyers on all maps (except caged ones)
+}
+#endif
+
+bool function IsCagedFlyer( entity ent )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+/////////////////////////////////////////////////////// hack!
+{
+	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() )
+		 return false
+	
+	if(IsValid(ent)){
+		switch(ent.GetScriptName()){
+			case "cagedFlyerpf184256":
+				return true
+			case "cagedFlyerpf185661":
+				return true
+			case "cagedFlyerpf185657":
+				return true
+			case "cagedFlyerpf149993":
+				return true
+			case "cagedFlyerpf149990":
+				return true
+			default: 
+				return false
+		}
+	}
+	return false
+}
+
+#if(CLIENT)
+void function ServerCallback_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
+{
+	thread PlayLootRarityFXOnDeathboxDrop_threaded( deathBox  )
+}
+
+void function PlayLootRarityFXOnDeathboxDrop_threaded( entity deathBox  )
+{
+	EndSignal( deathBox, "OnDeath" )
+	EndSignal( deathBox, "OnDestroy" )
+
+	int fxID = GetParticleSystemIndex( DEATHBOX_DROP_FX )
+	vector boxOrigin = deathBox.GetOrigin()
+	int deatboxTier = deathBox.GetNetInt( "lootRarity"  )
+	vector colorVec = GetFXRarityColorForTier( deatboxTier )
+
+	int deathBoxFX = StartParticleEffectOnEntity( deathBox, fxID, FX_PATTACH_POINT_FOLLOW, deathBox.LookupAttachment( "FX_CENTER" ) )
+	EffectSetControlPointVector( deathBoxFX, 1, colorVec )
+
+	OnThreadEnd(
+		function() : ( deathBoxFX )
+		{
+			if ( EffectDoesExist( deathBoxFX  )  )
+				EffectStop( deathBoxFX, true, true )
+		}
+	)
+
+	wait 1.0
+
+}
+#endif

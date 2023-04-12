@@ -1,0 +1,1370 @@
+untyped
+
+globalize_all_functions
+
+struct{
+	array<var> recordingAnims
+}file
+
+void function SpawnDoubleDoorAtCrosshair()
+{
+//By Colombia
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	origin.z-=32
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity ddl = CreateEntity("prop_door")
+	ddl.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
+	ddl.SetAngles(angles1)
+	ddl.SetOrigin(origin + ddl.GetRightVector() * 60)
+	DispatchSpawn(ddl)
+
+	entity ddr = CreateEntity("prop_door")
+	ddr.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
+	ddr.SetAngles(Vector(angles1.x, (angles1.y + 180)  % 360, angles1.z))
+	ddr.SetOrigin(origin + ddr.GetRightVector() * 60)
+	ddr.LinkToEnt( ddl )
+	DispatchSpawn(ddr)
+}
+ 
+void function RecordingAnimationTest()
+{
+//By Colombia
+	entity player = GetPlayerArray()[0]
+	vector initialpos = player.GetOrigin()
+	vector initialang = player.GetAngles()
+	player.StartRecordingAnimation(initialpos, initialang)
+	Message(player, "RECORDING MOVEMENT", "", 1.5)
+	wait 5
+	file.recordingAnims.append( player.StopRecordingAnimation() )
+	var anim = file.recordingAnims[file.recordingAnims.len()-1]
+	asset playermodel = player.GetModelName()
+	WaitFrame()
+	Message(player, "PLAYING MOVEMENT", "", 1.5)
+	printt(anim) //userdata
+	while(true)
+	{
+		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
+		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
+		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
+		wait GetRecordedAnimationDuration( anim )
+		if(IsValid(dummy))
+		dummy.Destroy()
+	}
+}
+
+void function CreateGravitationalForce( )
+{
+	entity point_push = CreateEntity( "point_push" )
+	point_push.kv.spawnflags = 31
+	point_push.kv.enabled = 1
+	point_push.kv.magnitude = 50
+	point_push.kv.radius = 150
+	point_push.SetOrigin( GetPlayerArray()[0].GetOrigin() )//+ GetPlayerArray()[0].GetForwardVector()*250 )
+	DispatchSpawn( point_push )
+	point_push.Fire( "Enable" )
+	// point_push.Fire( "Kill", "", 0.2 )
+}
+
+
+function AiUtility_Init()
+{
+	RegisterSignal( "OnNewOwner" )
+	RegisterSignal( "squadInCombat" )
+	RegisterSignal( "OnEndFollow" )
+	RegisterSignal( "OnStunned" )
+
+}
+////////////////////////////////////////////////////////////////////////////////
+// Cloaks npc forever (to be used by anim events)
+function NpcCloakOn( npc )
+{
+	//SetCloakDuration( fade in, duration, fade out )
+	npc.SetCloakDuration( 2.0, -1, 0 )
+	EmitSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_START_SFX )
+	EmitSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_LOOP_SFX )
+	npc.Minimap_Hide( TEAM_IMC, null )
+	npc.Minimap_Hide( TEAM_MILITIA, null )
+}
+////////////////////////////////////////////////////////////////////////////////
+// De-cloaks npc
+function NpcCloakOff( npc)
+{
+	npc.SetCloakDuration( 0, 0, 1.5 )
+	StopSoundOnEntity( npc, CLOAKED_DRONE_CLOAK_LOOP_SFX )
+	npc.Minimap_AlwaysShow( TEAM_IMC, null )
+	npc.Minimap_AlwaysShow( TEAM_MILITIA, null )
+}
+
+int function GetDefaultNPCFollowBehavior( npc )
+{
+	switch ( npc.GetAIClass() )
+	{
+		case AIC_FLYING_DRONE:
+			return AIF_SUPPORT_DRONE
+
+		case AIC_VEHICLE:
+			return AIF_GUNSHIP
+
+		case AIC_TITAN:
+		case AIC_TITAN_BUDDY:
+			return AIF_TITAN_FOLLOW_PILOT
+	}
+
+	return AIF_FIRETEAM
+}
+
+void function DieOnPlayerDisconnect( entity npc, entity player )
+{
+	Assert( IsNewThread(), "Must be threaded off" )
+	Assert( npc.IsNPC() )
+	Assert( player.IsPlayer() )
+	Assert( IsAlive( npc ) )
+	Assert( npc.GetBossPlayer() == player )
+	Assert( !IsDisconnected( player ) )
+	npc.EndSignal( "OnDeath" )
+
+	player.WaitSignal( "OnDestroy" )
+
+	// my boss quit the server!
+	if ( IsAlive( npc ) && npc.GetBossPlayer() == player )
+		npc.Die()
+}
+
+void function NPCFollowsPlayer( entity npc, entity leader )
+{
+	Assert( IsAlive( npc ) )
+	Assert( leader.IsPlayer() )
+
+	npc.SetBossPlayer( leader )
+
+	// team
+	SetTeam( npc, leader.GetTeam() )
+
+	if ( IsSpectre( npc ) )
+	{
+		string squadName = GetPlayerSpectreSquadName( leader )
+		SetSquad( npc, squadName )
+	}
+
+	thread DieOnPlayerDisconnect( npc, leader )
+	#if SP
+	Highlight_SetFriendlyHighlight( npc, "friendly_ai" )
+	#else
+	Highlight_SetOwnedHighlight( npc, "friendly_ai" )
+	#endif
+
+	NpcFollowsEntity( npc, leader )
+}
+
+void function NPCFollowsNPC( entity npc, entity leader )
+{
+	Assert( IsAlive( npc ) )
+	Assert( IsAlive( leader ) )
+	Assert( leader.IsNPC() )
+
+	// team
+	SetTeam( npc, leader.GetTeam() )
+
+	// squad
+	string squadNameOwner = expect string( leader.Get( "squadname" ) )
+	if ( squadNameOwner != "" && leader.GetClassName() == npc.GetClassName() )
+		SetSquad( npc, squadNameOwner )
+
+	NpcFollowsEntity( npc, leader )
+}
+
+void function NpcFollowsEntity( entity npc, entity leader )
+{
+	// stop scripted things
+	if ( IsMultiplayer() )
+		npc.Signal( "StopHardpointBehavior" )
+
+	if ( leader.IsPlayer() && leader.p.followPlayerOverride != null )
+	{
+		leader.p.followPlayerOverride( npc, leader )
+		return
+	}
+
+	// follow!
+	int followBehavior = GetDefaultNPCFollowBehavior( npc )
+	npc.InitFollowBehavior( leader, followBehavior )
+	npc.DisableBehavior( "Assault" )
+	npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_USE_SHOOTING_COVER )
+	npc.EnableBehavior( "Follow" )
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+bool function HasEnemyWithinDist( entity npc, float dist )
+{
+	float distSq = dist * dist
+
+	array<entity> enemies
+	entity closestEnemy = npc.GetClosestEnemy()
+	if ( closestEnemy )
+		enemies.append( closestEnemy )
+
+	entity currentEnemy = npc.GetEnemy()
+	if ( currentEnemy && currentEnemy != closestEnemy )
+		enemies.append( currentEnemy )
+
+	if ( !enemies.len() )
+		return false
+
+	vector origin = npc.GetOrigin()
+	foreach ( enemy in enemies )
+	{
+		if ( DistanceSqr( origin, enemy.GetOrigin() ) < distSq )
+			return true
+	}
+
+	return false
+}
+
+SpawnPointFP function FindSpawnPointForNpcCallin( entity npc, asset model, string anim )
+{
+	float yaw = npc.EyeAngles().y
+
+	vector npcView 				= AnglesToForward( npc.EyeAngles() )
+	FlightPath flightPath 		= GetAnalysisForModel( model, anim )
+
+	CallinData drop
+	InitCallinData( drop )
+	SetCallinStyle( drop, eDropStyle.NEAREST_YAW_FALLBACK )
+	SetCallinOwnerEyePos( drop, npc.EyePosition() )
+	drop.dist 			= 800
+	drop.origin 		= npc.GetOrigin() + npcView * 250
+	drop.yaw 			= yaw
+
+	vector angles = Vector( 0, yaw, 0 )
+ 	SpawnPointFP spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+	if ( spawnPoint.valid )
+		return spawnPoint
+
+	//if it didn't find one where he was looking - try near him
+	drop.origin 		= npc.GetOrigin()
+	spawnPoint = GetSpawnPointForStyle( flightPath, drop )
+
+	return spawnPoint
+}
+
+function WaitForSquadInCombat( squad )
+{
+	local master = {}
+
+	//when the thread ends, let child threads now
+	OnThreadEnd(
+		function() : ( master )
+		{
+			Signal( master, "OnDestroy" )
+		}
+	)
+
+	// this internal function keeps track of each guy
+	local combatTracker =
+		function( guy, master )
+		{
+			expect entity( guy )
+			expect entity( master )
+
+			EndSignal( master, "OnDestroy" )
+			EndSignal( guy, "OnDeath", "OnDestroy" )
+			if ( !IsAlive( guy ) )
+				return
+
+			while ( guy.GetNPCState() != "combat" )
+				guy.WaitSignal( "OnStateChange" )
+
+			Signal( master, "squadInCombat" )
+		}
+
+	foreach ( guy in squad )
+	{
+		thread combatTracker( guy, master )
+	}
+
+	WaitSignal( master, "squadInCombat" )
+}
+
+function WaitForNpcInCombat( npc )
+{
+	while ( npc.GetNPCState() != "combat" )
+		npc.WaitSignal( "OnStateChange" )
+}
+
+int function GetNpcHullType( entity npc )
+{
+	string aiSettings = npc.GetAISettingsName()
+	return int ( Dev_GetAISettingByKeyField_Global( aiSettings, "HullType" ) )
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+// "SPAWN AI" DEV MENU Fuctions
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+const float CROSSHAIR_VERT_OFFSET = 32
+
+vector function GetPlayerCrosshairOriginRaw( entity player )
+{
+	vector angles = player.EyeAngles()
+	vector forward = AnglesToForward( angles )
+	vector origin = player.EyePosition()
+
+	vector start = origin
+	vector end = origin + forward * 50000
+	TraceResults result = TraceLine( start, end )
+	vector crosshairOrigin = result.endPos
+
+	return crosshairOrigin
+}
+
+vector function GetPlayerCrosshairOrigin( entity player )
+{
+	return (GetPlayerCrosshairOriginRaw( player ) + Vector( 0, 0, CROSSHAIR_VERT_OFFSET ))
+}
+
+void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
+{
+	thread function() : ( delay, loglevel )
+	{
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+		printt( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DEBUGGING AI NODEGRAPH DATA <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" )
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+		for( int cIndex = 0; cIndex < NavMeshNode_GetNodeCount(); cIndex++ )
+		{
+			wait delay
+			vector cOrigin = NavMeshNode_GetNodePos( cIndex )
+
+			GetPlayerArray()[0].SetOrigin( cOrigin )
+
+			if ( loglevel == 1 )
+			{
+				printt( "Index: " + cIndex )
+			}
+			else if ( loglevel > 1 )
+			{
+				int nIndex =  NavMeshNode_GetNearestNodeToPos( OriginToGround( cOrigin ) )
+				vector nOrigin
+				if ( nIndex != -1 )
+				{
+					nOrigin = NavMeshNode_GetNodePos( nIndex )
+				}
+				printt( "<<<<<***********************************************************>>>>>" )
+				printt( "Current index    : " + cIndex )
+				printt( "Current position : " + cOrigin )
+				printt( "Nearest index    : " + nIndex )
+				printt( "Nearest position : " + nOrigin )
+			}
+		}
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+	}()
+}
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function CreateEditorPropZero(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1)
+    {
+		//########################################
+		//d8888b. d8888b.  .d88b.  d8888b. .d8888. 
+		//88  `8D 88  `8D .8P  Y8. 88  `8D 88'  YP 
+		//88oodD' 88oobY' 88    88 88oodD' `8bo.   
+		//88~~~   88`8b   88    88 88~~~     `Y8b. 
+		//88      88 `88. `8b  d8' 88      db   8D 
+		//88      88   YD  `Y88P'  88      `8888Y'
+		//######################################## 		
+    	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+    	e.kv.fadedist = fade
+		e.kv.rendermode = 0
+		e.kv.renderamt = 1
+		e.kv.solid = 6
+		e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    	if(mantle) e.AllowMantle()
+    
+    	if (realm > -1) {
+    		e.RemoveFromAllRealms()
+    		e.AddToRealm(realm)
+    	}
+    	string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+    	string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+    
+    	e.SetScriptName("editor_placed_prop")
+    	e.e.gameModeId = realm
+    
+    	//printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
+    
+    	return e
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function CreateEditorEntity(asset entity_name, vector pos, vector ang)
+    {
+
+	  //####################################################################
+	  //d88888b d8b   db d888888b d888888b d888888b d888888b d88888b .d8888. 
+	  //88'     888o  88 `~~88~~'   `88'   `~~88~~'   `88'   88'     88'  YP 
+	  //88ooooo 88V8o 88    88       88       88       88    88ooooo `8bo.   
+	  //88~~~~~ 88 V8o88    88       88       88       88    88~~~~~   `Y8b. 
+	  //88.     88  V888    88      .88.      88      .88.   88.     db   8D 
+	  //Y88888P VP   V8P    YP    Y888888P    YP    Y888888P Y88888P `8888Y'  Written by Zer0Bytes#4428
+	  //####################################################################
+
+      array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"] 
+      string randomWeapon = weapons[RandomInt(weapons.len())]
+      entity result
+    
+      switch (string(entity_name))  // not the best way of doing this idk
+      {
+    
+        case "npc_dummie":
+        entity dummie = CreateDummy( TEAM_UNASSIGNED, pos, ang )
+        SetSpawnOption_Alert(dummie)
+    	DispatchSpawn( dummie )
+        dummie.SetSkin(RandomInt(6))
+        dummie.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+    	result = dummie
+        break
+    
+        case "npc_dummie_ignore":  // unkillable dummies
+        entity ent_npc = CreateEntity( "npc_dummie" )
+        SetSpawnOption_AISettings( ent_npc, "npc_dummie_combat" )
+        ent_npc.SetOrigin( pos )
+        ent_npc.SetAngles( ang )
+        SetTeam(ent_npc,TEAM_IMC | TEAM_MILITIA)
+        DispatchSpawn( ent_npc ) // spawn entity
+        ent_npc.SetDamageNotifications( false )
+        ent_npc.NotSolid()
+        ent_npc.EnableNPCFlag( NPC_IGNORE_ALL ) // to make them not give a shit
+        ent_npc.SetSkin(RandomInt(6))
+    	result = ent_npc
+        break
+    
+        case "ent_lootbin":
+        entity ent_lootbin = CreateLootBin(pos,ang)
+        SetTargetName( ent_lootbin, "LootBin" )
+        ent_lootbin.SetOrigin( pos )
+        ent_lootbin.SetAngles( ang )
+    	result = ent_lootbin
+        break
+    
+        case "ent_singleDoor": // single door
+    	entity singleDoor = CreateEntity("prop_door")
+    	singleDoor.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+    	singleDoor.SetOrigin( pos )
+    	singleDoor.SetAngles( ang - <0,90,0>)
+    	DispatchSpawn(singleDoor)
+        break
+    
+        case "ent_doubledoor": // double door
+        entity DoorLeft = CreateEntity("prop_door")
+    	DoorLeft.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+    	DoorLeft.SetAngles(ang - <0,90,0>)
+    	DoorLeft.SetOrigin(pos + DoorLeft.GetRightVector() * 60)
+    	DispatchSpawn(DoorLeft)
+    
+    	entity DoorRight = CreateEntity("prop_door")
+    	DoorRight.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+    	DoorRight.SetAngles(ang + <0,90,0>)
+    	DoorRight.SetOrigin(pos + DoorRight.GetRightVector() * 60)
+    	DoorRight.LinkToEnt( DoorRight )
+    	DispatchSpawn(DoorRight)
+        break
+    
+        default:
+        break
+      }
+      string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+      string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+    
+      //printl("[Load0_Entity]" + string(entity_name) + ";" + positionSerialized + ";" + anglesSerialized + ";")
+      result.kv.fadedist = 2000
+    
+      return result
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function CreateEditorPilot(asset entity_name,int model_select,int anim_select,vector pos, vector ang)
+    {
+        //###################################################      
+        //d8888b. d888888b db       .d88b.  d888888b .d8888. 
+        //88   8D    88'   88      .8P  Y8.  ~~88    88'  YP 
+        //88oodD'    88    88      88    88    88     8bo.   
+        //88~~~      88    88      88    88    88       Y8b. 
+        //88        .88.   88booo.  8b  d8'    88    db   8D 
+        //88      Y888888P Y88888P   Y88P'     YP     8888Y' 
+        //###################################################  Written by Zer0Bytes#4428                         
+                                                          
+        //defaults if nothing is selected
+        array <asset> model_array = [$"mdl/humans/class/medium/pilot_medium_holo.rmdl"]
+        array <string> anim_array = ["mirage_menu_lobby_center_laugh"] // can be pulled from legion and make sure to remove "_0" etc
+
+        Assert( model_select, "No Model Choosen Set to 1!" )
+		
+        switch (string(entity_name))  // not the best way of doing this idk
+        {
+	        case "pilot_mirage":
+	            model_array = [
+				    $"mdl/humans/class/medium/pilot_medium_holo.rmdl"
+			    ]
+	            anim_array = [
+	                "mirage_menu_lobby_center_beard",
+	                "mirage_menu_lobby_center_laugh",
+	                "mirage_menu_lobby_center_picture",
+	                "mirage_menu_lobby_center_magic",
+	                "pilot_freefall_emote_backflip",
+	                "pilot_freefall_emote_backflip"
+				]
+            break
+        
+            case "pilot_gibraltar":
+                model_array = [
+					$"mdl/humans/class/heavy/pilot_heavy_gibraltar.rmdl"
+				]
+                anim_array = ["gibraltar_menu_lobby_center_slap"]
+            break
+        
+            case "pilot_support":
+                model_array = [
+					$"mdl/humans/class/light/pilot_light_support.rmdl"
+				]
+                anim_array = ["lifeline_idle_UA_dance"]
+            break
+        
+            case "pilot_bloodhound":
+                model_array = [
+					$"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl"
+				]
+                anim_array = ["bloodhound_menu_lobby_center_pet"]
+            break
+        
+            case "pilot_bangalore":
+                model_array =[
+					$"mdl/humans/class/medium/pilot_medium_bangalore.rmdl"
+				]
+                anim_array = ["bangalore_menu_lobby_center_hair"]
+            break
+        
+            case "pilot_wraith":
+                model_array = [
+					$"mdl/humans/class/light/pilot_light_wraith.rmdl"
+				]
+                anim_array = ["wraith_menu_lobby_center_voices"]
+            break
+        
+            case "pilot_pathfinder":
+                model_array = [
+					$"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl"
+				]
+                anim_array  = ["pathfinder_menu_lobby_center_hopping"]
+            break
+        
+            case "pilot_stim":
+                model_array = [
+					$"mdl/Humans/class/medium/pilot_medium_stim.rmdl"
+				]
+                anim_array = ["octane_menu_lobby_center_leg"]
+            break
+        
+            case "pilot_wattson":
+                model_array = [
+					$"mdl/humans/class/light/pilot_light_wattson.rmdl"
+				]
+                anim_array = ["wattson_menu_lobby_center_idle"]
+            break
+        
+            case "pilot_caustic":
+                model_array = [
+					$"mdl/humans/class/heavy/pilot_heavy_caustic.rmdl"
+				]
+                anim_array = ["caustic_menu_lobby_center_recorder"]
+            break
+        
+            case "pilot_crypto":
+                model_array = [
+					$"mdl/Humans/class/medium/pilot_medium_crypto.rmdl"
+				]
+                anim_array = ["crypto_menu_lobby_center_drone"]
+            break
+        
+		    case "npc_tick":
+                model_array = [
+				$"mdl/robots/drone_frag/drone_frag_loot.rmdl",
+			    $"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl",
+				$"mdl/robots/drone_frag/drone_frag_loot_halloween.rmdl",
+				$"mdl/robots/drone_frag/drone_frag_loot_halloween.rmdl"]
+
+				anim_array = [
+				"sd_search_idle",
+				"sd_angry_idle",
+				"sd_angry_idle",
+				"sp_suicide_spectre_explode_stand"]
+            break
+		    
+            default:
+            break
+        }
+        
+        asset model
+		for (int m;m < model_array.len();m++) // go trough array
+		{
+			if (model_select == m) // if is selected return anim
+			{
+				model = model_array[m]
+			}
+			else
+			{
+				model = model_array[model_select - 1]
+			}
+		}
+		
+
+        entity ent_prop = CreatePropDynamic(model,pos,ang,SOLID_VPHYSICS,30000)
+        ent_prop.kv.fadedist = 30000 // lower fading
+        ent_prop.e.gameModeId = -1
+        ent_prop.NotSolid() // make the ent's not solid
+        ent_prop.StopPhysics()
+        ent_prop.kv.fadedist = 2000
+        string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+        string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+        
+        if (anim_select != 0 )
+        {
+			string anim
+			for (int a;a < anim_array.len();a++) // go trough array
+			{
+				if (anim_select == a) // if is selected return anim
+				{
+					anim = anim_array[a]
+				}
+				else
+				{
+					anim = anim_array[anim_select - 1]
+				}
+			}
+
+			printl( "[Load0_Pilot]" + string(model) + ";" + anim + ";" + positionSerialized + ";" + anglesSerialized + ";")
+            float RotateLoopSpeed =  15
+            float smalltick = 0.5
+    		float bigtick = 2.5
+            switch (anim_select)
+            {
+    			//tick
+    			case 2: // big gold tick
+    			if (string(entity_name) == "npc_tick")
+    			{
+    				ent_prop.SetModelScale(bigtick)
+    			}
+    			thread PlayAnim( ent_prop, anim )
+                break
+    
+    			case 3: // small spook
+    			if (string(entity_name) == "npc_tick")
+    			{
+                    ent_prop.SetModelScale(smalltick)
+    			}
+    			thread PlayAnim( ent_prop, anim )
+                break
+    
+    			case 4: // small front flip spook
+    			if (string(entity_name) == "npc_tick")
+    			{
+                    ent_prop.SetModelScale(smalltick)
+    			}
+    			thread AnimationLoop( ent_prop, anim, RotateLoopSpeed)
+                break
+                //tick end 
+
+				case 5: // big boy
+				ent_prop.SetModelScale(7.0)
+				thread BigMirageRotateLoop(ent_prop,anim,RotateLoopSpeed * 8) // rotation
+				break
+	
+				case 6: // table smol mirages
+				ent_prop.SetModelScale(0.5)
+				thread PlayAnim( ent_prop, anim )
+				thread MiniMirageRotateLoop(ent_prop,RotateLoopSpeed) // rotation
+				break
+    
+                default:
+                thread PlayAnim( ent_prop, anim )
+                break
+            }
+        } else{  // 0 - no animation / t-pose
+            //printl( "[Load0_Pilot]" + string(model) + ";" + positionSerialized + ";" + anglesSerialized + ";")
+    		
+    	}
+    
+    	return ent_prop
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    array<entity> function ent_ZipLine(vector startPos,vector endPos,bool pathfinder_model)
+    {
+		//##################################################################
+		//d88888D d888888b d8888b. db      d888888b d8b   db d88888b .d8888. 
+		//YP  d8'   `88'   88  `8D 88        `88'   888o  88 88'     88'  YP 
+		//   d8'     88    88oodD' 88         88    88V8o 88 88ooooo `8bo.   
+		//  d8'      88    88~~~   88         88    88 V8o88 88~~~~~   `Y8b. 
+		// d8' db   .88.   88      88booo.   .88.   88  V888 88.     db   8D 
+		//d88888P Y888888P 88      Y88888P Y888888P VP   V8P Y88888P `8888Y' 
+        //################################################################## Written by Zer0Bytes#4428
+
+		vector pathfinder_offset = <0,0,120>
+		asset PATHFINDER_ZIP_MODEL = $"mdl/props/pathfinder_zipline/pathfinder_zipline.rmdl"
+
+    	entity zipline_start = CreateEntity( "zipline" )
+		entity ent_model_start
+    	zipline_start.kv.Material = "cable/zipline.vmt"
+    	zipline_start.kv.ZiplineAutoDetachDistance = "160"
+		array<entity> ziplineEnts
+
+		if (pathfinder_model)
+		{
+			ent_model_start = CreateEditorPropZero( PATHFINDER_ZIP_MODEL, startPos, <0,0,0>, true, 50000, -1 )
+			zipline_start.SetOrigin( startPos + pathfinder_offset)
+			//ent_model_start.SetParent(zipline_start)
+		} else
+		{
+		    zipline_start.SetOrigin( startPos )
+		}
+
+    	entity zipline_end = CreateEntity( "zipline_end" )
+    	zipline_end.kv.ZiplineAutoDetachDistance = "160"
+		entity ent_model_end
+    	
+		if (pathfinder_model)
+		{
+			ent_model_end = CreateEditorPropZero( PATHFINDER_ZIP_MODEL, endPos, <0,0,0>, true, 50000, -1 )
+			zipline_end.SetOrigin( endPos + pathfinder_offset)
+			//ent_model_end.SetParent(zipline_end)
+		}else
+		{
+		    zipline_end.SetOrigin( endPos )
+		}
+
+    	zipline_start.LinkToEnt( zipline_end )
+    	DispatchSpawn( zipline_start )
+    	DispatchSpawn( zipline_end )
+    
+		if (pathfinder_model)
+		{
+			ziplineEnts = [ zipline_start, zipline_end ,ent_model_start,ent_model_end]
+		}else
+		{
+			ziplineEnts = [ zipline_start, zipline_end ]
+		}
+		    
+    	return ziplineEnts
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function GenerateRings(asset ring_MODEL,vector origin,float rotate_speed,float ring_size)
+    {
+    	//Zer0Bytes#4428
+    
+        // #########################################
+        // d8888b. d888888b d8b   db  d888b  .d8888.
+        // 88   8D    88'   888o  88 88' Y8b 88'  YP
+        // 88oobY'    88    88V8o 88 88       8bo.  
+        // 88 8b      88    88 V8o88 88  ooo    Y8b.
+        // 88  88.   .88.   88  V888 88. ~8~ db   8D
+        // 88   YD Y888888P VP   V8P  Y888P   8888Y'
+        // ######################################### Written by Zer0Bytes#4428
+    
+        Assert( ring_MODEL != null, "No Ring Asset Selected" )
+        Assert( origin != null, "No Origin Set" )
+    	int amount_rings = 2 // the amount of rings
+    	int ring_size_scaling_begin = 0 // at what ring begin the scaling
+    	float ring_size_multiplier = 0.1
+    	entity ent_ring
+    	for (int i;i < amount_rings;i++) // top spinning rings
+    	{
+    		
+    		origin = origin + <0,0,2048 * i + ring_size_multiplier> // modify the y
+    
+            for (int j = 0;j < 4;j++) // side duplication
+    		{
+    			switch(j) 
+    			{
+    				case 0:  // 180
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <0,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, false)
+    				break
+    				case 1:  // 180
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <180,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    				case 2:  // 90
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <90,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, true)
+    				break
+    				case 3:  // 90
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-90,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    				case 4: // 45
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <45,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, true)
+    				break
+    				case 5: // 45
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-45,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    				case 6:  // 22
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <22,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, true)
+    				break
+    				case 7:  // 22
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-22,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    
+    			}
+    			ent_ring.NotSolid()
+
+    			for(int k;k < amount_rings;k++)
+    			{
+    				ent_ring.kv.renderamt = 255
+    				ent_ring.kv.rendermode = 3
+    				ent_ring.kv.rendercolor = "255 255 255 255"
+    				ent_ring.SetModelScale(ring_size * ring_size_multiplier * i)
+    			}
+    		}
+        }
+    	return ent_ring
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    vector wallz_oldorigin_y
+    void function CreateInvisibleWall(asset MODEL,vector origin,vector angles,int amount,float spacesize)
+    {
+        
+        // ##############################################
+        // db   d8b   db   d8b   db      db      d88888D 
+        // 88   I8I   88 d8   8b 88      88      YP  d8  
+        // 88   I8I   88 88ooo88 88      88         d8   
+        // Y8   I8I   88 88   88 88      88        d8    
+        //  8b d8'8b d8  88   88 88booo  88booo   d8  db 
+        //   8b8   8d8   YP   YP Y88888P Y88888P d88888P 
+        // ############################################## Written by Zer0Bytes#4428
+    
+    	Assert( MODEL != null, "No Asset Selected" )
+    
+        vector add_spacesize
+        vector origin_y
+        int check
+        origin = origin - <0,0,spacesize> 
+    
+        for (int i;i < amount;i++)
+        {
+            add_spacesize = <0,0,spacesize> 
+            
+            if(check != 0) // add to location
+            {
+                origin_y = origin_y + add_spacesize // next position
+            }
+            else{
+                origin_y = origin + add_spacesize // position
+                check = 1
+            }
+            entity ent_inviswall = CreateEditorPropZero( MODEL , origin_y, angles, true, 200, -1 )
+            
+            ent_inviswall.kv.renderamt = 255
+            ent_inviswall.kv.rendermode = 3
+            ent_inviswall.kv.rendercolor = "0 0 0 50"
+    	    ent_inviswall.kv.solid = 8 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+            ent_inviswall.kv.fadedist = 200
+            wallz_oldorigin_y = origin_y
+        }
+        //wait 0.3
+    }
+	void function CreateDownWall(asset MODEL,vector origin,vector angles,int amount,float spacesize)
+    {
+    	Assert( MODEL != null, "No Asset Selected" )
+        vector add_spacesize
+        vector origin_y
+        int check
+        origin = origin - <0,0,spacesize> 
+    
+        for (int i;i < amount;i++)
+        {
+            add_spacesize = <0,0,spacesize> 
+            
+            if(check != 0) // add to location
+            {
+                origin_y = origin_y - add_spacesize // next position
+            }
+            else{
+                origin_y = origin + add_spacesize // position
+                check = 1
+            }
+            entity ent_inviswall = CreateEditorPropZero( MODEL , origin_y, angles, true, 50000, -1 )
+        
+            wallz_oldorigin_y = origin_y
+        }
+        //wait 0.3
+    }
+
+    void function DEV_TeleportPlayers(vector pos, vector ang) 
+    {
+        int playersize = GetPlayerArray().len()
+        for (int i;i < playersize ;i++)
+    	{
+            entity player = GetPlayerArray()[i]
+    		if(IsValidPlayer(player))
+    		{
+    		   player.SetOrigin( pos )
+    		   player.SetAngles( ang )
+               printl("[DEV_Teleport]" + player.GetTargetName() + "["+ string(i) + "]" + ";" + string(pos) + ";" + string(ang)+ ";")
+    		}
+    	}
+    }
+    
+    void function DEV_ChargePlayers() 
+    {
+        int playersize = GetPlayerArray().len()
+        for (int i;i < playersize ;i++)
+    	{
+            entity player = GetPlayerArray()[i]
+    
+    		if(IsValidPlayer(player))
+    		{
+    			player.GetOffhandWeapon( OFFHAND_INVENTORY )
+    		    .SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
+    			player.GetOffhandWeapon( OFFHAND_LEFT )
+    			.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+                printl("[DEV_Charger]" + player.GetTargetName() + "["+ string(i) + "]" + ";")
+    		}
+    		
+    	}
+    }
+    
+    void function DEV_StatusPlayers()
+    {
+        int playersize = GetPlayerArray().len()
+        for (int i;i < playersize ;i++)
+    	{
+    		entity player = GetPlayerArray()[i]
+    		if(IsValidPlayer(player))
+    		{
+                
+    		    vector origin = GetPlayerCrosshairOrigin( player )
+
+                printl("["+ player.GetTargetName() + "] ["+ string(i)  + "]-----------------------------")
+    		    printl("[Entity]" + player.GetTargetName() + "["+ string(i) + "]" + ";" + string(player.GetOrigin()) + ";" + string(player.GetAngles()))
+    		    printl("[LookingAt]" + player.GetTargetName() + "["+ string(i) + "]" + ";" + string(origin))
+
+				printl("[DEV_StatusPlayers] // script DEV_TeleportPlayers(" + string(player.GetOrigin()) + "," + string(player.GetAngles()) + ")" )
+    		}
+    	}
+    }
+
+    // #########################################
+    // db       .d88b.   .d88b.  d8888b. .d8888. 
+    // 88      .8P  Y8. .8P  Y8. 88  `8D 88'  YP 
+    // 88      88    88 88    88 88oodD' `8bo.   
+    // 88      88    88 88    88 88~~~     `Y8b. 
+    // 88booo. `8b  d8' `8b  d8' 88      db   8D 
+    // Y88888P  `Y88P'   `Y88P'  88      `8888Y' 
+    // ######################################### Written by Zer0Bytes#4428
+
+    void function RotateLoop(entity ent,float speed,bool rightside)
+    {
+        vector result
+        while(isBrightWaterByZer0 && IsValid(ent))
+        {
+            if(rightside)
+            {
+               result =  ent.GetAngles() + <0,-speed,0>
+            }
+            else{
+               result = ent.GetAngles()  + <0,speed,00>
+            }
+    		ent.SetAngles( result ) // result
+        WaitFrame()
+        }
+    }
+    
+    void function vRotateLoop(entity ent,float speed,bool rightside)
+    {
+        vector result
+    	float sbase = 2
+        while(isBrightWaterByZer0 && IsValid(ent))
+        {
+            if(rightside)
+            {
+               result =  ent.GetAngles() -  <speed,-speed, 0>
+            }
+            else{
+               result = ent.GetAngles()  +  <-speed,speed, 0>
+            }
+    		ent.SetAngles( result ) // result
+        WaitFrame()
+        }
+    }
+    
+    void function AnimationLoop(entity decoy,string anim,float speed)
+    {
+        vector result
+        while(isBrightWaterByZer0)
+        {
+          PlayAnim( decoy, anim )
+          wait 0.00001
+        }
+    }
+
+    void function BigMirageRotateLoop(entity decoy,string anim,float speed)
+    {
+        vector result
+        while(isBrightWaterByZer0)
+        {
+            PlayAnim( decoy, anim )
+            if(RandomInt(1))
+            {
+               result =  decoy.GetAngles() + <speed,0,speed > - <0,speed,0>
+            }
+            else{
+               result = decoy.GetAngles() - <0,0,speed> + <speed,speed,0>
+            }
+          decoy.SetAngles( result ) // result
+          wait 0.00001
+        }
+    }
+    void function MiniMirageRotateLoop(entity decoy,float speed)
+    {
+        vector result
+        while(isBrightWaterByZer0)
+        {
+            if(RandomInt(1))
+            {
+               result =  decoy.GetAngles() + <0,0,speed> - <0,speed,0>
+            }
+            else{
+               result = decoy.GetAngles() - <0,0,speed> + <0,speed,0>
+            }
+          decoy.SetAngles( result ) // result
+          wait 0.00001
+        }
+    }
+
+    // ################
+	// d88888b db    db
+	// 88'     `8b  d8'
+	// 88ooo    `8bd8' 
+	// 88~~~    .dPYb. 
+	// 88      .8P  Y8.
+	// YP      YP    YP    
+    // ################ Written by Zer0Bytes#4428
+	
+    entity function ApplyFX(asset FX,entity ent_prop)
+    {
+        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), ent_prop.GetOrigin(), ent_prop.GetAngles())
+        trailFXHandle.SetParent(ent_prop)
+        //ent_prop.kv.renderamt = 100
+        //ent_prop.kv.rendermode = 3
+        //ent_prop.kv.rendercolor = "255 0 0 50"
+    	//ent_prop.kv.solid = 0 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+    
+        trailFXHandle.FXEnableRenderAlways()
+        return trailFXHandle
+    }
+    
+    entity function CreateFX(asset FX,vector Origin,vector Angles)
+    {
+        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), Origin, Angles)
+        trailFXHandle.FXEnableRenderAlways()
+        return trailFXHandle
+    }
+    
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+void function DEV_SpawnLootBinAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	
+	vector org1 = origin
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - org1
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity ent_lootbin = CreateCustomLootBin(origin,angles1, ["mp_weapon_sniper", "mp_weapon_sniper","mp_weapon_sniper"])
+	SetTargetName( ent_lootbin, "LootBin" )
+	ent_lootbin.SetOrigin( origin )
+	ent_lootbin.SetAngles( angles1 )	
+}
+
+void function DEV_SpawnDummyAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity dummy = CreateDummy( 99, origin, angles1 )
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
+	else 
+		SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
+	
+	int randomShield = 75
+	int shieldskin = 1
+	
+	if(GetCurrentPlaylistVarBool( "dummies_have_random_shields", true ))
+		switch(RandomIntRangeInclusive(1,4)){
+			case 1:
+				randomShield = 50
+				shieldskin = 5
+				break
+			case 2:
+				randomShield = 75
+				shieldskin = 3
+				break
+			case 3:
+				randomShield = 100
+				shieldskin = 6
+				break
+			case 4:
+				randomShield = 130
+				shieldskin = 1
+				break
+		}
+
+
+	DispatchSpawn( dummy )	
+	dummy.SetOrigin(origin)
+	dummy.SetShieldHealthMax( randomShield )
+	dummy.SetShieldHealth( randomShield )
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 100 )
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.SetSkin(shieldskin)
+	dummy.DisableHibernation()
+	dummy.SetAngles(angles1)
+	
+	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		thread PlayAnimOnTrainingDummy(dummy)
+	
+    array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
+    string randomWeapon = weapons[RandomInt(weapons.len())]
+    dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+}
+
+void function DEV_SpawnFriendlyDummyAtCrosshair()
+{
+	DEV_SpawnDummyAtCrosshair()
+	array<entity> npcs = GetNPCArray()
+	NPCFollowsPlayer( npcs[ npcs.len() - 1 ], gp()[0] )
+}
+
+void function PlayAnimOnTrainingDummy(entity dummy)
+{
+WaitFrame()
+
+EndSignal(dummy, "OnDeath")
+
+while(IsValid(dummy))
+	{
+		float duration = dummy.GetSequenceDuration("bloodhound_idle_rifle_firingrangedummy")
+		float empezoen = RandomFloatRange(0, duration)
+		dummy.Anim_PlayOnly("bloodhound_idle_rifle_firingrangedummy")
+		dummy.Anim_SetStartTime(empezoen)
+		wait duration-empezoen
+	}
+}
+
+void function DEV_SpawnProwlerAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity prowler = CreateProwler( 99, origin, angles )
+
+	DispatchSpawn( prowler )
+	
+    prowler.SetSkin(RandomInt(5))
+}
+
+void function DEV_SpawnMarvinAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+	int team = player.GetTeam()
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+	entity marvin = CreateMarvin( 99, origin, angles )
+
+	DispatchSpawn( marvin )
+}
+void function DEV_SpawnSpiderAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity spider = CreateSpider( 99, origin, angles )
+
+	DispatchSpawn( spider )
+}
+
+void function DEV_SpawnInfectedSoldierAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity Infected = CreateInfected( 99, origin, angles )
+
+	DispatchSpawn( Infected )
+}
+
+void function DEV_SpawnExplosiveTickAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity tick = CreateFragDrone( 99, origin, angles )
+
+	DispatchSpawn( tick )
+	tick.SetSkin(RandomInt(2))
+}
+
+void function DEV_SpawnAllNPCsWithTeam( int team )
+{
+	printt( "script thread DEV_SpawnAllNPCsWithTeam( " + team + " )" )
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
+	if ( restoreHostThreadMode )
+	{
+		DisablePrecacheErrors()
+		wait 0.5
+	}
+
+	entity player = GetPlayerArray()[ 0 ]
+	vector origin = GetPlayerCrosshairOrigin( player )
+	array<string> aiSettings = GetAllNPCSettings()
+
+	foreach ( settings in aiSettings )
+	{
+		vector angles = < 0, RandomFloat( 360 ), 0 >
+		entity npc = CreateNPCFromAISettings( settings, team, origin, angles )
+		DispatchSpawn( npc )
+	}
+
+	if ( restoreHostThreadMode )
+	{
+		wait 0.2
+		RestorePrecacheErrors()
+	}
+}
+
+void function DEV_SpawnLegendAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity dummy
+	
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		dummy = CreateLegend_ai( 99, origin, angles1 )
+	else
+	{
+		dummy = CreateLegend_ai( 99, origin, angles1, true)
+		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
+		dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
+		dummy.EnableNPCFlag( NPC_IGNORE_ALL )		
+	}
+	
+	DispatchSpawn( dummy )	
+	dummy.SetOrigin(origin)
+	dummy.SetShieldHealthMax( 25 )
+	dummy.SetShieldHealth( 25 )
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 100 )
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.DisableHibernation()
+	dummy.SetAngles(angles1)
+
+    array<string> weapons = ["npc_weapon_lstar", "npc_weapon_energy_shotgun", "npc_weapon_hemlok"]
+    string randomWeapon = weapons[RandomInt(weapons.len())]
+    dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+}
+
+void function DEV_SpawnWeaponAtCrosshair( string weaponName )
+{
+	printt( "script thread DEV_SpawnWeaponAtCrosshair( \"" + weaponName + "\")" )
+
+	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
+
+	entity player = GetPlayerArray()[ 0 ]
+	if ( !IsValid( player ) )
+		return
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+	entity weapon = CreateWeaponEntityByNameWithPhysics( weaponName, origin, angles )
+
+#if SP
+	bool isTitanWeapon = weaponName.find( "mp_titanweapon_" ) != null
+	if ( isTitanWeapon )
+		thread TitanLoadoutWaitsForPickup( weapon, SPTitanLoadoutPickup )
+#endif
+}
+
+function SetAISettingsWrapper( entity npc, string settings )
+{
+	npc.SetAISettings( settings )
+	Assert( settings.find( npc.GetClassName() ) == 0, "NPC classname " + npc.GetClassName() + " not found in " + settings )
+
+	if ( IsSingleplayer() )
+	{
+		FixupTitle( npc )
+	}
+}
+
+bool function WithinEngagementRange( entity npc, vector origin )
+{
+	entity weapon = npc.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	if ( weapon == null )
+		return false
+
+	float dist = Distance( npc.GetOrigin(), origin )
+	if ( dist < weapon.GetWeaponInfoFileKeyField( "npc_min_engage_range" ) )
+		return false
+
+	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
+}

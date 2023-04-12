@@ -1,0 +1,97 @@
+
+/////////////
+/////////////
+//// HEH ////
+/////////////
+/////////////
+// see sh_ehi.gnut
+
+global typedef EncodedEHandle int
+global const EncodedEHandle EncodedEHandle_null = 0
+
+#if SERVER
+
+global typedef EHI entity
+global const EHI EHI_null = null
+
+#elseif CLIENT || UI
+
+global typedef EHI EncodedEHandle
+global const EHI EHI_null = EncodedEHandle_null
+
+#endif
+
+
+#if SERVER || CLIENT || UI
+global struct EHIScriptStruct
+{
+	EHI ehi
+
+	// general cached data
+	bool isPlayer              = false
+	bool isConnected           = false
+	int  team                  = TEAM_INVALID
+	int  teamMemberIndex       = 0
+	string name                = ""
+	#if CLIENT || UI
+		bool   isLocalClientPlayer = false
+	#endif
+
+	// loadouts
+	#if SERVER
+		bool hasBeenValidated = false
+		bool HACK_wasJustValidated = false
+		bool shouldConsiderAsUpgrading = false
+	#endif
+	#if SERVER || CLIENT || UI
+		table<int, array<void functionref( EHI, ItemFlavor )> > itemFlavorLoadoutSlotChangedCallbacksMap
+	#endif
+	#if CLIENT
+		array<int> netVarsLastSeenValuesMap
+	#endif
+	#if UI
+		array<int> loadoutSlotsLastSeenContentsMap
+	#endif
+
+	// commentary
+	#if SERVER
+		int kills = 0
+	#endif
+
+	int rankScore            = 0
+	int rankedLadderPosition = 9999
+
+	//CTF Stuff
+	int CTFCaptures = 0
+	int CTFKills = 0
+}
+#endif
+
+
+#if SERVER
+global typedef EHISignalDummy entity
+#elseif CLIENT || UI
+global typedef EHISignalDummy EHIScriptStruct
+#endif
+
+#if SERVER || CLIENT
+global struct PropInfo
+{
+	// advanced models
+	string section
+	int index
+}
+
+global struct EditorMode
+{
+    string displayName
+	string description
+	
+	bool crosshairActive = false
+    
+    void functionref(entity player) onActivationCallback
+    void functionref(entity player) onDeactivationCallback
+    void functionref(entity player) onAttackCallback
+
+}
+#endif

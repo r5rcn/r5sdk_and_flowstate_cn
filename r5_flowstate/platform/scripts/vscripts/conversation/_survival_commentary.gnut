@@ -1,0 +1,381 @@
+global function SurvivalCommentary_Init
+global function SurvivalCommentary_GetKillLeaderEEH
+global function SurvivalCommentary_GetChampionTeam
+global function SurvivalCommentary_GetChampionEEH
+global function AddSurvivalCommentaryEvent
+global function SurvivalCommentary_InitThreatChatterForPlayer
+global function SurvivalCommentary_OnThreatActivationBombardment
+global function SurvivalCommentary_OnThreatActivationGrenade
+global function SurvivalCommentary_HostAnnounce
+global function SurvivalCommentary_KilledPlayerAnnounce
+global function SurvivalCommentary_ResetAllData
+
+global function GetKillLeader
+global function SetChampion
+global function GetChampion
+
+global const DELAY_COMMENTARY = 2
+
+struct {
+	entity currentKillLeader = null
+} file
+
+void function SurvivalCommentary_Init()
+{
+	ShSurvivalCommentary_Init()
+
+	if ( !IsFiringRangeGameMode() )
+		AddCallback_OnPlayerKilled( OnPlayerKilled )
+
+	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
+}
+
+int function SurvivalCommentary_GetKillLeaderEEH()
+{
+	if ( !IsValid( file.currentKillLeader ))
+		return EncodedEHandle_null
+
+	return file.currentKillLeader.GetEncodedEHandle()
+}
+
+entity function GetKillLeader()
+{
+	if ( !IsValid( file.currentKillLeader ) )
+		return null
+
+	return file.currentKillLeader
+}
+
+int function SurvivalCommentary_GetChampionTeam()
+{
+	return GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) ).GetTeam()
+}
+
+int function SurvivalCommentary_GetChampionEEH()
+{
+	return GetGlobalNetInt( "championEEH" )
+}
+
+void function SurvivalCommentary_ResetAllData()
+{
+	file.currentKillLeader = null
+	FlagClear( "SurvivalCommentary_FirstBloodReached" )
+}
+
+void function SetChampion( entity champion )
+{
+	SetGlobalNetInt( "championEEH", champion.GetEncodedEHandle() )
+	array<entity> championSquadMates = GetPlayerArrayOfTeam( champion.GetTeam() )
+	championSquadMates.fastremovebyvalue( champion )
+	if( championSquadMates.len() >= 1 )
+		SetGlobalNetInt( "championSquad1EEH", championSquadMates[0].GetEncodedEHandle() )
+	if( championSquadMates.len() >= 2 )
+		SetGlobalNetInt( "championSquad2EEH", championSquadMates[1].GetEncodedEHandle() )
+}
+
+entity function GetChampion()
+{
+	return GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
+}
+
+int function GetMinKillsForKillLeader()
+{
+	int minKill = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
+	if( GameRules_GetGameMode() == "custom_tdm" )
+		minKill = 2
+	else if( minKill < 1 )
+		minKill = KILL_LEADER_MIN_KILL_REQUIREMENT // From sh_survival_commentary.gnut
+
+	return minKill
+}
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( !IsValid( victim ) || !IsValid( attacker ) || IsValid( victim ) && !victim.IsPlayer() || IsValid( attacker ) && !attacker.IsPlayer() )
+		return
+
+	thread function() : ( victim, attacker, damageInfo )
+	{
+		wait DELAY_COMMENTARY
+		
+		if ( !IsValid( victim ) || !IsValid( attacker ) )
+			return
+		
+		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
+		{
+			if ( victim == file.currentKillLeader && victim != GetChampion() )
+			{
+				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, attacker, 0.0, "", "bc_weKilledKillLeader" )
+
+				foreach ( player in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
+			}
+
+			int attackerKills = attacker.GetPlayerNetInt( "kills" )
+			if( attacker != GetKillLeader() && attackerKills >= GetMinKillsForKillLeader() && GetKillLeader() == null
+			||  attacker != GetKillLeader() && attackerKills >= GetMinKillsForKillLeader() && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) )
+			{
+				file.currentKillLeader = attacker
+
+				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 0.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
+				
+				foreach ( player in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", attacker, attackerKills )
+			}
+		}
+		
+		if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
+		{
+			entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
+			if( victim == champion )
+			{
+				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.CHAMPION_ELIMINATED, attacker, 0.0, "bc_championEliminated", "bc_weKilledChampion" )
+
+				foreach ( player in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
+			}
+		}
+		
+		if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
+		{
+			if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
+			{
+				FlagSet( "SurvivalCommentary_FirstBloodReached" )
+				thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+			}
+		}
+	}()
+}
+
+//  eSurvivalEventType
+
+// 	0  INVALID,
+// 	1  FIRST_CIRCLE_MOVING,
+// 	2  CIRCLE_MOVING,
+// 	3  FINAL_CIRCLE_MOVING,
+// 	4  CIRCLE_CLOSING_TO_NOTHING,
+// 	5  TITANS_DROPPING,
+// 	6  CARE_PACKAGE_DROPPING,
+// 	7  HOVER_TANK_INBOUND,
+// 	8  TWO_SQUADS_LEFT,
+// 	9  ONE_VS_ONE,
+// 	10  WINNER_WINNER,
+// 	11  FIRST_CIRCLE_TIMER_STARTED,
+// 	12  NEXT_CIRCLE_TIMER_STARTED,
+// 	13  FINAL_CIRCLE_TIMER_STARTED,
+// 	14  CIRCLE_MOVES_1MIN,
+// 	15  CIRCLE_MOVES_45SEC,
+// 	16  CIRCLE_MOVES_30SEC,
+// 	17  CIRCLE_MOVES_10SEC,
+// 	18  ROUND_TIMER_STARTED,
+// 	19  HALF_PLAYERS_ALIVE,
+// 	20  PLAYERS_ALIVE_10,
+// 	21  PLAYERS_ALIVE_5,
+// 	22  HALF_SQUADS_ALIVE,
+// 	23  SQUADS_ALIVE_6,
+// 	24  SQUADS_ALIVE_3,
+// 	25  FIRST_BLOOD
+// 	26  PILOT_KILL,
+// 	27  PILOT_DOWNED,
+// 	28  PILOT_WOUNDED,
+// 	29  PILOT_REVIVED,
+// 	30  SQUAD_ELIMINATED,
+// 	31  NO_KILLS_FOR_TIME,
+// 	32  _count
+
+void function AddSurvivalCommentaryEvent( int event, entity attacker = null, entity victim = null )
+{
+	#if DEVELOPER
+	string enumString = GetEnumString( "eSurvivalEventType", event )
+	
+	printt( FUNC_NAME(), "eSurvivalEventType:", enumString, event )
+	#endif
+
+	switch( event )
+	{
+		case eSurvivalEventType.CIRCLE_MOVING:
+			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.CIRCLE_MOVING, 0 )
+			break
+		case eSurvivalEventType.CIRCLE_CLOSING_TO_NOTHING:
+			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.CIRCLE_CLOSING_TO_NOTHING, 0 )
+			break
+		case eSurvivalEventType.FINAL_CIRCLE_MOVING:
+			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.FINAL_CIRCLE_MOVING, 0 )
+			break
+		case eSurvivalEventType.ROUND_TIMER_STARTED:
+			thread SurvivalCommentary_CircleStartAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentDeathFieldStage() ), 0 )
+			break
+		case eSurvivalEventType.CARE_PACKAGE_DROPPING:
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CARE_PACKAGE_DROPPING, 0, "bc_droppingCarePack" )
+			break;
+		case eSurvivalEventType.FIRST_BLOOD:
+			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, attacker, 0.0, "bc_firstBlood", "bc_weTookFirstBlood" )
+			break;
+	}
+	// The announcer's voice can be changed with SurvivalCommentary_SetHost()
+	// For example, to change to a revenant announcement, execute "SurvivalCommentary_SetHost( eSurvivalHostType.NOC )"
+}
+
+int function GetRoundCommentaryBucket( int round )
+{
+	int roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND1
+
+	switch( round )
+	{
+		case 1:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND2
+			break
+		case 2:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND3
+			break
+		case 3:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND4
+			break
+		case 4:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND5
+			break
+		case 5:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND6
+			break
+		case 6:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND7
+			break
+		case 7:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND8
+			break
+		case 8:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND9
+			break
+		case 9:
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
+			break
+	}
+
+	if( SURVIVAL_IsFinalDeathFieldStage() )
+		roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
+
+	return roundeNum
+}
+
+void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay = 0, string responseName = "" )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
+	}
+}
+
+void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		if( !IsValid( player ) )
+			continue
+		
+		string responseName
+		int insideNextCircleMates = 0
+		foreach( squadMates in GetPlayerArrayOfTeam_Alive( player.GetTeam() ) )
+		{
+			if( !SURVIVAL_PosInSafeZone( squadMates.GetOrigin() ) )
+				continue
+			
+			insideNextCircleMates++
+		}
+		
+		if( insideNextCircleMates != 0 && insideNextCircleMates != GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
+			responseName = "bc_newCircle_wholeSquadNotInCircle"
+		else if ( SURVIVAL_IsFinalDeathFieldStage() )
+			responseName = "bc_circleTimerStartFinal"
+		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
+			responseName = "bc_nextCircleFar"
+		else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
+			responseName = "bc_insideNextCircle"
+
+		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
+	}
+}
+
+void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		string responseName
+		int insideNextCircleMates = 0
+		foreach( squadMates in GetPlayerArrayOfTeam_Alive( player.GetTeam() ) )
+		{
+			if( !SURVIVAL_PosInSafeZone( squadMates.GetOrigin() ) )
+				continue
+			
+			insideNextCircleMates++
+		}
+		
+		if( SURVIVAL_IsFinalDeathFieldStage() )
+			responseName = "bc_circleClosingFinal"
+		else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
+			responseName = "bc_circleMoving_allOutside"
+
+		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
+	}
+}
+
+void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer, float delay, string responseName = "", string killerMatesResponseName = "", string killerResponseName = "", bool shouldDistinctionResponse = false )
+{
+	if( !IsValid( killer ) )
+		killer = null
+	
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		if( !IsValid( player ) )
+			continue
+
+		string selectedResponseName
+		entity responsePlayer
+
+		if( IsValid( killer ) && killer != null )
+		{
+			if( killer == player && shouldDistinctionResponse )
+			{
+				selectedResponseName = killerResponseName
+				responsePlayer = player
+			}
+			else if( killer.GetTeam() == player.GetTeam() )
+			{
+				selectedResponseName = killerMatesResponseName
+				if( shouldDistinctionResponse )
+					responsePlayer = TryFindSpeakingPlayerOnTeamDisallowSelf( player.GetTeam(), killer )
+				else
+					responsePlayer = TryFindSpeakingPlayerOnTeam( player.GetTeam() )
+			} else
+			{
+				selectedResponseName = responseName
+				responsePlayer = TryFindSpeakingPlayerOnTeam( player.GetTeam() )
+			}
+		}
+
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, selectedResponseName, responsePlayer )
+	}
+}
+
+void function SurvivalCommentary_InitThreatChatterForPlayer ( entity player )
+{
+	
+}
+
+void function SurvivalCommentary_OnThreatActivationBombardment( entity player, ThreatEventCallbackData data )
+{
+	
+}
+
+void function SurvivalCommentary_OnThreatActivationGrenade( entity player, ThreatEventCallbackData data )
+{
+	
+}

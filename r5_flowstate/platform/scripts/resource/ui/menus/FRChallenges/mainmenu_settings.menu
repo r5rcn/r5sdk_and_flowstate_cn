@@ -582,7 +582,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人移动速度"
+				labelText				"假人生成距离"
 				visible                 1
 				zpos 0
 				tall					60

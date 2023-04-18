@@ -170,7 +170,7 @@ void function OnR5RLobby_Open()
 
 	RunClientScript("UICallback_SetHostName", GetPlayerName() + "'s Lobby")
 
-	while ISAIMTRAINER
+	while (ISAIMTRAINER)
 	{
 		ISAIMTRAINER = false
 	}

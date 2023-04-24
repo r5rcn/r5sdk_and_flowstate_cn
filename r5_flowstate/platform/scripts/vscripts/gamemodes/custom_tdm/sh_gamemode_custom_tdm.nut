@@ -48,7 +48,7 @@ void function Sh_CustomTDM_Init()
    case "mp_rr_aqueduct_night":
         Shared_RegisterLocation(
             NewLocationSettings(
-               "熔岩流",
+               "Overflow",
                 [
                     NewLocPair(<3863.79321, -3262.95703, 282.03125>, <0, -135.066055, 0>),
                     NewLocPair(<4169.18262, -5555.22119, 410.03125>, <0, 146.240646, 0>),
@@ -90,7 +90,7 @@ void function Sh_CustomTDM_Init()
     case "mp_rr_ashs_redemption":
         Shared_RegisterLocation(
             NewLocationSettings(
-                "艾许竞技场",
+                "Ash's Redemption",
                 [
                     NewLocPair(<-22104, 6009, -26529>, <0, 0, 0>),
 					NewLocPair(<-21372, 3709, -26555>, <-5, 55, 0>),
@@ -105,7 +105,7 @@ void function Sh_CustomTDM_Init()
     case "mp_rr_arena_composite":
         Shared_RegisterLocation(
             NewLocationSettings(
-                "原料厂",
+                "Drop-Off",
                 [
                     NewLocPair(<-3592, 1081, 258>, <0, 37, 0>),
                     NewLocPair(<3592, 1081, 258>, <0, 142, 0>),
@@ -131,7 +131,7 @@ void function Sh_CustomTDM_Init()
 	case "mp_rr_party_crasher":
 	Shared_RegisterLocation(
 		NewLocationSettings(
-				"排队破坏者",
+				"Party Crasher",
 				[
 					NewLocPair(<1729.17407, -3585.65137, 601.736206>, <0, 103.168709, 0>),
 					NewLocPair(<345.111481, -3769.65674, 583.285156>, <0, 78.5349045, 0>),
@@ -158,7 +158,7 @@ void function Sh_CustomTDM_Init()
 	if(FlowState_EnableEncore()){
 	Shared_RegisterLocation(
 		NewLocationSettings(
-				"再来一次",
+				"Encore",
 				[
 					NewLocPair(<4284.88037, -102.993355, 2680.03125>, <0, -179.447098, 0>),
 					NewLocPair(<-4282.63086, -94.0586777, 2680.03125>, <0, -1.49068689, 0>),
@@ -1075,7 +1075,7 @@ void function Sh_CustomTDM_Init()
 		if(FlowState_EnableMovementGym()){
 		Shared_RegisterLocation(
 		NewLocationSettings(
-			"Movement Gym v0.7",
+			"Movement Gym v0.8",
 			[
 						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
 			],

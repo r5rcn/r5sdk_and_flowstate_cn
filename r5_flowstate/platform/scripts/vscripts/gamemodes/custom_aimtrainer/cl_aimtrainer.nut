@@ -118,8 +118,8 @@ void function Cl_ChallengesByColombia_Init()
 	SetConVarBool( "host_speeds", false )
 	SetConVarBool( "con_drawnotify", false )
 	SetConVarBool( "enable_debug_overlays", false )
-	// SetConVarInt( "sq_showvmoutput", 1 )
-	// SetConVarInt( "sq_showvmwarning", 2 )
+	//SetConVarInt( "sq_showvmoutput", 1 )
+	//SetConVarInt( "sq_showvmwarning", 2 )
 	
 	//main menu cameras thread end signal
 	RegisterSignal("ChallengeStartRemoveCameras")
@@ -242,49 +242,49 @@ string function ReturnChallengeName(int index)
 	string final
 	switch(index){
 		case 1:
-			final = "变向目标练习"
+			final = "STRAFING DUMMY"
 			break		
 		case 2:
-			final = "切换目标练习"
+			final = "TARGET SWITCHING"
 			break
 		case 3:
-			final = "空中目标练习"
+			final = "FLOATING TARGET"
 			break
 		case 4:
-			final = "跳板目标练习"
+			final = "POPCORN TARGETS"
 			break
 		case 6:
-			final = "快速变向目标练习"
+			final = "FAST JUMPS STRAFES"
 			break
 		case 7:
-			final = "投掷电弧星练习"
+			final = "ARC STARS PRACTICE"
 			break
 		case 8:
-			final = "重力电梯射击练习"
+			final = "SHOOTING FROM LIFT"
 			break
 		case 9:
-			final = "空摘瓦鸡练习"
+			final = "SHOOTING VALK'S ULT"
 			break
 		case 10:
-			final = "打靶定位练习"
+			final = "TILE FRENZY"
 			break
 		case 11:
-			final = "贴脸目标练习"
+			final = "CLOSE FAST STRAFES"
 			break
 		case 12:
-			final = "空中跟枪练习"
+			final = "SMOOTHBOT"
 			break
 		case 13:
 			final = "TODO"
 			break
 		case 14:
-			final = "投掷碎片手雷练习"
+			final = "GRENADES PRACTICE"
 			break
 		case 15:
-			final = "跳伞目标练习"
+			final = "SKYDIVING TARGETS"
 			break
 		case 16:
-			final = "跑动目标练习"
+			final = "RUNNING TARGETS"
 			break
 		case 17:
 			final = "TODO"

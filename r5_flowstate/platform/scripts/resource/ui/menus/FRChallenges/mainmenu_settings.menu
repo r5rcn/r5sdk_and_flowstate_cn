@@ -1001,7 +1001,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"训练时长设定"
+				labelText				"训练时长设定(秒)"
 				visible                 0
 				zpos 0
 				tall					60

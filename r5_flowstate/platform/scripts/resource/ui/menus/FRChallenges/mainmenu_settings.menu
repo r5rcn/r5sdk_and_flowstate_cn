@@ -635,7 +635,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"目标无敌"
+				labelText				"假人无敌"
 				visible                 1
 				zpos 0
 				tall					60
@@ -827,7 +827,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"Rgb hud"
+				labelText				"RGB HUD"
 				visible                 0
 				zpos 0
 				tall					60
@@ -957,7 +957,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"无时限训练"
+				labelText				"无限时长训练"
 				visible                 0
 				zpos 0
 				tall					60
@@ -1001,7 +1001,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"训练时长设定"
+				labelText				"训练时长设定(秒)"
 				visible                 0
 				zpos 0
 				tall					60

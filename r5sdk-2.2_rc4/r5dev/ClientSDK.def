@@ -1,4 +1,0 @@
-LIBRARY client
-
-EXPORTS
-    DummyExport @1

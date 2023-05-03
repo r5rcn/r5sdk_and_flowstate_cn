@@ -71,7 +71,7 @@ void function ShieldSelectorButton(var button)
 
 void function firstpage(var button)
 {
-	Hud_SetText( Hud_GetChild( file.menu, "Pages" ), "  Page: 1/2  " )
+	Hud_SetText( Hud_GetChild( file.menu, "Pages" ), "  页数: 1/2  " )
 	array<var> challengesRows = GetElementsByClassname( file.menu, "SettingsBtn2" )
 	foreach ( var elem in challengesRows )
 	{
@@ -86,7 +86,7 @@ void function firstpage(var button)
 
 void function secondpage(var button)
 {
-	Hud_SetText( Hud_GetChild( file.menu, "Pages" ), "  Page: 2/2  " )
+	Hud_SetText( Hud_GetChild( file.menu, "Pages" ), "  页数: 2/2  " )
 	array<var> challengesRows = GetElementsByClassname( file.menu, "SettingsBtn" )
 	foreach ( var elem in challengesRows ) 
 	{

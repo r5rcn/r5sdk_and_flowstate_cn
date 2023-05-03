@@ -140,7 +140,7 @@
 		"pin_corner_to_sibling"	"TOP_LEFT"
 		"pin_to_sibling_corner"	"BOTTOM_LEFT"
 	}
-
+	
 	"CNDepotLine1"
 	{
         "ControlName"			"Label"
@@ -152,7 +152,7 @@
 		"wrap"					"1"
 		"fontHeight"			"25"
 		"textAlignment"			"north-west"
-		"labelText"				"当前版本：CN Depot V20230418_1（Depot v2.2.4）"
+		"labelText"				"当前版本：CN Depot V20230418_2（Depot v2.2.4）"
 		"font"					"DefaultBold_41"
 		"allcaps"				"0"
 		"fgcolor_override"		"200 200 200 255"
@@ -203,7 +203,6 @@
 		"pin_corner_to_sibling"	"TOP_LEFT"
 		"pin_to_sibling_corner"	"BOTTOM_LEFT"
 	}
-	
 
 	"VersionNumber"
 	{

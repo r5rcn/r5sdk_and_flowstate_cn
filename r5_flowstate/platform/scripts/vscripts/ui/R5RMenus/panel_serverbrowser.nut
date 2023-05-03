@@ -352,7 +352,7 @@ void function ServerBrowser_PrevPage(var button)
 	}
 
 	// Set current page ui
-	Hud_SetText(Hud_GetChild( file.panel, "Pages" ), "  Page:" + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1) + "  ")
+	Hud_SetText(Hud_GetChild( file.panel, "Pages" ), "  页数:" + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1) + "  ")
 }
 
 array<ServerListing> function ServerBrowser_GetArray(int svServerCount)

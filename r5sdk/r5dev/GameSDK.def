@@ -1,0 +1,4 @@
+LIBRARY gamesdk
+
+EXPORTS
+    DummyExport @1

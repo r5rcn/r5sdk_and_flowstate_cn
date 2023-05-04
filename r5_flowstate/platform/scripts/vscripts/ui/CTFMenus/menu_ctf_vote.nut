@@ -40,7 +40,7 @@ void function SetCTFVotingScreen()
 	for(int i = 1; i < 5; i++ ) {
 		Hud_SetEnabled( Hud_GetChild( file.menu, "MapVote" + i ), true )
 		RuiSetInt( Hud_GetRui( Hud_GetChild( file.menu, "MapVote" + i )), "status", eFriendStatus.ONLINE_INGAME )
-		RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote" + i )), "statusText", "Votes: 0")
+		RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote" + i )), "statusText", "投票: 0")
 		RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote" + i )), "presenseText", "" )
 	}
 }
@@ -50,7 +50,7 @@ void function SetCTFVoteMenuNextRound()
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "Starting Next Round!")
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "开始下一轮游戏!")
 }
 
 //Update current maps up for vote
@@ -77,10 +77,10 @@ void function UpdateVoteTimer(int timeleft)
 //Update current votes for each map
 void function UpdateVotesUI(int map1, int map2, int map3, int map4)
 {
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote1" )), "statusText", "Votes: " + map1 )
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote2" )), "statusText", "Votes: " + map2 )
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote3" )), "statusText", "Votes: " + map3 )
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote4" )), "statusText", "Votes: " + map4 )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote1" )), "statusText", "投票: " + map1 )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote2" )), "statusText", "投票: " + map2 )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote3" )), "statusText", "投票: " + map3 )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "MapVote4" )), "statusText", "投票: " + map4 )
 }
 
 //Lock Buttons and update the map player voted for
@@ -101,7 +101,7 @@ void function UpdateVotedLocation(string map)
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "Next Location: " + map)
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "下一地点: " + map)
 }
 
 //Sets and updates tied voting screen

@@ -113,7 +113,7 @@ void function MakeScoreRUI()
 {
     if ( file.scoreRui != null)
     {
-        RuiSetString( file.scoreRui, "messageText", "Team IMC: 0  ||  Team MIL: 0" )
+        RuiSetString( file.scoreRui, "messageText", "队伍IMC: 0  ||  队伍MIL: 0" )
         return
     }
     clGlobal.levelEnt.EndSignal( "CloseScoreRUI" )
@@ -123,7 +123,7 @@ void function MakeScoreRUI()
     var rui = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopo, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
     
     RuiSetGameTime( rui, "startTime", Time() )
-    RuiSetString( rui, "messageText", "Team IMC: 0  ||  Team MIL: 0" )
+    RuiSetString( rui, "messageText", "队伍IMC: 0  ||  队伍MIL: 0" )
     RuiSetString( rui, "messageSubText", "Text 2")
     RuiSetFloat( rui, "duration", 9999999 )
     RuiSetFloat3( rui, "eventColor", SrgbToLinear( <128, 188, 255> ) )
@@ -151,13 +151,13 @@ void function ServerCallback_TDM_DoAnnouncement(float duration, int type)
         case eTDMAnnounce.ROUND_START:
         {
             thread MakeScoreRUI();
-            message = "Round start"
+            message = "本轮开始"
             break
         }
         case eTDMAnnounce.VOTING_PHASE:
         {
             clGlobal.levelEnt.Signal( "CloseScoreRUI" )
-            message = "Welcome To Team Deathmatch"
+            message = "欢迎来到团队死斗"
             subtext = "Made by sal (score UI by shrugtal)"
             break
         }
@@ -255,7 +255,7 @@ void function ServerCallback_TDM_SetSelectedLocation(int sel)
 void function ServerCallback_TDM_PlayerKilled()
 {
     if(file.scoreRui)
-        RuiSetString( file.scoreRui, "messageText", "Team IMC: " + GameRules_GetTeamScore(TEAM_IMC) + "  ||  Team MIL: " + GameRules_GetTeamScore(TEAM_MILITIA) );
+        RuiSetString( file.scoreRui, "messageText", "队伍 IMC: " + GameRules_GetTeamScore(TEAM_IMC) + "  ||  队伍 MIL: " + GameRules_GetTeamScore(TEAM_MILITIA) );
 }
 
 var function CreateTemporarySpawnRUI(entity parentEnt, float duration)

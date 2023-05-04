@@ -977,7 +977,7 @@ playlists
 				"MP_RR_AQUEDUCT_NIGHT"                "熔岩流-黑夜"
 				"MP_RR_ARENA_COMPOSITE"               "原料厂"
 				"MP_RR_ARENA_SKYGARDEN"               "再来一次"
-				"mp_rr_party_crasher" 		  		  "排队破坏者"
+				"mp_rr_party_crasher" 		  		  "派对破坏者"
 
 				"WORLDS_EDGE_NIGHT"                   "暗影降临-世界尽头"
 				"WORLDS_EDGE_NIGHT_DESC"              "死亡的传奇将作为暗影重生\n与最后10个传奇一起生存和逃脱"

@@ -125,7 +125,7 @@ void function InitSystemPanel( var panel )
 	file.hubButtonData[ panel ] <- clone data
 	file.invisButtonData[ panel ] <- clone data
 	
-	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
+	file.ExitChallengeButtonData[ panel ].label = "结束挑战"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
@@ -152,16 +152,16 @@ void function InitSystemPanel( var panel )
 	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
 	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
 	
-	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
+	file.thirdPersonButtonData[ panel ].label = "切换第三人称"
 	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
 
-	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
+	file.endmatchButtonData[ panel ].label = "关闭游戏大厅"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
 	
-	file.hubButtonData[ panel ].label = "HUB"
+	file.hubButtonData[ panel ].label = "返回出生点（项目选择）"
 	file.hubButtonData[ panel ].activateFunc = RunHub
 	
-	file.invisButtonData[ panel ].label = "Toggle Hide Players"
+	file.invisButtonData[ panel ].label = "切换隐藏其他玩家"
 	file.invisButtonData[ panel ].activateFunc = RunInvis
 	
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"

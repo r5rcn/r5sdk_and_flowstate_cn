@@ -330,19 +330,19 @@ void function ServerCallback_CTF_SetPointIconHint(int teamflag, int messageid)
         switch(messageid)
         {
         case eCTFFlag.Defend:
-            RuiSetString( selected, "hint", "Defend" )
+            RuiSetString( selected, "hint", "防守" )
             break
         case eCTFFlag.Capture:
-            RuiSetString( selected, "hint", "Capture" )
+            RuiSetString( selected, "hint", "夺取" )
             break
         case eCTFFlag.Attack:
-            RuiSetString( selected, "hint", "Attack" )
+            RuiSetString( selected, "hint", "进攻" )
             break
         case eCTFFlag.Escort:
-            RuiSetString( selected, "hint", "Escort" )
+            RuiSetString( selected, "hint", "护送" )
             break
         case eCTFFlag.Return:
-            RuiSetString( selected, "hint", "Return" )
+            RuiSetString( selected, "hint", "返回" )
             break
         }
     } catch (pe3){ }
@@ -421,7 +421,7 @@ void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
         file.dropflagrui = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopo, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
 
         RuiSetGameTime( file.dropflagrui, "startTime", Time() )
-        RuiSetString( file.dropflagrui, "messageText", "Press %use_alt% to drop the flag" )
+        RuiSetString( file.dropflagrui, "messageText", "按下 %use_alt% 键扔下旗帜" )
         RuiSetFloat( file.dropflagrui, "duration", 9999999 )
         RuiSetFloat3( file.dropflagrui, "eventColor", color )
 
@@ -508,8 +508,8 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
         {
             thread MakeScoreRUI();
             //message = "Round start"
-            message = "Match Start"
-            subtext = "Score 5 points to win!"
+            message = "比赛开始"
+            subtext = "取得五分来获得胜利!"
 
             //Timer Stuff
             roundover = false
@@ -635,7 +635,7 @@ void function ServerCallback_CTF_PointCaptured(int IMC, int MIL)
 
         teamscore.imcscore = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoIMCScore, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
         RuiSetGameTime( teamscore.imcscore, "startTime", Time() )
-        RuiSetString( teamscore.imcscore, "messageText", "Captures: " + IMC)
+        RuiSetString( teamscore.imcscore, "messageText", "夺取: " + IMC)
         RuiSetFloat( teamscore.imcscore, "duration", 9999999 )
         RuiSetFloat3( teamscore.imcscore, "eventColor", SrgbToLinear( <100, 100, 255> / 255 ))
     }
@@ -647,7 +647,7 @@ void function ServerCallback_CTF_PointCaptured(int IMC, int MIL)
 
         teamscore.milscore = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopoMILScore, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
         RuiSetGameTime( teamscore.milscore, "startTime", Time() )
-        RuiSetString( teamscore.milscore, "messageText", "Captures: " + MIL )
+        RuiSetString( teamscore.milscore, "messageText", "夺取: " + MIL )
         RuiSetFloat( teamscore.milscore, "duration", 9999999 )
         RuiSetFloat3( teamscore.milscore, "eventColor", SrgbToLinear( <255, 100, 100> / 255 ))
     }
@@ -751,10 +751,10 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
     switch(messageid)
     {
         case eCTFMessage.PickedUpFlag:
-            message = "Your team has captured the enemy flag!"
+            message = "你的队伍夺取了敌方旗帜!"
             break
         case eCTFMessage.EnemyPickedUpFlag:
-            message = "Enemy team has captured your flag!"
+            message = "敌方队伍夺取了你们的旗帜!"
             break
     }
 
@@ -774,13 +774,13 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
     switch(messageid)
     {
         case eCTFMessage.PickedUpFlag:
-            message = "You picked up the flag"
+            message = "你捡起了旗帜"
             break
         case eCTFMessage.EnemyPickedUpFlag:
-            message = "Enemy team picked up your flag"
+            message = "敌人捡起了我方的旗帜"
             break
         case eCTFMessage.TeamReturnedFlag:
-            message = "Your teams flag has been returned to base"
+            message = "我方的旗帜已被送回"
     }
 
     switch(GetLocalClientPlayer().GetTeam())
@@ -831,15 +831,15 @@ void function ServerCallback_CTF_OpenCTFRespawnMenu(vector campos, int IMCscore,
     if(attacker != null)
     {
         if (attacker == GetLocalClientPlayer())
-            RunUIScript( "UpdateKillerName", "Suicide")
+            RunUIScript( "UpdateKillerName", "自杀")
         else if(attacker.IsPlayer() && attacker != null)
             RunUIScript( "UpdateKillerName", attacker.GetPlayerName())
         else
-            RunUIScript( "UpdateKillerName", "Mysterious Forces")
+            RunUIScript( "UpdateKillerName", "神秘的力量")
     }
     else
     {
-        RunUIScript( "UpdateKillerName", "Mysterious Forces")
+        RunUIScript( "UpdateKillerName", "神秘的力量")
     }
 
     RunUIScript("SetCTFScores", IMCscore, MILscore, CTF_SCORE_GOAL_TO_WIN)
@@ -848,7 +848,7 @@ void function ServerCallback_CTF_OpenCTFRespawnMenu(vector campos, int IMCscore,
     {
         if(player == localplayer)
         {
-            AddTeamIcons(player, $"rui/pilot_loadout/mods/hopup_skullpiercer", <25,25,0>, "Death Location")
+            AddTeamIcons(player, $"rui/pilot_loadout/mods/hopup_skullpiercer", <25,25,0>, "死亡地点")
         }
         else
         {
@@ -1108,13 +1108,13 @@ string function GetWinningTeamText(int team)
     switch(team)
     {
         case TEAM_IMC:
-            teamwon = "IMC has won"
+            teamwon = "IMC胜利"
             break
         case TEAM_MILITIA:
-            teamwon = "MILITIA has won"
+            teamwon = "MILITIA胜利"
             break
         case 69:
-            teamwon = "Winner couldn't be decided"
+            teamwon = "无法决定获胜者"
             break
     }
 

@@ -382,7 +382,7 @@ void function CheckForPlayersPlaying()
 			{
 				SetTdmStateToNextRound()
 				foreach(player in GetPlayerArray()){
-					Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
+					Message(player, "ATTENTION", "没有足够的玩家. 本轮结束.", 5)
 				}
 			}
 	WaitFrame()	
@@ -569,14 +569,14 @@ if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 		{
 			foreach(player in GetPlayerArray())
 			{
-			Message(player, "APEX PROPHUNT", "We have enough players, starting now.", 5, "diag_ap_aiNotify_circleMoves10sec")
+			Message(player, "APEX PROPHUNT", "玩家数已达标, 正在开始.", 5, "diag_ap_aiNotify_circleMoves10sec")
 			}
 			wait 5
 			break
 		} else {
 			foreach(player in GetPlayerArray())
 			{
-				Message(player, "APEX PROPHUNT", "Waiting another player to start. Please wait.", 1)
+				Message(player, "APEX PROPHUNT", "正在等待其他玩家. 请稍后.", 1)
 			}
 			wait 5			
 		}
@@ -587,7 +587,7 @@ array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	foreach(player in MILITIAplayers)
 	{
-		Message(player, "ATTENTION", "            You're a prop. Teleporting in 5 seconds! \n Use your ULTIMATE to CHANGE PROP up to 3 times. ", 5)
+		Message(player, "ATTENTION", "            你是躲藏者. 将在 5 秒后传送! \n 使用你的终极技能更换模型 只能使用三次. ", 5)
 	}
 wait 5
 }
@@ -651,7 +651,7 @@ foreach(player in GetPlayerArray())
 				player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_ULTIMATE)
 				DeployAndEnableWeapons(player)
 			} else if(player.GetTeam() == TEAM_IMC){
-			Message(player, "PROPS ARE HIDING", "Teleporting in 30 seconds. Please wait.", 10)}
+			Message(player, "PROPS ARE HIDING", "将在30秒后传送. 请稍等.", 10)}
 		}
 	wait 0.2
 	}
@@ -669,10 +669,10 @@ foreach(player in GetPlayerArray())
         if(IsValidPlayer(player))
         {
 		if (player.GetTeam() == TEAM_MILITIA){
-			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE to PLACE PROP (lock angles).", 20, "Survival_UI_Ultimate_Ready") }
+			Message(player, "ATTENTION", "寻找者已进场. 用你的终极技能来锁定位置.", 20, "Survival_UI_Ultimate_Ready") }
 			else if (player.GetTeam() == TEAM_IMC){
 			array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 20)
+			Message(player, "ATTENTION", "击杀躲藏者. 目前存活的躲藏者: " + MILITIAplayersAlive.len(), 20)
 			}				
 		}
 		
@@ -721,7 +721,7 @@ while( Time() <= endTime )
 				if(IsValid(player))
 				{
 					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"2 MINUTES REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5)
+					Message(player,"剩余两分钟!", "存活躲藏者数量: " + MILITIAplayersAlive.len(), 5)
 				}
 			}
 		}
@@ -732,7 +732,7 @@ while( Time() <= endTime )
 				if(IsValid(player))
 				{
 					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"1 MINUTE REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves60sec")
+					Message(player,"剩余一分钟!", "存活躲藏者数量: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves60sec")
 				}
 			}
 		}
@@ -743,7 +743,7 @@ while( Time() <= endTime )
 				if(IsValid(player))
 				{
 					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"30 SECONDS REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves30sec")
+					Message(player,"剩余30秒!", "存活躲藏者数量: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves30sec")
 				}
 			}
 		}
@@ -754,7 +754,7 @@ while( Time() <= endTime )
 				if(IsValid(player))
 				{
 					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"10 SECONDS REMAINING!",  "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves10sec")
+					Message(player,"剩余10秒!",  "存活躲藏者数量: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves10sec")
 				}
 			}
 		}
@@ -769,14 +769,14 @@ array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
 if(MILITIAplayersAlive.len() > 0){
 foreach(player in GetPlayerArray())
     {
-		Message(player, "PROPS TEAM WIN", "Props alive: " + MILITIAplayersAlive.len() + ". Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
+		Message(player, "躲藏者胜利", "存活躲藏者数量: " + MILITIAplayersAlive.len() + ". 正在更换队伍.", 7, "diag_ap_aiNotify_winnerFound")
 		player.SetThirdPersonShoulderModeOn()
 		HolsterAndDisableWeapons(player)
 	}
 } else {
 foreach(player in GetPlayerArray())
     {
-		Message(player, "ATTACKERS TEAM WIN", "All props are dead. Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
+		Message(player, "寻找者胜利", "所有躲藏者死亡. 正在更换队伍.", 7, "diag_ap_aiNotify_winnerFound")
 		player.SetThirdPersonShoulderModeOn()	
 		HolsterAndDisableWeapons(player)		
 	}	
@@ -938,5 +938,5 @@ bool function ClientCommand_NextRoundPROPHUNT(entity player, array<string> args)
 string function helpMessagePROPHUNT()
 //by michae\l/#1125
 {
-	return " Use your ULTIMATE to CHANGE PROP up to 3 times. \n Use your ULTIMATE to LOCK ANGLES as attackers arrive. "
+	return " 使用你的终极技能更换模型 只能使用三次. \n 当寻找者到达时，使用你的终极技能锁定位置 "
 }

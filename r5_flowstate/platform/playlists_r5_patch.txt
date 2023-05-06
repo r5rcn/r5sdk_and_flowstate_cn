@@ -997,7 +997,7 @@ playlists
                 "DISCONNECT_SEND_OVERFLOW"            "Connection to server overflowed (code:dam)."
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:mountain)."
-				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.6] by @CafeFPS\翻译：R5RCN全体成员"
+				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.6] by @CafeFPS\n翻译：R5RCN全体成员"
 			}
 		}
 	}

@@ -193,7 +193,7 @@ void function UpdateSystemPanel( var panel )
 	if(IsConnected() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
 	else if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
+		file.lobbyReturnButtonData[ panel ].label = "退出练枪挑战"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	foreach ( index, button in file.buttons[ panel ] )

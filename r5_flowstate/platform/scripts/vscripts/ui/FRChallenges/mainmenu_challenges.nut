@@ -17,7 +17,7 @@ void function OpenFRChallengesMainMenu(int dummiesKilled)
 	CloseAllMenus()
 	ISAIMTRAINER = true
 	PlayerKillsForChallengesUI = dummiesKilled.tostring()
-	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "当前已击杀假人: " + dummiesKilled.tostring())
+	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "Dummies killed this session: " + dummiesKilled.tostring())
 	if(PlayerCurrentWeapon == "") 
 		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "当前武器: 辅助手枪")
 	else
@@ -58,7 +58,7 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenge5", UIE_CLICK, Challenge5Funct )
 	AddEventHandlerToButton( menu, "Challenge6", UIE_CLICK, Challenge6Funct )
 	AddEventHandlerToButton( menu, "Challenge7", UIE_CLICK, Challenge7Funct )
-	//AddEventHandlerToButton( menu, "Challenge8", UIE_CLICK, Challenge8Funct )
+	AddEventHandlerToButton( menu, "Challenge8", UIE_CLICK, Challenge8Funct )
 	//Second column
 	AddEventHandlerToButton( menu, "Challenge1NewC", UIE_CLICK, Challenge1NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge2NewC", UIE_CLICK, Challenge2NewCFunct )
@@ -67,7 +67,7 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenge5NewC", UIE_CLICK, Challenge5NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge6NewC", UIE_CLICK, Challenge6NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge7NewC", UIE_CLICK, Challenge7NewCFunct )
-	//AddEventHandlerToButton( menu, "Challenge8NewC", UIE_CLICK, Challenge8NewCFunct )
+	AddEventHandlerToButton( menu, "Challenge8NewC", UIE_CLICK, Challenge8NewCFunct )
 	
 	var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
 	ToolTipData gameMenuToolTip

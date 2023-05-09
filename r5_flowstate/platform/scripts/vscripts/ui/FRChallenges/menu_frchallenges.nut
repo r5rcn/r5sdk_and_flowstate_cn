@@ -46,12 +46,12 @@ void function UpdateResultsData(string challengeName, int shothits, int dummiesk
 	Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResult"), shothits.tostring())
 	Hud_SetText(Hud_GetChild( file.menu, "DamageDoneResult"), damagedone.tostring())
 	Hud_SetText(Hud_GetChild( file.menu, "CriticalShotsResult"), criticalshots.tostring())
-	Hud_SetText(Hud_GetChild( file.menu, "PersonalBestData"), "这项挑战最高命中数:  " + shotshitrecord.tostring())
+	Hud_SetText(Hud_GetChild( file.menu, "PersonalBestData"), "THIS SESSION BEST:  " + shotshitrecord.tostring())
 	
 	if(isNewRecord) 
 	{
 		Hud_SetText(Hud_GetChild( file.menu, "WasNotNewPersonalBest"), "")
-		Hud_SetText(Hud_GetChild( file.menu, "WasNewPersonalBest"), "全新最佳记录")
+		Hud_SetText(Hud_GetChild( file.menu, "WasNewPersonalBest"), "新高分!")
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinalWasNotNew"), "")
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal"), shothits.tostring())
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2WasNotNew"), "")

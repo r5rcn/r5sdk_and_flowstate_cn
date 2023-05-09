@@ -173,7 +173,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.25 | Made by @CafeFPS"
+			labelText				"v1.3 | Made by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -288,7 +288,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"Pages"
 		{
 			"ControlName"			"Label"
-			"labelText"				"  页: 1/1  "
+			"labelText"				"  页数: 1/1  "
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			"wide"					"120"
@@ -337,7 +337,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 
 			ruiArgs
 			{
-				buttonText "保存为 .txt文件"
+				buttonText "Export to .txt"
 			}
 
 			"pin_to_sibling"		"ServerBrowserBGBottom"

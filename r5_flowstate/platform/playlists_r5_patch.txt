@@ -17,18 +17,7 @@ playlists
 				register_dummie_kill_as_actual_kill 			1
 				dummies_have_random_shields 					1
 				dummies_agressivedummies 						1	//Toggle for combat/training dummies
-				
-				///////////////////////////////////////////////////////////////////////////////////
-				//// Custom Weapons
-				///////////////////////////////////////////////////////////////////////////////////
-				custom_weapon_list "mp_weapon_volt_smg mp_weapon_sentinel"
-				
-				mp_weapon_volt_smg_class "smg"
-				mp_weapon_volt_smg_attachments "barrel mag sight grip"
-				
-				mp_weapon_sentinel_class  "sniper"
-				mp_weapon_sentinel_attachments "mag sight grip"
-				
+
 				///////////////////////////////////////////////////////////////////////////////////
 				//// Code Required Vars
 				///////////////////////////////////////////////////////////////////////////////////
@@ -316,31 +305,42 @@ playlists
 		{
 			inherit defaults
 		}
-		custom_aimtrainer
-		{
-			inherit defaults
-		}
 
 		custom_ctf
 		{
 			inherit defaults
 		}
 
-		custom_tdm
+		map_editor_deprecated
+		{
+			inherit defaults
+		}
+
+		//By @CafeFPS
+		fs_dm
 		{
 			inherit defaults
 		}
 		
-		map_editor
+		fs_aimtrainer
 		{
 			inherit defaults
 		}
-
+		
+		fs_prophunt
+		{
+			inherit defaults
+		}
+		
+		fs_duckhunt
+		{
+			inherit defaults
+		}
 	}
 
 	Playlists
 	{
-		custom_aimtrainer
+		fs_aimtrainer
 		{
 			inherit survival
 			vars
@@ -351,8 +351,10 @@ playlists
 				solo_mode 1
 				
 				visible                                        1
-				name                                           "Aim Trainer"
-				description                                    "Aim Trainer"
+				name                               "FS AimTrainer"
+				description                        "FS AimTrainer"
+				abbreviation                       "FS AimTrainer"
+				lobbytitle                         "FS AimTrainer"
 
 				waiting_for_players_spawning_enabled           1
 				jump_from_plane_enabled                        0
@@ -400,7 +402,7 @@ playlists
 				staging_ultimates_enabled                      1
 				survival_staging_area_enabled                  0
 			}
-			gamemodes { custom_aimtrainer { maps {
+			gamemodes { fs_aimtrainer { maps {
 				mp_rr_canyonlands_64k_x_64k                    1
 				mp_rr_canyonlands_mu1                          1
 				mp_rr_desertlands_64k_x_64k                    1
@@ -409,7 +411,7 @@ playlists
 			} } }
 		}
 		
-		custom_tdm
+		fs_prophunt
 		{
 			inherit defaults
 			vars
@@ -419,10 +421,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               custom_tdm
-				description                        "TDM"
-				abbreviation                       "TDM"
-				lobbytitle                         "TDM"
+				name                               "FS PropHunt"
+				description                        "FS PropHunt"
+				abbreviation                       "FS PropHunt"
+				lobbytitle                         "FS PropHunt"
 				pin_match_type                     survival
 				enable_nessies                     0
 				
@@ -455,13 +457,157 @@ playlists
 				match_ending_enabled               0
 				sur_circle_start_paused            1
 
+				//For FFA classic mode
+				//specific weapons and abilities settings
+				respawn_kit_enabled 				1
+				respawn_kit_primary_weapon 			"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 barrel_stabilizer_l4_flash_hider stock_tactical_l3"
+				respawn_kit_secondary_weapon 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3"
+				respawn_kit_tactical 				"mp_ability_phase_walk"
+				respawn_kit_ultimate 				"mp_weapon_jump_pad"
+
+				//GENERAL SETTINGS PROPHUNT
+				flowstateEndlessFFAorTDM	0 //location won't change, no champion will be defined
+				flowstateHoster 					"r5r_ColombiaFPS"
+				flowstateAdmin1 					""
+				flowstateAdmin2 					""
+				flowstateAdmin3 					""
+				flowstateAdmin4 					""
+				flowstateRoundtime 					800
+				flowstateBubble 					"48, 107, 255" //ring color
+				flowstateResetKills 				1
+				flowstateGrenadesDisabled			1
+				flowstateGrenadesDisabled       	0
+
+				flowstateKickHighPingPlayer			0
+				flowstateMaxPingAllowed				230
+				
+				flowstatePROPHUNT					1
+					flowstatePROPHUNTweapon1		"mp_weapon_rspn101" //primary prophunt wepaon
+					flowstatePROPHUNTweapon2		"mp_weapon_shotgun_pistol" //secondary prophunt weapon
+					flowstatePROPHUNTLimitTime		300
+					flowstatePROPHUNTDebug			1
+
+				//visuals
+				flowstateForceCharacter 			0	//It enables the following settings
+				flowstateChosenCharacter 			0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateDummyOverride 				0	// explains itself, it's bugged with some abilities (grapple ie)
+				
+				//game continuity 
+				flowstateAutoreloadPrimary 			1
+				flowstateAutoreloadSecondary 		1
+				flowstateKillshotEnabled 			1	//enables the killshot sound when killing
+			}
+			gamemodes { fs_prophunt { maps {
+				mp_rr_desertlands_64k_x_64k                    1
+				mp_rr_canyonlands_64k_x_64k                    1
+			} } }
+		}
+		
+		fs_duckhunt
+		{
+			inherit defaults
+			vars
+			{
+				image                              worlds_edge
+				video                              worlds_edge
+				panel_image                        panel_worlds_edge
+				visible                            1
+				battlechatter_enabled              1
+				name                               "FS DuckHunt"
+				description                        "FS DuckHunt"
+				abbreviation                       "FS DuckHunt"
+				lobbytitle                         "FS DuckHunt"
+				pin_match_type                     survival
+				enable_nessies                     0
+
+				max_teams                          16
+				max_players                        16
+				min_players                        0
+				
+				default_shield_hp                  75
+				survival_shields                   1
+				skydive_ziplines_enabled           1
+				ground_loot_enable 				   1
+				lootbin_loot_enable                1
+				
+				survival_jumpkit_enabled           0
+				survival_wallrun_enabled           0
+				
+				survival_infinite_ammo             1
+				survival_custom_deploy             1
+				character_select_time_min          0
+				character_select_time_max          0
+				charselect_picking_delay_after_all 0
+				survival_enable_squad_intro        0
+				survival_enable_gladiator_intros   0
+				jump_from_plane_enabled            0
+				replay_enabled                     1  
+				replay_delay                       5
+				enable_small_pheonix			   0
+				match_ending_enabled               0
+				sur_circle_start_paused            1
+
+				flowstateHoster 					""
+
+				DuckHunt_Round_LimitTime			300
+
+			}
+			gamemodes { fs_duckhunt { maps {
+				mp_rr_aqueduct	                    1
+			} } }
+		}
+		
+		fs_dm
+		{
+			inherit defaults
+			vars
+			{
+				image                              worlds_edge
+				video                              worlds_edge
+				panel_image                        panel_worlds_edge
+				visible                            1
+				battlechatter_enabled              1
+				name                               "FS TDM/FFA"
+				description                        "DM or FFA with multiple settings, customize your own server"
+				abbreviation                       "FS TDM/FFA"
+				lobbytitle                         "FS TDM/FFA"
+				pin_match_type                     survival
+				enable_nessies                     0
+				
+				max_teams                          16
+				max_players                        16
+				min_players                        0
+				
+				default_shield_hp                  75
+				survival_shields                   1
+				skydive_ziplines_enabled           1
+				ground_loot_enable 				   0
+				lootbin_loot_enable                0
+				
+				survival_jumpkit_enabled           0
+				survival_wallrun_enabled           0
+				
+				survival_infinite_ammo             1
+				survival_custom_deploy             1
+				character_select_time_min          0
+				character_select_time_max          0
+				charselect_picking_delay_after_all 0
+				survival_enable_squad_intro        0
+				survival_enable_gladiator_intros   0
+				jump_from_plane_enabled            0
+				replay_enabled                     1  
+				replay_delay                       5
+				enable_small_pheonix			   0
+				match_ending_enabled               0
+				sur_circle_start_paused            1
+
 				replay_new_ui 1
 					
 				//For FFA classic mode
 				//specific weapons and abilities settings
 				respawn_kit_enabled 				1
 				respawn_kit_primary_weapon 			"mp_weapon_r97 optic_cq_hcog_classic bullets_mag_l2 barrel_stabilizer_l4_flash_hider stock_tactical_l3"
-				respawn_kit_secondary_weapon 		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3"
+				respawn_kit_secondary_weapon 		"mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3 hopup_headshot_dmg"
 				respawn_kit_tactical 				"mp_ability_grapple"
 				respawn_kit_ultimate 				"mp_ability_phase_rewind"
 				
@@ -482,7 +628,7 @@ playlists
 				flowstateChatLogEnable 					0
 				
 				flowstateEndlessFFAorTDM				0 //location won't change, no champion will be defined
-				Admins 									"r5r_ColombiaFPS admin2"
+				Admins 									"admin"
 				respawn_delay 							5
 				flowstateRoundtime 						800
 				flowstateBubble 						"111, 66, 245" //ring color
@@ -492,24 +638,33 @@ playlists
 				flowstateLockeedPOI 					0
 				flowstateCapitolCityReplacesTTVLocation 0 //Makes ttv building bigger
 				flowstateGrenadesDisabled				1
-				flowstateAdminTgive 					1 //tgive is for the admin ONLY
+				flowstateAdminTgive 					0 //tgive is for the admin ONLY
 				flowstateGrenadesDisabled       		0
 				flowstateAutoChangeLevelEnable			1
-				flowstateRoundsBeforeChangeLevel		2
+				flowstateRoundsBeforeChangeLevel		3
 				flowstateGiveAllOpticsToPlayer			0
 				flowstate_headshots_only_gamemode 		0 //i recommend a wingman only in respawn kit above
 				flowstateReloadTacticalOnRespawn  		0
 				flowstateReloadUltimateOnRespawn 		1
 				
 				//custom maps by community
-				//World's Edge Map
+				flowstate_Enable_Shipment_By_AyeZee				1
+				flowstate_Enable_Killhouse_By_AyeZee			1
+				flowstate_Enable_Nuketown_By_AyeZee				1
+				flowstate_Enable_Encore							1
+				flowstate_Enable_Killyard_By_DEAFPS				1
+				flowstate_Enable_Dustment_By_DEAFPS				1
+				flowstate_Enable_Shoothouse_By_DEAFPS			1
+				flowstate_Enable_Rust_By_DEAFPS					1
+				flowstate_Enable_NCanals_By_DEAFPS				1				
+				flowstate_Enable_Encore_Nuketown_By_AyeZee		1
+				
+				//disabled atm
 				flowstate_Enable_BRIGHWATER_By_Zero				0
 				flowstate_Enable_CAVE_By_BlessedSeal			0
-				flowstate_Enable_SKILLTRAINER_By_Colombia		1
-				
-				//Kings Canyon OG map
-				flowstate_Enable_CUSTOMMAP_By_Biscutz 	0
-				flowstate_Enable_WHITEFOREST_By_Zero 	0				
+				flowstate_Enable_SKILLTRAINER_By_Colombia		0				
+				flowstate_Enable_CUSTOMMAP_By_Biscutz			0
+				flowstate_Enable_WHITEFOREST_By_Zero			0
 				
 				flowstateKickHighPingPlayer				0
 				flowstateMaxPingAllowed					230
@@ -535,7 +690,7 @@ playlists
 				flowstateExtrashieldValue 				150 //extrashield actual value
 
 			}
-			gamemodes { custom_tdm { maps {
+			gamemodes { fs_dm { maps {
 				mp_rr_canyonlands_64k_x_64k                    	1
 				mp_rr_canyonlands_mu1                         	1
 				mp_rr_desertlands_64k_x_64k                    	1
@@ -552,7 +707,164 @@ playlists
 			} } }
 		}
 		
-		map_editor
+		fs_1v1
+		{
+			inherit defaults
+			vars
+			{
+				image                              worlds_edge
+				video                              worlds_edge
+				panel_image                        panel_worlds_edge
+				visible                            1
+				battlechatter_enabled              1
+				name                               "FS 1v1"
+				description                        "DM or FFA with multiple settings, customize your own server"
+				abbreviation                       "FS 1v1"
+				lobbytitle                         "FS 1v1"
+				pin_match_type                     survival
+				enable_nessies                     0
+				
+   				//Flowstate By CaféDeColombiaFPS.
+				
+				max_teams                          16
+				max_players                        16
+				min_players                        0
+				
+				default_shield_hp                  75
+				survival_shields                   1
+				skydive_ziplines_enabled           1
+				ground_loot_enable 				   0
+				lootbin_loot_enable                0
+				
+				survival_jumpkit_enabled           0
+				survival_wallrun_enabled           0
+				
+				survival_infinite_ammo             1
+				survival_custom_deploy             1
+				character_select_time_min          0
+				character_select_time_max          0
+				charselect_picking_delay_after_all 0
+				survival_enable_squad_intro        0
+				survival_enable_gladiator_intros   0
+				jump_from_plane_enabled            0
+				replay_enabled                     1  
+				replay_delay                       5
+				enable_small_pheonix			   0
+				match_ending_enabled               0
+				sur_circle_start_paused            1
+
+				replay_new_ui 						1
+				
+				flowstate_1v1mode					1
+				solo_mode 							1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
+				flowstateRoundtime 						800
+				flowstateRoundsBeforeChangeLevel	2
+			}
+			gamemodes { fs_dm { maps {
+				mp_rr_canyonlands_64k_x_64k                    	1
+				mp_rr_aqueduct									1
+				mp_rr_arena_composite							1
+			} } }
+		}
+		
+		fs_movementgym
+		{
+			inherit defaults
+			vars
+			{
+				image                              worlds_edge
+				video                              worlds_edge
+				panel_image                        panel_worlds_edge
+				visible                            1
+				battlechatter_enabled              1
+				name                               "FS Movement Gym"
+				description                        "Train your apex movement with custom designed maps"
+				abbreviation                       "FS Movement Gym"
+				lobbytitle                         "FS Movement Gym"
+				pin_match_type                     survival
+				enable_nessies                     0
+				
+   				//Flowstate By CafĂ©DeColombiaFPS.
+				
+				max_teams                          1
+				max_players                        123
+				min_players                        0
+				
+				default_shield_hp                  0
+				survival_shields                   0
+				skydive_ziplines_enabled           0
+				ground_loot_enable 				   0
+				lootbin_loot_enable                0
+				battlechatter_enabled              0
+				survival_jumpkit_enabled           0
+				survival_wallrun_enabled           0
+				
+				survival_infinite_ammo             1
+				survival_custom_deploy             1
+				character_select_time_min          0
+				character_select_time_max          0
+				charselect_picking_delay_after_all 0
+				survival_enable_squad_intro        0
+				survival_enable_gladiator_intros   0
+				jump_from_plane_enabled            0
+				replay_enabled                     0  
+				match_ending_enabled               0
+				sur_circle_start_paused            1
+
+				replay_new_ui 1
+				
+				//MovementGym
+				flowstate_Enable_MovementGym 1
+				flowstate_Enable_MovementGym_Logs 1
+				teammate_huds_enabled 0
+				
+				//For FFA classic mode
+				//specific weapons and abilities settings
+				respawn_kit_enabled 				1
+				respawn_kit_primary_weapon 			""
+				respawn_kit_secondary_weapon 		""
+				respawn_kit_tactical 				"mp_ability_phase_walk"
+				respawn_kit_ultimate 				"mp_ability_phase_rewind"
+
+				
+				//GENERAL SETTINGS
+				flowstateBattleLogEnable 				0
+				flowstateChatLogEnable 					0
+				
+				flowstateEndlessFFAorTDM				0 //location won't change, no champion will be defined
+				Admins 									"DEAR5R "
+				respawn_delay 							1
+				flowstateRoundtime 						3600
+				flowstateBubble 						"111, 66, 245" //ring color
+				flowstateResetKills 					1
+				flowstateTimer 							1
+				flowstateGrenadesDisabled				1
+				flowstateAdminTgive 					1 //tgive is for the admin ONLY
+				flowstateGrenadesDisabled       		1
+				flowstateAutoChangeLevelEnable			1
+				flowstateRoundsBeforeChangeLevel		1
+				
+				flowstateKickHighPingPlayer				0
+				flowstateMaxPingAllowed					230
+				solo_mode 								1 //this will fix the ingame player count text, so it wont display "??" in players alive (now players connected) count.
+				flowstateDoorsEnabled					0 //Doors enabled or disabled in all buildings.
+				flowstateDoorsRegen						0 //if door is damaged but not destroyed, it will regen health. Suggestion: false.
+
+				//visuals
+				flowstateForceCharacter 				0	//It enables the following settings
+				flowstateChosenCharacter 				8	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateForceAdminCharacter			0
+				flowstateChosenAdminCharacter			0	// 0 Bang// 1 Bloodhound// 2 Caustic// 3 Gibby// 4 Lifeline// 5 Mirage// 6 Octane// 7 Pathy// 8 Wraith// 9 Watty// 10 Crypto
+				flowstateDummyOverride 					0	// explains itself, it's bugged with some abilities (grapple ie)
+
+			}
+			gamemodes { fs_dm { maps {
+				mp_rr_desertlands_64k_x_64k                    	1
+				mp_rr_desertlands_64k_x_64k_nx                    	1
+			} } }
+		}
+		
+		map_editor_deprecated
 		{
 			inherit survival
 			vars
@@ -584,69 +896,11 @@ playlists
 				min_players                                    1
 				enable_nessies                                 0
 			}
-			gamemodes { map_editor { maps {
-				mp_rr_desertlands_64k_x_64k                    1
-			} } }
-		}
-		
-		custom_surf
-		{
-			inherit defaults
-			vars
-			{
-				image                              worlds_edge
-				video                              worlds_edge
-				panel_image                        panel_worlds_edge
-				visible                            1
-				battlechatter_enabled              1
-				name                               custom_tdm
-				description                        "TDM"
-				abbreviation                       "TDM"
-				lobbytitle                         "TDM"
-				pin_match_type                     survival
-				enable_nessies                     0
-				
-   				//SURF
-				
-				max_teams                          16
-				max_players                        16
-				min_players                        0
-				
-				default_shield_hp                  75
-				survival_shields                   1
-				skydive_ziplines_enabled           1
-				ground_loot_enable 				   1
-				lootbin_loot_enable                1
-				
-				survival_jumpkit_enabled           0
-				survival_wallrun_enabled           0
-				
-				survival_infinite_ammo             1
-				survival_custom_deploy             1
-				character_select_time_min          0
-				character_select_time_max          0
-				charselect_picking_delay_after_all 0
-				survival_enable_squad_intro        0
-				survival_enable_gladiator_intros   0
-				jump_from_plane_enabled            0
-				replay_enabled                     1  
-				replay_delay                       5
-				enable_small_pheonix			   0
-				match_ending_enabled               0
-				sur_circle_start_paused            1
-				flowstateSURF 						1	//Exclusive Apex Surf by AyeZee. Only works on WE
-					flowstateSURFRoundtime			300  //it has two maps. Time for them.
-					flowstateSURFLockPOI			0
-					flowstateSURFLockeedPOI			0
-			}
-			gamemodes { custom_tdm { maps {
+			gamemodes { map_editor_deprecated { maps {
 				mp_rr_desertlands_64k_x_64k                    1
 			} } }
 		}
 
-		///////////////////////////////////
-		///////////   SURVIVAL  ///////////
-		///////////////////////////////////
 		custom_ctf
 		{
 			inherit defaults
@@ -713,7 +967,7 @@ playlists
 				max_score                                      5    //Set max amount of flag captures
 				round_time                                     30   //Sets time limit for rounds in minutes
 
-				////Respawn Classes: Weapons and Abilitys use the exact same format as custom_tdm
+				////Respawn Classes: Weapons and Abilitys use the exact same format as fs_dm
 				//Class 1
 				ctf_respawn_class1_name                        "Close-Quarters"
 				ctf_respawn_class1_primary                     "mp_weapon_r97 optic_cq_hcog_classic barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l3"
@@ -729,7 +983,7 @@ playlists
 				//Class 3
 				ctf_respawn_class3_name                        "Assault"
 				ctf_respawn_class3_primary                     "mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3"
-				ctf_respawn_class3_secondary                   "mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3"
+				ctf_respawn_class3_secondary                   "mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3"
 				ctf_respawn_class3_tactical                    "mp_ability_area_sonar_scan"
 				ctf_respawn_class3_ultimate                    "mp_weapon_jump_pad"
 				//Class 4
@@ -767,9 +1021,9 @@ playlists
 			{
 				visible                                        0
 				battlechatter_enabled                          1
-				name                                           #PL_PLAY_APEX
+				name                                           "Battle Royale"
 				description                                    #PL_SURVIVAL_SQUADS_DESC
-				abbreviation                                   #PL_PLAY_APEX
+				abbreviation                                   "Battle Royale"
 
 				pin_match_type                                 survival
 				enable_nessies                                 0
@@ -781,8 +1035,8 @@ playlists
 				player_revive_enabled                          1
 				enable_apex_screens                            1
 				skydive_ziplines_enabled                       1
-				enable_bolo_heirloom				0
-				rgb_skydive 					1
+				enable_bolo_heirloom						   0
+				rgb_skydive 								   1
 			}
 			gamemodes { survival { maps {
 				mp_rr_desertlands_64k_x_64k                    1
@@ -794,8 +1048,7 @@ playlists
 			} } }
 		}
 
-	
-		firingrange
+		survival_firingrange
 		{
 			inherit survival
 			vars
@@ -803,7 +1056,7 @@ playlists
 				visible                                        1
 				ui_slot                                        firing_range
 				image                                          firing_range
-				name                                           #PL_FIRINGRANGE
+				name                                           "Firing Range"
 				description                                    #PL_FIRINGRANGE_DESC
 				video                                          _temp
 
@@ -866,6 +1119,7 @@ playlists
 			inherit survival
 			vars
 			{
+				name                                           "Survival Dev"
 				visible                                        1
 
 				// Skip intros:
@@ -894,7 +1148,9 @@ playlists
 
 			}
 			gamemodes { survival { maps {
-				mp_rr_canyonlands_staging                      	1
+				mp_rr_party_crasher                     		1
+				mp_rr_aqueduct                                 	1
+				mp_rr_arena_composite                          	1
 				mp_rr_canyonlands_64k_x_64k                    	1
 				mp_rr_canyonlands_mu1                          	1
 				mp_rr_canyonlands_mu1_night                    	1
@@ -902,11 +1158,9 @@ playlists
 				mp_rr_desertlands_64k_x_64k_nx                 	1
 				mp_rr_desertlands_64k_x_64k_tt                 	1
 				mp_rr_arena_skygarden                          	1
-				mp_rr_party_crasher                     		1
-				mp_rr_aqueduct                                 	1
 				mp_rr_aqueduct_night                           	1
 				mp_rr_ashs_redemption                          	1
-				mp_rr_arena_composite                          	1
+				
 			} } }
 		}
 
@@ -914,7 +1168,7 @@ playlists
 		{
 			vars
 			{
-				name                                           "menufall"
+				name                                           "Lobby"
 				visible                                        0
 				menu_fall_ltm                                  1
 
@@ -927,9 +1181,6 @@ playlists
 			} } }
 		}
 
-		///////////////////////////////////
-		//////////////  DEV  //////////////
-		///////////////////////////////////
 		dev_default
 		{
 			inherit survival_dev
@@ -996,8 +1247,9 @@ playlists
                 "DISCONNECT_SEND_RELIABLEOVERFLOW"    "Connection to server overflowed (code:river)."
                 "DISCONNECT_SEND_OVERFLOW"            "Connection to server overflowed (code:dam)."
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
-                "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:mountain)."
-				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.6] by @CafeFPS\n翻译：R5RCN全体成员"
+                "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
+				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和社区制作的独家内容,如技能,游戏模式或地图"
+				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot：R5RCN全体成员"
 			}
 		}
 	}

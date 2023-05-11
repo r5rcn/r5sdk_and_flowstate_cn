@@ -269,7 +269,7 @@ void function MG_Speedometer_destroy(){
 void function MG_Checkpoint_Msg(){
 	
 	entity player = GetLocalClientPlayer()
-	AnnouncementData announcement = Announcement_Create( "检查点!" )
+	AnnouncementData announcement = Announcement_Create( "Checkpoint!" )
 	Announcement_SetHideOnDeath( announcement, false )
 	Announcement_SetDuration( announcement, 3 )
 	Announcement_SetPurge( announcement, true )

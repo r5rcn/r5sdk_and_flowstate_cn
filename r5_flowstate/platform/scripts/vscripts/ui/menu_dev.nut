@@ -273,20 +273,16 @@ void function SetupDefaultDevCommandsMP()
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
 	
-	if(GetCurrentPlaylistName() == "map_editor")
+	if(GetCurrentPlaylistName() == "map_editor_deprecated")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
 	
-	if(GetCurrentPlaylistName() == "custom_tdm")
+	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1")
+	{
 		SetupDevMenu( "TDM模式: 修改主武器", SetDevMenu_TDMPrimaryWeapons )
-	
-	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevMenu( "TDM模式: 修改副武器", SetDevMenu_TDMSecondaryWeapons )
-	
-	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevCommand( "TDM模式: 保存当前武器", "saveguns" )
-
-	if(GetCurrentPlaylistName() == "custom_tdm")
-		SetupDevCommand( "TDM模式: 重置已保存的武器", "resetguns" )
+		SetupDevCommand( "TDM模式: 重置已保存武器", "resetguns" )
+	}
 
 	if(GetCheatsState()){
 		

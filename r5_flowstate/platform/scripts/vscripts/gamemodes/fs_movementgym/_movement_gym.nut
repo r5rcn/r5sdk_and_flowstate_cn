@@ -224,7 +224,7 @@ function ClientCommand_Hub(entity user, array < string > args) {
     user.RemoveFromAllRealms()
     user.AddToRealm(1)
     user.MakeVisible()
-    Message(user, "You are now Visible")
+    Message(user, "你现在可以被看见")
   }
 
   //Force Default Player Settings
@@ -241,15 +241,15 @@ function ClientCommand_invis(entity user, array < string > args) {
       user.RemoveFromAllRealms()
       user.AddToRealm(2)
       user.MakeInvisible()
-      Message(user, "You are now Invisible")
+      Message(user, "你现在可以被看见")
     } else {
       user.RemoveFromAllRealms()
       user.AddToRealm(1)
       user.MakeVisible()
-      Message(user, "You are now Visible")
+      Message(user, "你现在可以被看见")
     }
   } else {
-    Message(user, "This action is not allowed right now")
+    Message(user, "现在不允许执行此操作")
   }
   return true
 }
@@ -325,13 +325,13 @@ function ClientCommand_style(entity user, array < string > args) {
 
 bool function _MG_Spectate_by_name(entity player, array<string> name){
 	if( !IsValid(player) || name.len() == 0 ){
-		Message(player, "Incorrect Usage", "Try: spectate playername\n Or to stop spectating try: spectate stop")
+		Message(player, "错误的使用方法", "试试: spectate 玩家名称\n 停止观战的话 试试: spectate stop")
 		return false
 	}
 	
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
 	{
-		Message( player, "Spam Protection", "It is in cool down. Please try again later." )
+		Message( player, "频率过高", "正在冷却 请稍后再试" )
 		return false
 	}
 	
@@ -367,19 +367,19 @@ bool function _MG_Spectate_by_name(entity player, array<string> name){
 					//thread _MG_Spectate_checker(player, target)
 					return true
 				} else {
-					Message(player, "Player is hidden", "or is surfing :)")
+					Message(player, "玩家已隐藏", "或者他在滑翔 :)")
 					player.RemoveFromAllRealms()
 					player.AddToRealm(1)
 					return false
 				}
 				
 			} else {
-				Message(player, "Invalid Player Name", "or player are already spectating someone")
+				Message(player, "无效的玩家名称", "或者玩家已经在观战某人")
 				return false
 			}	
 		}	
 	} else {
-		Message(player, "Invalid Parameters", "Possible Reasons:\n wrong username\n you are already spectating someone\n unhide players\n exit surf\n ")
+		Message(player, "无效参数", "可能原因:\n 错误的玩家名\n 你已经在观战某人\n 取消隐藏玩家\n 退出滑翔\n ")
 		return false
 	}
 	
@@ -559,7 +559,7 @@ function MovementGym_Hub_Buttons() {
     {
 	EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 	TeleportFRPlayer(user,< 9492, 5553.3, -3657 >,< 0, -89.9998, 0 >)
-	Message(user, "Free Roam")
+	Message(user, "漫游模式")
 	//Start Checkpoint
 	user.p.allowCheckpoint = false
 	user.p.currentCheckpoint = 0
@@ -573,49 +573,49 @@ function MovementGym_Hub_Buttons() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
       TeleportFRPlayer(user,< -2789.5070, 2607.6090, 41922.3500 > + tpoffset,< 0, -89.9998, 0 >)
-      Message(user, "Mantle Jump Practice")
+      Message(user, "Mantle Jump 练习")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10814.41, 9492.509, -4296.651 > , < 0, -179.9999, 0 > , "%use% Advanced Tap Strafe into Wall Jump"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 3391.9900, 2660.3000, 42441.2000 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Advanced Tap Strafe into Wall Jump")
+      Message(user, "进阶Tap Strafe应用于蹬墙跳")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10730, 9492.509, -4296.651 > , < 0, -179.9999, 0 > , "%use% Superglide Practice"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -17280, 7718, 41940 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Superglide Practice")
+      Message(user, "Superglide 练习")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10649, 9492.506, -4296.651 > , < 0, -179.9999, 0 > , "%use% Sideways Superglide Practice"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -21670, 7550, 41938.3500 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Sideways Superglide Pracc")
+      Message(user, "侧向 Superglide 练习")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10569.16, 9492.509, -4296.651 > , < 0, -179.9999, 0 > , "%use% Backwards Superglide Practice"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -23694, 7550, 41938.3500 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Backwards Superglide Practice")
+      Message(user, "向后 Superglide 练习")
     })
 
-  AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 10077.86, -4296.651 > , < 0, 90.0002, 0 > , "%use% Jump Pad Tap Strafes"), void
+  AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 10077.86, -4296.651 > , < 0, 90.0002, 0 > , "%use% 跳板Tap Strafes"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -2329.1000, 8714.7000, 41919.5000 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Jump Pad Tap Strafes")
+      Message(user, "跳板Tap Strafes")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10896.9, 9492.509, -4296.651 > , < 0, -179.9999, 0 > , "%use% Basic Tap Strafe Practice"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -17280, 258.0005, 41940 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Tap Strafe Practice")
+      Message(user, "Tap Strafe 练习")
 
     })
 
@@ -623,7 +623,7 @@ function MovementGym_Hub_Buttons() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 9647, -963, 42441.2000 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Octane Stim Superglides", "\n  You now recieved Stim Tactical")
+      Message(user, "动力扎针 Superglides", "\n  你现在获得了技能兴奋剂")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10534.2, 9907.363, -4296.651 > , < 0, 90.0002, 0 > , "%use% Pathfinder Grapples"), void
@@ -640,7 +640,7 @@ function MovementGym_Hub_Buttons() {
         user.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
 
       user.SetPlayerNetBool("pingEnabled", false)
-      Message(user, "Pathfinder Grapples", "You now recieved Grapple Tactical")
+      Message(user, "探路者钩爪", "你现在获得了技能钩爪")
     })
 
 }
@@ -1106,7 +1106,7 @@ function MovementGym_Map1() {
 	user.p.startTime = floor( Time() ).tointeger()
 	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", true)
-	Message(user, "Timer Started!" )
+	Message(user, "计时开始!" )
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 5330, 9154.7, -688.353 >, < 0, -89.9998, 0 >, "%use% Stop Timer"), void function(entity panel, entity user, int input)
@@ -1123,7 +1123,7 @@ function MovementGym_Map1() {
           int realseconds = seconds - (minutes * 60)
           
 	  //Display player Time
-	  Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+	  Message(user, "你的用时: " + minutes + ":" + realseconds)
 	  
 	  //Add to results file
 	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map1"
@@ -1136,18 +1136,13 @@ function MovementGym_Map1() {
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-		if(user.IsInRealm(1)){
-			foreach(entity sPlayer in GetPlayerArray()){
-				if(sPlayer.IsInRealm(1)){
-					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
-				}
-			}
-		}
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 	  
         } else { 
 	  
 	  //Display player Time
-          Message(user, "Your Final Time: " + seconds + " seconds")
+          Message(user, "你的用时: " + seconds + " 秒")
 	  
 	  //Add to results file
 	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map1"
@@ -1160,13 +1155,8 @@ function MovementGym_Map1() {
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-		if(user.IsInRealm(1)){
-			foreach(entity sPlayer in GetPlayerArray()){
-				if(sPlayer.IsInRealm(1)){
-					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
-				}
-			}
-		}
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 	  }
 }
     })
@@ -2072,7 +2062,7 @@ function MovementGym_Map2() {
     {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
       user.p.isTimerActive = false
       user.p.startTime = 0
       user.p.allowCheckpoint = false
@@ -2084,7 +2074,7 @@ function MovementGym_Map2() {
 //Start Timer Button
 	user.p.isTimerActive = true
 	user.p.startTime = floor( Time() ).tointeger()
-	Message(user, "Timer Started!" )
+	Message(user, "计时开始!" )
 	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", true)
     })
@@ -2125,7 +2115,7 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
           int realseconds = seconds - (minutes * 60)
           
 	  //Display player Time
-	  Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+	  Message(user, "你的用时: " + minutes + ":" + realseconds)
 	  
 	  //Add to results file
 	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map2"
@@ -2138,18 +2128,13 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-		if(user.IsInRealm(1)){
-			foreach(entity sPlayer in GetPlayerArray()){
-				if(sPlayer.IsInRealm(1)){
-					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
-				}
-			}
-		}
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 	  
         } else { 
 	  
 	  //Display player Time
-          Message(user, "Your Final Time: " + seconds + " seconds")
+          Message(user, "你的用时: " + seconds + " 秒")
 	  
 	  //Add to results file
 	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map2"
@@ -2162,13 +2147,8 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	  
 	  //Send time to killfeed
-		if(user.IsInRealm(1)){
-			foreach(entity sPlayer in GetPlayerArray()){
-				if(sPlayer.IsInRealm(1)){
-					Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 2)
-				}
-			}
-		}
+	  foreach(entity sPlayer in GetPlayerArray())
+		Remote_CallFunction_NonReplay( sPlayer, "MG_StopWatch_Obituary", seconds, user, 1)
 	}
       }
     })
@@ -3430,7 +3410,7 @@ function MovementGym_Octane() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 13203.69, -55.6094, 22440.6 > , < 0, 90.0002, 0 > , "%use% Next Exercise "), void
@@ -3443,7 +3423,7 @@ function MovementGym_Octane() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 16494.48, -441.2969, 22440.6 > , < 0, -89.9998, 0 > , "%use% Repeat"), void
@@ -3456,7 +3436,7 @@ function MovementGym_Octane() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < -2221.9, 8789.602, 21916.1 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
@@ -3476,7 +3456,7 @@ function MovementGym_Octane() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -2329.1000, 8714.7000, 41919.5000 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Jump Pad Tap Strafes")
+      Message(user, "跳板Tap Strafes")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < -6423.869, 8855.203, 21916.1 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
@@ -3496,14 +3476,14 @@ function MovementGym_Octane() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -6531.1010, 8698.3000, 41914.3000 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Jump Pad Tap Strafes")
+      Message(user, "跳板Tap Strafes")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < -8058.902, 8572.203, 22417.89 > , < 0, -89.9997, 0 > , "%use% Repeat"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -8932.6010, 8698.3000, 41914.3000 > +tpoffset, < 0, 89.9998, 0 > )
-      Message(user, "Jump Pad Tap Strafes")
+      Message(user, "跳板Tap Strafes")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < -8825.4, 8849.203, 21916.1 > , < 0, -90.0002, 0 > , "%use% Back to Hub"), void
@@ -4785,37 +4765,37 @@ function MovementGym_Grapple1() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -13561.7000, 26485.9000, -83.2000 > , < 0, 0, 0 > )
-      Message(user, "Easy Grapple")
+      Message(user, "简单钩爪")
     })
   AddCallback_OnUseEntity(CreateFRButton( < -11183.8700, 26450.8000, 37.7500 > , < 0, -89.9999, 0 > , "%use% Next"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < -13540.7000, 27525.8000, -335.8000 > , < 0, 0, 0 > )
-      Message(user, "Medium Grapple")
+      Message(user, "进阶钩爪")
     })
   AddCallback_OnUseEntity(CreateFRButton( < -10684.1700, 27534.7000, 33.8496 > , < 0, -89.9999, 0 > , "%use% Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
   AddCallback_OnUseEntity(CreateFRButton( < -10684.1700, 27615.5100, 33.8496 > , < 0, -89.9999, 0 > , "%use% Next"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10446.3000, -26287.1000, 22469.8000 > , < 0, 0, 0 > )
-      Message(user, "Hard Grapple")
+      Message(user, "困难钩爪")
     })
   AddCallback_OnUseEntity(CreateFRButton( < -13618.5700, 26486.5000, -92.9492 > , < 0, 90.0005, 0 > , "%use% Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
   AddCallback_OnUseEntity(CreateFRButton( < -13589.6700, 27521, -337.3496 > , < 0, 90.0005, 0 > , "%use% Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   //Props 
@@ -5775,7 +5755,7 @@ function MovementGym_Grapple2() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10416.5, -22351.61, 22430.3 > , < 0, 0.0004, 0 > , "%use% Repeat"), void
@@ -5788,7 +5768,7 @@ function MovementGym_Grapple2() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 4076, -26273.7000, 22448.4000 > , < 0, 90, 0 > )
-      Message(user, "Grapple 180")
+      Message(user, "钩爪 180")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 10213.5, -32983.9, 22883.1 > , < 0, -179.9996, 0 > , "%use% Repeat"), void
@@ -5808,7 +5788,7 @@ function MovementGym_Grapple2() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 16365.2, -33433.54, 22921.69 > , < 0, 90.0005, 0 > , "%use% Repeat"), void
@@ -5821,14 +5801,14 @@ function MovementGym_Grapple2() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 4076, -26370, 22434.2 > , < 0, -179.9997, 0 > , "%use% Back to Hub"), void
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   AddCallback_OnUseEntity(CreateFRButton( < 4038.299, -26366.34, 23529.3 > , < 0, -179.9997, 0 > , "%use% Next"), void
@@ -5848,7 +5828,7 @@ function MovementGym_Grapple2() {
     function (entity panel, entity user, int input) {
       EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
       TeleportFRPlayer(user, < 10646, 9925, -4283 > , < 0, -89.9998, 0 > )
-      Message(user, "HUB", "\n  You now recieved Phase Walk Tactical")
+      Message(user, "HUB", "\n  你现在获得了相位移动技能")
     })
 
   // Triggers
@@ -6112,7 +6092,7 @@ function MovementGym_Surf_Kitsune_lvl1() {
       //Start Timer Button
       user.p.isTimerActive = true
       user.p.startTime = floor(Time()).tointeger()
-      Message(user, "Timer Started!")
+      Message(user, "计时开始!")
       Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
       Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", true)
     })
@@ -6142,7 +6122,7 @@ function MovementGym_Surf_Kitsune_lvl1() {
         user.RemoveFromAllRealms()
         user.AddToRealm(1)
         user.MakeVisible()
-        Message(user, "Hub", "You are now Visible")
+        Message(user, "Hub", "你现在可以被看到")
       }
 
       //Force Default Player Settings
@@ -7782,7 +7762,7 @@ function MovementGym_Surf_Kitsune_lvl7() {
           int realseconds = seconds - (minutes * 60)
 
           //Display player Time
-          Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+          Message(user, "你的用时 " + minutes + ":" + realseconds)
 
           //Add to results file
           string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map3"
@@ -7797,7 +7777,7 @@ function MovementGym_Surf_Kitsune_lvl7() {
         } else {
 
           //Display player Time
-          Message(user, "Your Final Time: " + seconds + " seconds")
+          Message(user, "你的用时 " + seconds + "  秒")
 
           //Add to results file
           string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map3"
@@ -7839,7 +7819,7 @@ function MovementGym_Surf_Kitsune_lvl7() {
         ent.RemoveFromAllRealms()
         ent.AddToRealm(1)
         ent.MakeVisible()
-        Message(ent, "Hub", "You are now Visible")
+        Message(ent, "Hub", "你现在可以被看到")
       }
 
       //Force Default Player Settings

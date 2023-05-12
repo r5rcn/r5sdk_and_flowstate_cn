@@ -1,0 +1,2 @@
+bin\fileverifier.exe
+pause

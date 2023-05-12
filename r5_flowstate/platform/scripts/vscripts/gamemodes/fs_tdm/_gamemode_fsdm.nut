@@ -625,7 +625,7 @@ void function __HighPingCheck(entity player)
 		player.ForceStand()
 		HolsterAndDisableWeapons( player )
 
-		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
+		Message(player, "FLOWSTATE KICK", "管理员已启动ping值限制: " + FlowState_MaxPingAllowed() + " ms. \n 你的延迟过高: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
 
 		wait 3
 
@@ -634,7 +634,7 @@ void function __HighPingCheck(entity player)
 		ClientCommand( player, "disconnect" )
 		UpdatePlayerCounts()
 	} else if(GameRules_GetGameMode() == "fs_dm"){
-		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
+		Message(player, "FLOWSTATE", "你的延迟: " + (int(player.GetLatency()* 1000) - 40) + " ms."
 		, 5)
 	}
 }
@@ -2428,7 +2428,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"15 MINUTES REMAINING!","", 5)
+						Message(player,"剩余 15 分钟!","", 5)
 					}
 				}
 			}
@@ -2438,7 +2438,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"10 MINUTES REMAINING!","", 5)
+						Message(player,"剩余 10 分钟!","", 5)
 					}
 				}
 			}
@@ -2448,7 +2448,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"5 MINUTES REMAINING!","", 5)
+						Message(player,"剩余 5 分钟!","", 5)
 					}
 				}
 			}
@@ -2458,7 +2458,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"2 MINUTES REMAINING!","", 5)
+						Message(player,"剩余 2 分钟!","", 5)
 					}
 				}
 			}
@@ -2466,7 +2466,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"1 MINUTE REMAINING!","", 5, "")
+						Message(player,"剩余 1 分钟!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
@@ -2474,7 +2474,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"30 SECONDS REMAINING!","", 5, "")
+						Message(player,"剩余 30 秒!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
@@ -2482,7 +2482,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"10 SECONDS REMAINING!","", 5, "")
+						Message(player,"剩余 10 秒!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
@@ -2598,7 +2598,7 @@ void function SimpleChampionUI()
 			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
 
 		foreach( player in GetPlayerArray() )
-			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
+			Message( player, "服务器优化开始", "服务器需要重启来清除卡顿", 6.0 )
 		
 		wait 6.0
 		
@@ -3642,7 +3642,7 @@ bool function ClientCommand_ControllerSummary(entity player, array < string > ar
 			msg += sPlayer.GetPlayerName() + "\n"
 		}
 		
-	Message(player, "CONTROLLER SUMMARY", "There are " + controllers + " controller players connected. \n" + msg)
+	Message(player, "手柄玩家统计", "一共有 " + controllers + " 名手柄玩家游玩. \n" + msg)
 	
     return true
 }
@@ -3660,7 +3660,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
 	{
-		Message( player, "An error has occured", "It is in cool down. Please try again later." )
+		Message( player, "发生错误", "正在冷却 请稍后再试" )
 		return false
 	}
 	
@@ -3673,7 +3673,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
         if( !IsValid(specTarget) )
         {
             printf("error: try again")
-			Message( player, "An error has occured", "You could not specate the player you were trying to spectate. Please try again later." )
+			Message( player, "发生错误", "无法观战你正在尝试观战的玩家. 请稍后再试." )
             return false
         }
 
@@ -3699,27 +3699,27 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 				thread CheckForObservedTarget(player)
 				player.p.lastTimeSpectateUsed = Time()
 			} catch(e420){
-				Message( player, "An error has occured", "Unknown error occurred. Please try again later." )
+				Message( player, "发生错误", "出现未知错误 请稍后再试" )
 			}
         }
     }
     else
     {
         printt("There is no one to spectate!")
-		Message( player, "An error has occured", "There are no players available to spectate. Please try again later." )
+		Message( player, "发生错误", "没有玩家可以观战. 请稍后再试." )
     }
     return true
 }
 
 string function helpMessage()
 {
-	return "\n\n           CONSOLE COMMANDS:\n\n " +
-	"1. 'kill_self': if you get stuck.\n" +
-	"2. 'scoreboard': displays scoreboard to user.\n" +
-	"3. 'latency': displays ping of all players to user.\n" +
-	"5. 'spectate': spectate enemies!\n" +
-	"6. 'controllersummary': see how many controller players are connected.\n" +
-	"7. 'commands': display this message again"
+	return "\n\n           控制台命令:\n\n " +
+	"1. 'kill_self': 如果你卡住了.\n" +
+	"2. 'scoreboard': 向用户展示计分板.\n" +
+	"3. 'latency': 向用户展示所有人的延迟.\n" +
+	"5. 'spectate': 观战敌人!\n" +
+	"6. 'controllersummary': 查看有几个手柄玩家.\n" +
+	"7. 'commands': 再次显示这条消息"
 }
 
 bool function ClientCommand_Help(entity player, array<string> args)
@@ -3729,16 +3729,16 @@ bool function ClientCommand_Help(entity player, array<string> args)
 	
 	if(FlowState_RandomGunsEverydie())
 	{
-		Message(player, "WELCOME TO FLOWSTATE: FIESTA", helpMessage(), 10)}
+		Message(player, "欢迎来到 FLOWSTATE: FIESTA", helpMessage(), 10)}
 	else if (FlowState_Gungame())
 	{
-		Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
+		Message(player, "欢迎来到 FLOWSTATE: 军备竞赛", helpMessage(), 10)
 
 	} else if (FlowState_SURF())
 	{
-		Message(player, "Apex SURF", "", 5)
+		Message(player, "Apex 滑翔", "", 5)
 	} else{
-		Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
+		Message(player, "欢迎来到 FLOWSTATE: 死斗", helpMessage(), 10)
 	}
 
 	return true
@@ -3768,7 +3768,7 @@ bool function ClientCommand_ShowLatency(entity player, array<string> args)
 		return false
 	
     try{
-    	Message(player,"Latency board", LatencyBoard(), 8)
+    	Message(player,"延迟", LatencyBoard(), 8)
     }catch(e) {}
 
     return true
@@ -3792,7 +3792,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
 	{
-		Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
+		Message(player, "错误", "管理员禁用了Dev Menu的TDM Weapons.")
 		return false
 	}
 
@@ -3800,13 +3800,13 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
     if(file.blacklistedWeapons.len() && file.blacklistedWeapons.find(args[1]) != -1)
 	{
-		Message(player, "WEAPON BLACKLISTED")
+		Message(player, "武器黑名单")
 		return false
 	}
 
 	if( file.blacklistedAbilities.len() && file.blacklistedAbilities.find(args[1]) != -1 )
 	{
-		Message(player, "ABILITY BLACKLISTED")
+		Message(player, "技能黑名单")
 		return false
 	}
 
@@ -3950,12 +3950,12 @@ bool function ClientCommand_Scoreboard(entity player, array<string> args)
 	float ping = player.GetLatency() * 1000 - 40
 
 	Message(player,
-	"- CURRENT SCOREBOARD - ",
-	"\n               CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills.\n" +
-	"\n Name:    K  |   D   |   KD   |   Damage dealt\n" +
+	"- 计分板 - ",
+	"\n               冠军: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " 杀.\n" +
+	"\n 名称:    K  |   D   |   KD   |   伤害\n" +
 	ScoreboardFinal(true) + "\n" +
-	"\nYour ping: " + ping.tointeger() + "ms.\n" +
-	"Hosted by: " + GetOwnerName()
+	"\n你的延迟: " + ping.tointeger() + "ms.\n" +
+	"服主: " + GetOwnerName()
 	, 4)
 
 	return true
@@ -3969,11 +3969,11 @@ bool function ClientCommand_ScoreboardPROPHUNT(entity player, array<string> args
 	float ping = player.GetLatency() * 1000 - 40
 
 	Message(player,
-	"- PROPHUNT SCOREBOARD - ",
-	"Name:    K  |   D   \n" +
+	"- 躲猫猫计分板 - ",
+	"名称:    K  |   D   \n" +
 	ScoreboardFinalPROPHUNT(true) + "\n" +
-	"Your ping: " + ping.tointeger() + "ms. \n" +
-	"Hosted by: " + GetOwnerName()
+	"你的延迟: " + ping.tointeger() + "ms. \n" +
+	"服主: " + GetOwnerName()
 	, 5)
 
 	return true
@@ -4008,7 +4008,7 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 		if (!IsValid(p)) continue
 		SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))
 		currentTeam += 1
-		Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
+		Message(p, "队伍平衡", "我们现在有" + numTeams + "支小队.", 4)
 	}
 
 	return true

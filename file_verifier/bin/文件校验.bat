@@ -1,2 +1,2 @@
-bin\fileverifier.exe
+fileverifier.exe
 pause

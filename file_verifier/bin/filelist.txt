@@ -70,6 +70,7 @@ materials/correction/mp_canyonlands_mu2_hdr.raw_hdr
 materials/correction/mp_canyonlands_night_hdr.raw_hdr
 materials/correction/mp_olympus.raw_hdr
 materials/correction/mp_rr_desertlands_hdr.raw_hdr
+materials/correction/mp_rr_desertlands_mu1_hdr.raw_hdr
 materials/correction/outside_ring.raw_hdr
 materials/correction/shell_shock.raw_hdr
 materials/correction/smoke_cloud.raw_hdr
@@ -3079,8 +3080,8 @@ platform/shaders/fxc/visquery_ps40.vcs
 platform/support/EA Help/Assistance technique.fr_FR.rtf
 platform/support/EA Help/Kundendienst.rtf
 platform/support/EA Help/Pomoc techniczna.rtf
-platform/support/EA Help/Servicio tÂ¨Â¦cnico.rtf
-platform/support/EA Help/Suporte TÂ¨Â¦cnico.rtf
+platform/support/EA Help/Servicio t¨¦cnico.rtf
+platform/support/EA Help/Suporte T¨¦cnico.rtf
 platform/support/EA Help/Supporto tecnico.rtf
 platform/support/EA Help/Technical Support.en_US.rtf
 platform/support/EA Help/Technical Support.ja_JP.rtf

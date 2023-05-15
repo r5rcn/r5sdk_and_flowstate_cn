@@ -2475,6 +2475,7 @@ platform/scripts/vscripts/custom_maps/_custom_maps_2.nut
 platform/scripts/vscripts/custom_maps/_custom_maps_3.nut
 platform/scripts/vscripts/custom_maps/_custom_maps_4.nut
 platform/scripts/vscripts/custom_maps/_custom_movement_maps.nut
+platform/scripts/vscripts/custom_maps/_custom_grapplemap.nut
 platform/scripts/vscripts/dev/_devstats.gnut
 platform/scripts/vscripts/freelance/_freelance.gnut
 platform/scripts/vscripts/gamemodes/cl_gamemode_survival.nut
@@ -2532,6 +2533,7 @@ platform/scripts/vscripts/lobby/lobbyvm/sh_lobbyvm.nut
 platform/scripts/vscripts/lobby/lobbyvm/_lobbyvm.nut
 platform/scripts/vscripts/melee/sh_melee.gnut
 platform/scripts/vscripts/melee/sh_melee_synced.gnut
+platform/scripts/vscripts/mp_antiafk.nut
 platform/scripts/vscripts/mp/cl_jump_pads.gnut
 platform/scripts/vscripts/mp/cl_lasermesh.gnut
 platform/scripts/vscripts/mp/cl_pintelemetry.gnut

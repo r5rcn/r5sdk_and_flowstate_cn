@@ -216,8 +216,8 @@ void function ServerBrowser_NoServersLabel(bool show)
 
 void function ServerBrowser_UpdateServerPlayerCount()
 {
-	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "玩家: " + file.m_vAllPlayers)
-	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "服务器: " + file.m_vAllServers)
+	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: " + file.m_vAllPlayers)
+	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: " + file.m_vAllServers)
 }
 
 void function OnBtnFiltersClear()
@@ -242,7 +242,7 @@ void function ServerBrowser_SelectServer(int id)
 
 	if(id == -1) {
 		file.m_vSelectedServer.svServerID = -1
-		file.m_vSelectedServer.svServerName = "请在列表中选择一个服务器"
+		file.m_vSelectedServer.svServerName = "Please select a server from the list"
 		file.m_vSelectedServer.svMapName = "error"
 		file.m_vSelectedServer.svPlaylist = "error"
 		file.m_vSelectedServer.svDescription = ""
@@ -278,8 +278,8 @@ void function ServerBrowser_NoServersFound(bool showlabel)
 	ServerBrowser_ResetLabels()
 
 	if(showlabel)
-		Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "玩家: 0")
-		Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "服务器: 0")
+		Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: 0")
+		Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: 0")
 }
 
 ////////////////////////////////////

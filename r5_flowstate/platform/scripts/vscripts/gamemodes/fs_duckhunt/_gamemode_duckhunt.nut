@@ -114,12 +114,14 @@ void function _OnPlayerConnected(entity player)
 	{
 		SetTeam(player, TEAM_IMC )
 	}
-
+	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	switch(GetGameState())
     {
 		case eGameState.WaitingForPlayers:
 		case eGameState.MapVoting:
-			Message(player, "APEX 打鸭子", "Made by @CafeFPS & Darkes#8647. Game is starting.", 4)
+			Message(player, "APEX DUCK HUNT", "Made by @CafeFPS & Darkes#8647. Game is starting.", 4)
 			
 			_HandleRespawn(player)
 			Survival_SetInventoryEnabled( player, false )
@@ -429,7 +431,7 @@ void function _OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 				{
 					thread StartSpectatingDuckhunt(victim, attacker, false)
 					
-					Message(victim, "如果可能的话，30秒内出生")
+					Message(victim, "Spawning in 30 seconds if possible")
 					wait 30
 					
 					if( !IsValid(victim) || GetGameState() != eGameState.Playing || victim.GetTeam() != TEAM_IMC ) return
@@ -620,10 +622,10 @@ void function DUCKHUNT_Lobby()
 		
 		if(FS_DUCKHUNT.winnerTeam != 0)
 		{
-			Message(player, FS_DUCKHUNT.winnerTeam == TEAM_MILITIA ? "鸭子胜利" : "猎人胜利", "使用暂停菜单中的设置猎人按钮成为猎人.", 6)
+			Message(player, FS_DUCKHUNT.winnerTeam == TEAM_MILITIA ? "DUCKS WIN" : "HUNTERS WIN", "Use SET HUNTER button in Pause menu to become a hunter.", 6)
 		} else
 		{
-			Message( player, "APEX 打鸭子", "Made by @CafeFPS & Darkes#8647", 4 )
+			Message( player, "APEX DUCK HUNT", "Made by @CafeFPS & Darkes#8647", 4 )
 		}
 		
 		_HandleRespawn(player)
@@ -1016,7 +1018,7 @@ void function DucksWinTriggerEnter( entity trigger , entity player )
 		EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 		EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
 		
-		Message(player, "杀死猎人", "", 1)
+		Message(player, "KILL THE HUNTERS", "", 1)
 		
 		player.p.wasTeleported = true //to change trigger behavior
 		
@@ -1052,7 +1054,7 @@ void function LastFloorEnter( entity trigger , entity player )
 	{
 		StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), player.GetOrigin(), Vector(0,0,0) )
 
-		Message(player, "最后一层检查点", "", 1)
+		Message(player, "Last floor checkpoint", "", 1)
 		
 		foreach( sPlayer in GetPlayerArray() )
 		{

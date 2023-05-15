@@ -1136,7 +1136,7 @@ void function _OnPlayerConnected(entity player)
 
     if( !IsAlive(player) )
         _HandleRespawn(player)
-
+	
     switch ( GetGameState() )
     {
     case eGameState.WaitingForPlayers:

@@ -560,6 +560,8 @@ void function _OnPlayerConnected(entity player)
 	if(!GetCurrentPlaylistVarBool( "flowstate_hackersVsPros", false ))
 		thread __HighPingCheck( player )
 	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
 	if( is1v1EnabledAndAllowed() )
 	{
 		void functionref() soloModefixDelayStart1 = void function() : (player) {
@@ -616,7 +618,8 @@ void function isChineseServer()
 
 void function __HighPingCheck(entity player)
 {
-	wait 12
+	wait 12 //latency is always high when connecting?
+	
     if(!IsValid(player) || IsValid(player) && IsAdmin(player) ) return
 
 	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
@@ -625,17 +628,16 @@ void function __HighPingCheck(entity player)
 		player.ForceStand()
 		HolsterAndDisableWeapons( player )
 
-		Message(player, "FLOWSTATE KICK", "管理员已启动ping值限制: " + FlowState_MaxPingAllowed() + " ms. \n 你的延迟过高: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
-
+		Message(player, "自动踢出", "管理员已启动ping值限制: " + FlowState_MaxPingAllowed() + " ms. \n 你的延迟过高: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
+		
 		wait 3
 
 		if(!IsValid(player)) return
-		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + " -> [High Ping!]")
-		ClientCommand( player, "disconnect" )
+		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
+		KickPlayerById( player.GetPlatformUID() )
 		UpdatePlayerCounts()
 	} else if(GameRules_GetGameMode() == "fs_dm"){
-		Message(player, "FLOWSTATE", "你的延迟: " + (int(player.GetLatency()* 1000) - 40) + " ms."
-		, 5)
+		Message(player, "FLOWSTATE", "你的延迟: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
 	}
 }
 
@@ -2421,7 +2423,6 @@ void function SimpleChampionUI()
 					}
 				}
 			}
-		
 			if( Time() == endTime - 900 )
 			{
 				foreach( player in GetPlayerArray() )

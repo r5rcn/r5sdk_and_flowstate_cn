@@ -137,7 +137,7 @@ void function PlaylistButton_Activated(var button)
 void function SetupPlaylistQuickSearch()
 {
 	array<string> playlists = Servers_GetActivePlaylists()
-	playlists.insert(0, "随机服务器")
+	playlists.insert(0, "Random Server")
 
 	file.m_vPlaylists = playlists
 

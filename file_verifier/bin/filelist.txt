@@ -1235,7 +1235,6 @@ platform/materials/correction/mp_canyonlands_mu2_hdr.raw_hdr
 platform/materials/correction/mp_canyonlands_night_hdr.raw_hdr
 platform/materials/correction/mp_olympus.raw_hdr
 platform/materials/correction/mp_rr_desertlands_hdr.raw_hdr
-platform/materials/correction/mp_rr_desertlands_mu1_hdr.raw_hdr
 platform/materials/correction/outside_ring.raw_hdr
 platform/materials/correction/shell_shock.raw_hdr
 platform/materials/correction/smoke_cloud.raw_hdr

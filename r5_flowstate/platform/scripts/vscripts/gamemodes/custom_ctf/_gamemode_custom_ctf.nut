@@ -1137,6 +1137,8 @@ void function _OnPlayerConnected(entity player)
     if( !IsAlive(player) )
         _HandleRespawn(player)
 	
+	thread Flowstate_InitAFKThreadForPlayer(player)
+	
     switch ( GetGameState() )
     {
     case eGameState.WaitingForPlayers:

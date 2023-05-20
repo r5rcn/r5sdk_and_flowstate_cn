@@ -839,7 +839,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ConnectButtonText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"Connect"
+		"labelText"				"连接服务器"
 		"font"					"Default_27_Outline"
 		"allcaps"				"1"
 		"wide"					"200"

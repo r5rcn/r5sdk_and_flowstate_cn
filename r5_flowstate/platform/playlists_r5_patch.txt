@@ -351,10 +351,10 @@ playlists
 				solo_mode 1
 				
 				visible                                        1
-				name                               "FS AimTrainer"
-				description                        "FS AimTrainer"
-				abbreviation                       "FS AimTrainer"
-				lobbytitle                         "FS AimTrainer"
+				name                               "FS 练枪挑战"
+				description                        "FS 练枪挑战"
+				abbreviation                       "FS 练枪挑战"
+				lobbytitle                         "FS 练枪挑战"
 
 				waiting_for_players_spawning_enabled           1
 				jump_from_plane_enabled                        0
@@ -421,10 +421,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS PropHunt"
-				description                        "FS PropHunt"
-				abbreviation                       "FS PropHunt"
-				lobbytitle                         "FS PropHunt"
+				name                               "FS 躲猫猫"
+				description                        "FS 躲猫猫"
+				abbreviation                       "FS 躲猫猫"
+				lobbytitle                         "FS 躲猫猫"
 				pin_match_type                     survival
 				enable_nessies                     0
 				
@@ -513,10 +513,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS DuckHunt"
-				description                        "FS DuckHunt"
-				abbreviation                       "FS DuckHunt"
-				lobbytitle                         "FS DuckHunt"
+				name                               "FS 打鸭子"
+				description                        "FS 打鸭子"
+				abbreviation                       "FS 打鸭子"
+				lobbytitle                         "FS 打鸭子"
 				pin_match_type                     survival
 				enable_nessies                     0
 
@@ -567,10 +567,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS TDM/FFA"
-				description                        "DM or FFA with multiple settings, customize your own server"
-				abbreviation                       "FS TDM/FFA"
-				lobbytitle                         "FS TDM/FFA"
+				name                               "FS 团队死斗/个人死斗"
+				description                        "具有多种设置的DM或FFA，自定义您自己的服务器"
+				abbreviation                       "FS 团队死斗/个人死斗"
+				lobbytitle                         "FS 团队死斗/个人死斗"
 				pin_match_type                     survival
 				enable_nessies                     0
 				
@@ -718,7 +718,7 @@ playlists
 				visible                            1
 				battlechatter_enabled              1
 				name                               "FS 1v1"
-				description                        "DM or FFA with multiple settings, customize your own server"
+				description                        "具有多种设置的DM或FFA，自定义您自己的服务器"
 				abbreviation                       "FS 1v1"
 				lobbytitle                         "FS 1v1"
 				pin_match_type                     survival
@@ -777,10 +777,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS Movement Gym"
-				description                        "Train your apex movement with custom designed maps"
-				abbreviation                       "FS Movement Gym"
-				lobbytitle                         "FS Movement Gym"
+				name                               "FS 身法训练"
+				description                        "在定制的地图中练习apex的身法"
+				abbreviation                       "FS 身法训练"
+				lobbytitle                         "FS 身法训练"
 				pin_match_type                     survival
 				enable_nessies                     0
 				
@@ -912,10 +912,10 @@ playlists
 				panel_image                                    panel_worlds_edge
 				visible                                        1
 				battlechatter_enabled                          1
-				name                                           "Capture The Flag"
-				description                                    "Two teams each have their own color flag placed in their home base. The objective is to steal the other team's flag and take it to their own base"
-				abbreviation                                   "Capture The Flag"
-				lobbytitle                                     "Capture The Flag"
+				name                                           "夺旗"
+				description                                    "两支小队在各自的基地都有自己的旗帜. 目的是夺走对方的旗帜并将其带到自己的基地"
+				abbreviation                                   "夺旗"
+				lobbytitle                                     "夺旗"
 
 				pin_match_type                                 survival
 				enable_nessies                                 0
@@ -1021,9 +1021,9 @@ playlists
 			{
 				visible                                        0
 				battlechatter_enabled                          1
-				name                                           "Battle Royale"
+				name                                           "大逃杀"
 				description                                    #PL_SURVIVAL_SQUADS_DESC
-				abbreviation                                   "Battle Royale"
+				abbreviation                                   "大逃杀"
 
 				pin_match_type                                 survival
 				enable_nessies                                 0
@@ -1056,7 +1056,7 @@ playlists
 				visible                                        1
 				ui_slot                                        firing_range
 				image                                          firing_range
-				name                                           "Firing Range"
+				name                                           "射击场"
 				description                                    #PL_FIRINGRANGE_DESC
 				video                                          _temp
 
@@ -1168,7 +1168,7 @@ playlists
 		{
 			vars
 			{
-				name                                           "Lobby"
+				name                                           "大厅"
 				visible                                        0
 				menu_fall_ltm                                  1
 
@@ -1249,7 +1249,7 @@ playlists
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和社区制作的独家内容,如技能,游戏模式或地图"
-				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot230529：R5RCN全体成员"
+				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot230529：R5RCN全体"
 			}
 		}
 	}

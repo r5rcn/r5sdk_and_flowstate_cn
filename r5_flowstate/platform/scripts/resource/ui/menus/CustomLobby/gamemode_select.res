@@ -212,7 +212,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             {
                 lockIconEnabled 0
                 modeNameText "自由漫游"
-                modeDescText "在任何地图随便逛逛"
+                modeDescText "在任何地图随便走走"
                 modeImage "rui/menu/maps/mp_rr_desertlands_64k_x_64k"
             }
 

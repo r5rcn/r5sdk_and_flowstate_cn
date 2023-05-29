@@ -179,8 +179,8 @@ void function SetupPlaylistQuickSearch()
 		
 		if(playlists[i + file.pageoffset] == "Random Server")
 		{
-			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeNameText", "Random Server" )
-			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeDescText", "Quickly Join any kind of server" )
+			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeNameText", "随机服务器" )
+			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeDescText", "快速加入任何类型的服务器" )
 			RuiSetImage( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeImage", $"rui/menu/gamemode/ranked_1" )
 		}
 		else

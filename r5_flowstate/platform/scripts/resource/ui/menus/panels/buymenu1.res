@@ -312,7 +312,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"RE-45自动手枪"
+			labelText				"RE-45"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -360,7 +360,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"EVA-8霰弹枪"
+			labelText				"EVA-8"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -408,7 +408,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"獒犬霰弹枪"
+			labelText				"獒犬"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -456,7 +456,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"和平捍卫者霰弹枪"
+			labelText				"和平捍卫者"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -1163,7 +1163,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"激光瞄准镜"
+			labelText				"激光瞄准器"
 			visible                 0
 			zpos 25
 			tall					40

@@ -148,10 +148,10 @@ void function InitSystemPanel( var panel )
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
 	
-	file.SetHunterButtonData[ panel ].label = "SET HUNTER"
+	file.SetHunterButtonData[ panel ].label = "设置猎人"
 	file.SetHunterButtonData[ panel ].activateFunc = SetHunterFunct
 		
-	file.TDM_ChangeWeapons[ panel ].label = "CHANGE WEAPON"
+	file.TDM_ChangeWeapons[ panel ].label = "更换武器"
 	file.TDM_ChangeWeapons[ panel ].activateFunc = OpenWeaponSelector
 	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
@@ -193,7 +193,7 @@ void function InitSystemPanel( var panel )
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
-	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
+	file.ToggleScoreboardFocus[ panel ].label = "切换计分板"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
@@ -302,7 +302,7 @@ void function UpdateSystemPanel( var panel )
 	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
-		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
+		Hud_SetText( dataCenterElem, "R5Reloaded 服务器: " + MyPing() + " ms.")
 }
 
 void function ToggleSetHunter(bool enable)

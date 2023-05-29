@@ -17,7 +17,7 @@ void function OpenFRChallengesMainMenu(int dummiesKilled)
 	CloseAllMenus()
 	ISAIMTRAINER = true
 	PlayerKillsForChallengesUI = dummiesKilled.tostring()
-	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "Dummies killed this session: " + dummiesKilled.tostring())
+	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "本次会话击杀假人数: " + dummiesKilled.tostring())
 	if(PlayerCurrentWeapon == "") 
 		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "当前武器: 辅助手枪")
 	else

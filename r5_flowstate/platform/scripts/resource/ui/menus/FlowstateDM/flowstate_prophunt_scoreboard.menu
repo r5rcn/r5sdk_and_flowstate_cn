@@ -1147,7 +1147,7 @@
 			"tall"						"40"
 			"visible"					"1"
 			"fontHeight"				"30"
-			"labelText"					"HUNTERS SCOREBOARD"
+			"labelText"					"猎人队计分板"
 			"font"						"DefaultBold_41"
 			"allcaps"					"1"
 			"fgcolor_override"			"255 255 255 255"
@@ -1178,7 +1178,7 @@
 		{
 			"classname"				"ScoreboardHuntersUI"
 			"ControlName"			"Label"
-			"labelText"				"Player Name"
+			"labelText"				"玩家名称"
 			"xpos"					"-50"
 			"ypos"					"0"
 			"auto_wide_tocontents"	"1"
@@ -1194,7 +1194,7 @@
 		{
 			"classname"				"ScoreboardHuntersUI"
 			"ControlName"			"Label"
-			"labelText"				"Kills"
+			"labelText"				"击杀数"
 			"xpos"					"-250"
 			"ypos"					"0"
 			"zpos"					"6"

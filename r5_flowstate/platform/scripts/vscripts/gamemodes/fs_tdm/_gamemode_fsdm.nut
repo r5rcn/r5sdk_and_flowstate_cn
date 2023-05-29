@@ -455,7 +455,8 @@ void function _OnPlayerConnected(entity player)
 
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-
+	player.p.lastTgiveUsedTime = Time()
+	
 	if(FlowState_RandomGunsEverydie())
 	    Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)
 	else if (FlowState_Gungame())
@@ -1236,12 +1237,17 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
 	{
 		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		
+		if( weapon.LookupAttachment( "CHARM" ) != 0 )
+			weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
 	}
 	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
 	{
 		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		
+		if( weapon.LookupAttachment( "CHARM" ) != 0 )
+			weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+			
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	}
 	
@@ -1256,18 +1262,15 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 void function WpnAutoReload( entity player )
 {	
 	if(!IsValid(player)) return
+
+	entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 	
-	try
-	{
-		entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+	if(IsValid(primary))
 		primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
+	
+	if(IsValid(sec))
 		sec.SetWeaponPrimaryClipCount(sec.GetWeaponPrimaryClipCountMax())
-	}
-	catch (error)
-	{
-		
-	}
 }
 
 void function WpnAutoReloadOnKill( entity player )
@@ -3602,9 +3605,10 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
     if ( !IsValid(player) || !IsAdmin(player) || args.len() == 0 ) return false
 
     foreach(sPlayer in GetPlayerArray()) {
-        if (sPlayer.GetPlayerName() == args[0]) {
-            Warning("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
-            ClientCommand( sPlayer, "disconnect" )
+        if (sPlayer.GetPlayerName() == args[0]) 
+		{
+			Warning("[Flowstate] -> 正在踢出 " + sPlayer.GetPlayerName() + ":" + sPlayer.GetPlatformUID() + " -> [由管理员!]")
+			KickPlayerById( sPlayer.GetPlatformUID() )
             return true
         }
     }
@@ -3810,7 +3814,12 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 		Message(player, "技能黑名单")
 		return false
 	}
-
+	
+	if( Time() < player.p.lastTgiveUsedTime + FlowState_TgiveDelay() )
+	{
+		Message(player, "更换武器冷却中")
+		return false
+	}
 	entity weapon
 
 	try {
@@ -3819,39 +3828,35 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 			case "p":
 			case "primary":
 				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-				if( IsValid( primary ) ){
+				if( IsValid( primary ) )
 					player.TakeWeaponByEntNow( primary )
-					weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
-				}
+				
+				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
+				
 			break
 			case "s":
 			case "secondary":
 				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-				if( IsValid( secondary ) ) {
+				if( IsValid( secondary ) ) 
 					player.TakeWeaponByEntNow( secondary )
-					weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
-				}
+				
+				weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
 			break
 			case "t":
 			case "tactical":
-				entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-				if( IsValid( tactical ) ) {
-					float oldTacticalChargePercent = float( tactical.GetWeaponPrimaryClipCount()) / float(tactical.GetWeaponPrimaryClipCountMax() )
+				entity tactical = player.GetOffhandWeapon( OFFHAND_LEFT )
+				if ( IsValid( tactical ) )
 					player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-
-					weapon = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
-					entity newTactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-					newTactical.SetWeaponPrimaryClipCount( int( newTactical.GetWeaponPrimaryClipCountMax() * oldTacticalChargePercent ) )
-				}
+					
+				tactical = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
 			break
 			case "u":
 			case "ultimate":
 				entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 				if( IsValid( ultimate ) )
-				{
 					player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-					weapon = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
-				}
+				
+				ultimate = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
 			break
 		}
 	} catch( e420 ) {
@@ -3868,8 +3873,13 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
         }
     }
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() )
+	{
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
-
+		player.ClearFirstDeployForAllWeapons()
+	}
+	
+	player.p.lastTgiveUsedTime = Time()
+	
     return true
 }
 
@@ -4025,7 +4035,7 @@ bool function ClientCommand_BecomePro(entity p, array<string> args)
 	{
 		wait 1
 		if(!IsValid(p)) return
-		Message(p, "HACKERS VS PROS", "You're a Pro")
+		Message(p, "外挂 VS 职业哥", "你是职业哥")
 	}()
 	return true
 }

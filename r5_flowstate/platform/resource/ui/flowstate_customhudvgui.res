@@ -273,7 +273,7 @@ Resource/UI/flowstate_customhudvgui.res
 		visible					0
 		enabled 				0
 		fontHeight				30
-		labelText				"PROPS ARE HIDING 30"
+		labelText				"躲藏队正在躲藏 30"
 		font					"DefaultBold_41"
 		allcaps					1
 		fgcolor_override		"255 255 255 255"
@@ -346,7 +346,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				28
-			labelText				"PROP CONTROLS"
+			labelText				"躲藏队控制"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 79 161 255"
@@ -367,7 +367,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				20
-			labelText				"ROUND ENDS IN 00:00"
+			labelText				"回合即将开始 00:00"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -388,7 +388,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				23
-			labelText				"NOISE IN 30"
+			labelText				"噪音剩余 30"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

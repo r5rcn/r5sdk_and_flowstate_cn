@@ -216,7 +216,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"L-STAR能量机枪"
+			labelText				"L-STAR"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"

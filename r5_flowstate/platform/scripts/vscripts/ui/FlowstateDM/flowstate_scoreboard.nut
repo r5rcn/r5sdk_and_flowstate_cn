@@ -196,7 +196,7 @@ void function UpdateVotedLocation_FSDMTied(string map)
 {
 	SetVoteHudElems(false, true, true, true, false, false, false, true, true, false, false, false)
 
-	Hud_SetText( Hud_GetChild( file.menu, "TimerText" ), "从绑定位置中随机选择一个位置")
+	Hud_SetText( Hud_GetChild( file.menu, "TimerText" ), "从票数相等的位置中随机选择")
 	Hud_SetText( Hud_GetChild( file.menu, "TimerText2" ), "票数相等!")
 	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), map)
 }

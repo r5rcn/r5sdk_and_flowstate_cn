@@ -38,12 +38,12 @@ int function GetAfkState( entity player )
 
 void function AfkWarning( entity player )
 {
-    Message( player, "AFK WARNING", "\n You're afk, server will kick you if you don't move in the next " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " seconds." )
+    Message( player, "挂机警告", "\n 你已进入挂机状态, 如果你在接下来 " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " 秒内不移动 将会被服务器踢出" )
 }
 
 void function CheckAfkKickThread(entity player)
 {
-	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName )
+	printt("Flowstate - AFK thread initialized for " + player.GetPlayerName() )
 	
 	while( true )
 	{

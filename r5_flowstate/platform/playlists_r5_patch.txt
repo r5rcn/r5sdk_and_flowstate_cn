@@ -513,10 +513,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS 打鸭子"
-				description                        "FS 打鸭子"
-				abbreviation                       "FS 打鸭子"
-				lobbytitle                         "FS 打鸭子"
+				name                               "FS DuckHunt"
+				description                        "FS DuckHunt"
+				abbreviation                       "FS DuckHunt"
+				lobbytitle                         "FS DuckHunt"
 				pin_match_type                     survival
 				enable_nessies                     0
 
@@ -1248,8 +1248,8 @@ playlists
                 "DISCONNECT_SEND_OVERFLOW"            "Connection to server overflowed (code:dam)."
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
-				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和社区制作的独家内容,如技能,游戏模式或地图"
-				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot230529：R5RCN全体"
+				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和\n社区制作的独家内容,\n如技能,游戏模式或地图"
+				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot [230529]"
 			}
 		}
 	}

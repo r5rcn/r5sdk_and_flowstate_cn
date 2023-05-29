@@ -247,7 +247,7 @@ void function R5RPlay_SetSelectedPlaylist(int quickPlayType)
 			quickplay.quickPlayType = JoinType.QuickServerJoin
 
 			asset image = $"rui/menu/gamemode/play_apex"
-			if(g_SelectedPlaylist == "Random Server")
+			if(g_SelectedPlaylist == "随机服务器")
 				image = $"rui/menu/gamemode/ranked_1"
 
 			SetGamemodeButtonRUI(GetUIPlaylistName(g_SelectedPlaylist), "未准备", true, image)
@@ -448,7 +448,7 @@ void function FindServer(bool refresh = false)
 		if ( file.m_vServerList[i].svCurrentPlayers == file.m_vServerList[i].svMaxPlayers )
 			continue;
 
-		if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "Random Server")
+		if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "随机服务器")
 			continue;
 
 		// Server fits our requirements, add it to the list
@@ -463,7 +463,7 @@ void function FindServer(bool refresh = false)
 			if ( file.m_vServerList[i].svCurrentPlayers == file.m_vServerList[i].svMaxPlayers )
 				continue;
 
-			if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "Random Server")
+			if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "随机服务器")
 				continue;
 
 			// Server fits our requirements, add it to the list

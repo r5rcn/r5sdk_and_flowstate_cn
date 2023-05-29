@@ -70,6 +70,7 @@ materials/correction/mp_canyonlands_mu2_hdr.raw_hdr
 materials/correction/mp_canyonlands_night_hdr.raw_hdr
 materials/correction/mp_olympus.raw_hdr
 materials/correction/mp_rr_desertlands_hdr.raw_hdr
+materials/correction/mp_rr_desertlands_mu1_hdr.raw_hdr
 materials/correction/outside_ring.raw_hdr
 materials/correction/shell_shock.raw_hdr
 materials/correction/smoke_cloud.raw_hdr
@@ -1969,6 +1970,7 @@ platform/scripts/aisettings/classes.txt
 platform/scripts/aisettings/location_scoring_criteria.rson
 platform/scripts/aisettings/npc_dropship.txt
 platform/scripts/aisettings/npc_dropship_respawn.txt
+platform/scripts/aisettings/npc_dummie_bangalore.txt
 platform/scripts/aisettings/npc_dummie_caustic.txt
 platform/scripts/aisettings/npc_dummie_caustic_training.txt
 platform/scripts/aisettings/npc_dummie_combat.txt
@@ -1977,6 +1979,7 @@ platform/scripts/aisettings/npc_dummie_loba.txt
 platform/scripts/aisettings/npc_dummie_loba_training.txt
 platform/scripts/aisettings/npc_dummie_mirage.txt
 platform/scripts/aisettings/npc_dummie_mirage_training.txt
+platform/scripts/aisettings/npc_dummie_pathfinder.txt
 platform/scripts/aisettings/npc_dummie_wraith.txt
 platform/scripts/aisettings/npc_frag_drone.txt
 platform/scripts/aisettings/npc_frag_drone_throwable.txt
@@ -2470,12 +2473,12 @@ platform/scripts/vscripts/conversation/_spectre_chatter_mp.gnut
 platform/scripts/vscripts/conversation/_survival_commentary.gnut
 platform/scripts/vscripts/custom_maps/_custom_deafps_maps.nut
 platform/scripts/vscripts/custom_maps/_custom_doormap.nut
+platform/scripts/vscripts/custom_maps/_custom_grapplemap.nut
 platform/scripts/vscripts/custom_maps/_custom_maps_1.nut
 platform/scripts/vscripts/custom_maps/_custom_maps_2.nut
 platform/scripts/vscripts/custom_maps/_custom_maps_3.nut
 platform/scripts/vscripts/custom_maps/_custom_maps_4.nut
 platform/scripts/vscripts/custom_maps/_custom_movement_maps.nut
-platform/scripts/vscripts/custom_maps/_custom_grapplemap.nut
 platform/scripts/vscripts/dev/_devstats.gnut
 platform/scripts/vscripts/freelance/_freelance.gnut
 platform/scripts/vscripts/gamemodes/cl_gamemode_survival.nut
@@ -2533,7 +2536,6 @@ platform/scripts/vscripts/lobby/lobbyvm/sh_lobbyvm.nut
 platform/scripts/vscripts/lobby/lobbyvm/_lobbyvm.nut
 platform/scripts/vscripts/melee/sh_melee.gnut
 platform/scripts/vscripts/melee/sh_melee_synced.gnut
-platform/scripts/vscripts/mp_antiafk.nut
 platform/scripts/vscripts/mp/cl_jump_pads.gnut
 platform/scripts/vscripts/mp/cl_lasermesh.gnut
 platform/scripts/vscripts/mp/cl_pintelemetry.gnut
@@ -2565,6 +2567,7 @@ platform/scripts/vscripts/mp/sh_weapon_inspect.gnut
 platform/scripts/vscripts/mp/spawn.nut
 platform/scripts/vscripts/mp/_ai_mp.gnut
 platform/scripts/vscripts/mp/_ai_superspectre.nut
+platform/scripts/vscripts/mp/_antiafk.nut
 platform/scripts/vscripts/mp/_base_cmds.gnut
 platform/scripts/vscripts/mp/_base_gametype.gnut
 platform/scripts/vscripts/mp/_base_gametype_mp.gnut
@@ -2583,6 +2586,7 @@ platform/scripts/vscripts/mp/_loot_ticks.nut
 platform/scripts/vscripts/mp/_match_preferences.gnut
 platform/scripts/vscripts/mp/_mobility_experiments.gnut
 platform/scripts/vscripts/mp/_model_viewer.nut
+platform/scripts/vscripts/mp/_movement_recorder.nut
 platform/scripts/vscripts/mp/_music.gnut
 platform/scripts/vscripts/mp/_playlist.gnut
 platform/scripts/vscripts/mp/_score.nut
@@ -2639,6 +2643,7 @@ platform/scripts/vscripts/pilot/cl_pilot_passive_adrenaline.gnut
 platform/scripts/vscripts/pilot/cl_pilot_tracking_vision.gnut
 platform/scripts/vscripts/pilot/sh_pilot_gun_shield.gnut
 platform/scripts/vscripts/pilot/sh_pilot_leeching.gnut
+platform/scripts/vscripts/pilot/sh_pilot_passive_adrenaline.gnut
 platform/scripts/vscripts/pilot/sh_pilot_passive_voices.gnut
 platform/scripts/vscripts/pilot/sh_pilot_tracking_vision.gnut
 platform/scripts/vscripts/pilot/_leeching.gnut

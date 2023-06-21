@@ -302,7 +302,19 @@ void function UpdateSystemPanel( var panel )
 	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
-		Hud_SetText( dataCenterElem, "R5Reloaded 服务器: " + MyPing() + " ms.")
+	{
+		string hostname = GetConVarString("pylon_matchmaking_hostname")
+		string datacenterName = ""
+
+		if (hostname == "ms.r5reloaded.com")
+			datacenterName = "R5reloaded"
+		else if (hostname == "local.test")
+			datacenterName = "R5reloaded CN"
+		else
+			datacenterName = "Other"
+
+		Hud_SetText( dataCenterElem, datacenterName + "服务器: " + MyPing() + " ms.")
+	}
 }
 
 void function ToggleSetHunter(bool enable)

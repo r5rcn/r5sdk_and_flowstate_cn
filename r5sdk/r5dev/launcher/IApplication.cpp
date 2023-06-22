@@ -103,7 +103,7 @@ bool CModAppSystemGroup::StaticCreate(CModAppSystemGroup* pModAppSystemGroup)
 	g_pFactory->AddFactory(FACTORY_INTERFACE_VERSION, g_pFactory);
 	g_pFactory->AddFactory(INTERFACEVERSION_PLUGINSYSTEM, g_pPluginSystem);
 
-	//InitPluginSystem(pModAppSystemGroup);
+	InitPluginSystem(pModAppSystemGroup);// ÐÞ¸Ä
 	//CALL_PLUGIN_CALLBACKS(g_pPluginSystem->GetCreateCallbacks(), pModAppSystemGroup);
 
 	g_pDebugOverlay = g_pFactory->GetFactoryPtr(VDEBUG_OVERLAY_INTERFACE_VERSION, false).RCast<CIVDebugOverlay*>();

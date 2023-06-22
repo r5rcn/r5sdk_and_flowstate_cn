@@ -31,21 +31,9 @@ void CPluginSystem::PluginSystem_Init()
 				path.has_extension() &&
 				path.extension().compare(".dll") == 0)
 			{
-				/* 不检测重复
-				bool addInstance = true;
-				for (auto& inst : pluginInstances)
-				{
-					if (inst.m_svPluginFullPath.compare(pathString) == 0)
-						addInstance = false;
-				}
-				*/
-
-				//if (addInstance)
-				//{
-					PluginInstance_t plugInst = PluginInstance_t(path.filename().u8string(), pathString + path.filename().u8string());
-					pluginInstances.push_back(plugInst);
-					DevMsg(eDLL_T::ENGINE, "Added plugin: %s\n", plugInst.m_svPluginFullPath.c_str());
-				//}
+				PluginInstance_t plugInst = PluginInstance_t(path.filename().u8string(), pathString + path.filename().u8string());
+				pluginInstances.push_back(plugInst);
+				DevMsg(eDLL_T::ENGINE, "Added plugin: %s\n", plugInst.m_svPluginFullPath.c_str());
 			}
 		}
 	}
@@ -67,15 +55,6 @@ bool CPluginSystem::LoadPluginInstance(PluginInstance_t& pluginInst)
 		return false;
 
 	CModule pluginModule = CModule(pluginInst.m_svPluginName);
-
-	/* 用不到
-	// Pass selfModule here on load function, we have to do this because local listen/dedi/client dll's are called different, refer to a comment on the pluginsdk.
-	auto onLoadFn = pluginModule.GetExportedFunction("PluginInstance_OnLoad").RCast<PluginInstance_t::OnLoad>();
-	Assert(onLoadFn);
-
-	if (!onLoadFn(pluginInst.m_svPluginName.c_str()))
-		return false;
-	*/
 
 	pluginInst.m_hModule = pluginModule;
 

@@ -308,10 +308,10 @@ void function UpdateSystemPanel( var panel )
 
 		if (hostname == "ms.r5reloaded.com")
 			datacenterName = "R5reloaded"
-		else if (hostname == "local.test")
-			datacenterName = "R5reloaded CN"
+		else if (hostname == "ms.cnr5apex.cn")
+			datacenterName = "R5reloaded CN 北京"
 		else
-			datacenterName = "Other"
+			datacenterName = "第三方"
 
 		Hud_SetText( dataCenterElem, datacenterName + "服务器: " + MyPing() + " ms.")
 	}

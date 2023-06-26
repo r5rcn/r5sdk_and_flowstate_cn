@@ -34,10 +34,10 @@ void function UpdateDataCenterFooter( InputDef footerData )
 
 	if (hostname == "ms.r5reloaded.com")
 		datacenterName = "R5reloaded"
-	else if (hostname == "local.test")
-		datacenterName = "R5reloaded CN"
+	else if (hostname == "ms.cnr5apex.cn")
+		datacenterName = "R5reloaded CN 北京"
 	else
-		datacenterName = "Other"
+		datacenterName = "第三方"
 
 	label = "`1%[STICK2|TAB]%`0"+Localize( "#DATA_CENTERS"," " )+": "+datacenterName
 	footerData.clickable = true

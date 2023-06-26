@@ -56,7 +56,8 @@ void function InitDataCenterDialogMenu( var newMenuArg )
 	var menu = GetMenu( "DataCenterDialog" )
 
 	InitDialogCommon( menu )
-	AddEventHandlerToButton( menu, "ListDataCenters", UIE_CLICK, OnDataCenterButton_Activate )
+	AddEventHandlerToButton( menu, "DataCenterButtonGlobal", UIE_CLICK, OnDataCenterButtonGlobal_Activate )
+	AddEventHandlerToButton( menu, "DataCenterButtonChina", UIE_CLICK, OnDataCenterButtonChina_Activate )
 }
 
 
@@ -73,6 +74,21 @@ void function InitConnectingDialog( var newMenuArg )
 	uiGlobal.ConfirmMenuErrorCode = Hud_GetChild( menu, "LblErrorCode" )
 }
 
+void function OnDataCenterButtonGlobal_Activate( var button )
+{
+	printt( "Chosed ms.r5reloaded.com" )
+	EmitUISound( "ui_menu_accept" )
+	SetConVarString("pylon_matchmaking_hostname","ms.r5reloaded.com")
+	CloseActiveMenu()
+}
+
+void function OnDataCenterButtonChina_Activate( var button )
+{
+	printt( "Chosed local.test" )
+	EmitUISound( "ui_menu_accept" )
+	SetConVarString("pylon_matchmaking_hostname","local.test")
+	CloseActiveMenu()
+}
 
 void function OnConnectingDialog_NavigateBack()
 {

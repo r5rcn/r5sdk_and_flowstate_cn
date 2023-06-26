@@ -27,8 +27,21 @@ void function InitR5RMainMenuPanel( var panel )
 
 void function UpdateDataCenterFooter( InputDef footerData )
 {
-	string label = "数据中心: ms.r5reloaded.com"
-	footerData.clickable = false
+
+	string label = "#DATACENTER_DOWNLOADING"
+	string hostname = GetConVarString("pylon_matchmaking_hostname")
+	string datacenterName = ""
+
+	if (hostname == "ms.r5reloaded.com")
+		datacenterName = "R5reloaded"
+	else if (hostname == "ms.cnr5apex.cn")
+		datacenterName = "R5reloaded CN 北京"
+	else
+		datacenterName = "第三方"
+
+	label = "`1%[STICK2|TAB]%`0"+Localize( "#DATA_CENTERS"," " )+": "+datacenterName
+	footerData.clickable = true
+
 
 	var elem = footerData.vguiElem
 	Hud_SetText( elem, label )

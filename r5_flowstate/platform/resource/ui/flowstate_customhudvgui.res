@@ -388,7 +388,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				23
-			labelText				"噪音剩余 30"
+			labelText				"下一次发出噪音 30"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

@@ -202,7 +202,7 @@
 		{
 			"classname"					"ScoreboardPropsUI"
 			"ControlName"			"Label"
-			"labelText"				"幸存者"
+			"labelText"				"幸存次数"
 			"xpos"					"-250"
 			"ypos"					"0"
 			"zpos"					"6"

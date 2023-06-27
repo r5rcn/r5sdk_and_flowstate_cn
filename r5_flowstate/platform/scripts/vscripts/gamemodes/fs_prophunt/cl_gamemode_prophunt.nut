@@ -392,15 +392,15 @@ void function UpdateWhistleTimer(bool fromChangedResolution = false)
 		if(time == 0)
 		{
 			player.ClientCommand("EmitWhistle")
-			text = "制造噪音"
+			text = "发出噪音"
 			
 		}else if(time == -1)
 		{
 			time = PROPHUNT_WHISTLE_TIMER
-			text = "噪音剩余 " + time.tostring()
+			text = "下一次发出噪音剩余 " + time.tostring()
 		} else
 		{
-			text = "噪音剩余 " + time.tostring()
+			text = "下一次发出噪音剩余 " + time.tostring()
 		}
 		
         Hud_SetText( HudElement( "WhistleTimer"), text)

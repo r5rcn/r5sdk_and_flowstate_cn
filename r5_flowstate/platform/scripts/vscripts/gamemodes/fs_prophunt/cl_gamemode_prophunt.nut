@@ -139,7 +139,7 @@ void function PROPHUNT_EnableControlsUI(bool isAttacker, float starttime)
 		
 		HudElement( "ScreenBlur2" ).SetSize( 238*screenSize[0]/1760, 275*screenSize[1]/990 )		
 		HudElement( "ScreenBlur1" ).SetPos( -35, -35 )
-		Hud_SetText( HudElement( "RoundTimer"), "正在等待猎人队")
+		Hud_SetText( HudElement( "RoundTimer"), "正在等待猎人")
 		Hud_SetText( HudElement( "PropControlsTitle"), "躲藏者控制键位")
 		GetLocalClientPlayer().p.isRoundTimerEnabled = false
 	} else

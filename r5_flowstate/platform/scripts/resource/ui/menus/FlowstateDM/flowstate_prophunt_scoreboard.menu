@@ -1147,7 +1147,7 @@
 			"tall"						"40"
 			"visible"					"1"
 			"fontHeight"				"30"
-			"labelText"					"猎人队计分板"
+			"labelText"					"猎人计分板"
 			"font"						"DefaultBold_41"
 			"allcaps"					"1"
 			"fgcolor_override"			"255 255 255 255"

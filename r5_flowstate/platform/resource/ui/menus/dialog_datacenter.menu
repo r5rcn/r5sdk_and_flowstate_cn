@@ -69,7 +69,7 @@ resource/ui/menus/dialog_datacenter.menu
 			"rui"					"ui/generic_friend_button.rpak"
 			ruiArgs
 			{
-				buttonText "R5reloaded"
+				buttonText "R5Reloaded"
 			}
 			wide					636
 			tall					35
@@ -93,7 +93,7 @@ resource/ui/menus/dialog_datacenter.menu
 			"rui"					"ui/generic_friend_button.rpak"
 			ruiArgs
 			{
-				buttonText "R5reloaded CN 北京"
+				buttonText "R5Reloaded CN 北京"
 			}
 			wide					636
 			tall					35

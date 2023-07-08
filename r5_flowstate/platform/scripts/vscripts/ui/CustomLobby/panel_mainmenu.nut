@@ -33,9 +33,9 @@ void function UpdateDataCenterFooter( InputDef footerData )
 	string datacenterName = ""
 
 	if (hostname == "ms.r5reloaded.com")
-		datacenterName = "R5reloaded"
+		datacenterName = "R5Reloaded"
 	else if (hostname == "ms.cnr5apex.cn")
-		datacenterName = "R5reloaded CN 北京"
+		datacenterName = "R5Reloaded CN 北京"
 	else
 		datacenterName = "第三方"
 

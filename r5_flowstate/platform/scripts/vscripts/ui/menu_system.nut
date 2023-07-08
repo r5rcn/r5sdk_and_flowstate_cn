@@ -326,9 +326,9 @@ void function UpdateSystemPanel( var panel )
 		string datacenterName = ""
 
 		if (hostname == "ms.r5reloaded.com")
-			datacenterName = "R5reloaded"
+			datacenterName = "R5Reloaded"
 		else if (hostname == "ms.cnr5apex.cn")
-			datacenterName = "R5reloaded CN"
+			datacenterName = "R5Reloaded CN"
 		else
 			datacenterName = "第三方"
 

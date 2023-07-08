@@ -84,9 +84,9 @@ void function OnDataCenterButtonGlobal_Activate( var button )
 
 void function OnDataCenterButtonChina_Activate( var button )
 {
-	printt( "Chosed local.test" )
+	printt( "Chosed ms.cnr5apex.cn" )
 	EmitUISound( "ui_menu_accept" )
-	SetConVarString("pylon_matchmaking_hostname","local.test")
+	SetConVarString("pylon_matchmaking_hostname","ms.cnr5apex.cn")
 	CloseActiveMenu()
 }
 

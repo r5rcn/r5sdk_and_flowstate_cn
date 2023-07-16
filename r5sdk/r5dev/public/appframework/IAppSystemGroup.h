@@ -1,7 +1,7 @@
 #ifndef APPSYSTEMGROUP_H
 #define APPSYSTEMGROUP_H
 
-#include "public/interface.h"
+#include "tier1/interface.h"
 #include "tier1/utlvector.h"
 #include "filesystem/filesystem.h"
 
@@ -94,7 +94,7 @@ protected:
 static_assert(sizeof(CAppSystemGroup) == 0xA8);
 
 inline CMemory p_CAppSystemGroup_Destroy;
-inline auto CAppSystemGroup_Destroy = p_CAppSystemGroup_Destroy.RCast<void(*)(CAppSystemGroup* pAppSystemGroup)>();
+inline void(*CAppSystemGroup_Destroy)(CAppSystemGroup* pAppSystemGroup);
 
 ///////////////////////////////////////////////////////////////////////////////
 class VAppSystemGroup : public IDetour

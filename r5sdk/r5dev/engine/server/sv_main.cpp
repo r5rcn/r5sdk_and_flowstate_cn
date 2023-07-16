@@ -78,7 +78,7 @@ void SV_CheckForBan(const BannedVec_t* pBannedVec /*= nullptr*/)
 
 	for (int c = 0; c < g_ServerGlobalVariables->m_nMaxClients; c++) // Loop through all possible client instances.
 	{
-		CClient* pClient = g_pClient->GetClient(c);
+		CClient* pClient = g_pServer->GetClient(c);
 		if (!pClient)
 			continue;
 
@@ -95,10 +95,15 @@ void SV_CheckForBan(const BannedVec_t* pBannedVec /*= nullptr*/)
 		const char* szIPAddr = pNetChan->GetAddress(true);
 		const uint64_t nNucleusID = pClient->GetNucleusID();
 
+		// If no banned list was provided, build one with all clients
+		// on the server. This will be used for bulk checking so live
+		// bans could be performed, as this function is called periodically.
 		if (!pBannedVec)
 			bannedVec.push_back(std::make_pair(string(szIPAddr), nNucleusID));
 		else
 		{
+			// Check if current client is within provided banned list, and
+			// prune if so...
 			for (auto& it : *pBannedVec)
 			{
 				if (it.second == pClient->GetNucleusID())
@@ -157,7 +162,7 @@ void SV_BroadcastVoiceData(CClient* cl, int nBytes, char* data)
 
 	for (int i = 0; i < g_ServerGlobalVariables->m_nMaxClients; i++)
 	{
-		CClient* pClient = g_pClient->GetClient(i);
+		CClient* pClient = g_pServer->GetClient(i);
 
 		if (!pClient)
 			continue;
@@ -184,7 +189,7 @@ void SV_BroadcastVoiceData(CClient* cl, int nBytes, char* data)
 
 		// if voice stream has enough space for new data
 		if (pNetChan->GetStreamVoice().GetNumBitsLeft() >= 8 * nBytes + 96)
-			pClient->SendNetMsg(&voiceData, false, false, true);
+			pClient->SendNetMsgEx(&voiceData, false, false, true);
 	}
 }
 

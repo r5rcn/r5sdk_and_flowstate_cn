@@ -1,5 +1,4 @@
 #pragma once
-#include <launcher/IApplication.h>
 #include <public/iengine.h>
 
 class CEngine : public IEngine
@@ -23,7 +22,7 @@ private:
 
 /* ==== CENGINE ======================================================================================================================================================= */
 inline CMemory p_CEngine_Frame;
-inline auto v_CEngine_Frame = p_CEngine_Frame.RCast<bool(*)(CEngine* thisp)>();
+inline bool(*v_CEngine_Frame)(CEngine* thisp);
 
 extern CEngine* g_pEngine;
 

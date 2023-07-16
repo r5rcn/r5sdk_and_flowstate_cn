@@ -1,11 +1,10 @@
 #include "core/stdafx.h"
-#include "core/logdef.h"
 #include "tier1/cvar.h"
 #include "filesystem/basefilesystem.h"
 #include "filesystem/filesystem.h"
-#ifndef DEDICATED
-#include "gameui/IConsole.h"
-#endif // !DEDICATED
+
+#include "bspfile.h"
+#include "engine/modelloader.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: prints the output of the filesystem based on the warning level
@@ -17,7 +16,7 @@ void CBaseFileSystem::Warning(CBaseFileSystem* pFileSystem, FileWarningLevel_t l
 {
 	if (level >= FileWarningLevel_t::FILESYSTEM_WARNING_REPORTALLACCESSES)
 	{
-		// Logging reads is very verbose! Explicitly toggle..
+		// Logging reads are very verbose! Explicitly toggle..
 		if (!fs_showAllReads->GetBool())
 		{
 			return;
@@ -39,29 +38,23 @@ bool CBaseFileSystem::VCheckDisk(const char* pszFilePath)
 {
 	// Only load material files from the disk if the mode isn't zero,
 	// use -novpk to load valve materials from the disk.
-	if (FileSystem()->CheckVPKMode(0) && strstr(pszFilePath, ".vmt"))
+	if (FileSystem()->CheckVPKMode(0) && V_strstr(pszFilePath, ".vmt"))
 	{
 		return false;
 	}
 
-	std::string svFilePath = ConvertToWinPath(pszFilePath);
-	if (svFilePath.find("\\*\\") != string::npos)
-	{
-		// Erase '//*/'.
-		svFilePath.erase(0, 4);
-	}
-
-	fs::path filePath(svFilePath);
-	if (filePath.is_absolute())
+	if (V_IsAbsolutePath(pszFilePath))
 	{
 		// Skip absolute file paths.
 		return false;
 	}
 
-	// TODO: obtain 'mod' SearchPath's instead.
-	svFilePath.insert(0, "platform\\");
+	CUtlString filePath;
+	filePath.Format("platform/%s", pszFilePath);
+	filePath.FixSlashes();
+	filePath = filePath.Replace("\\*\\", "");
 
-	if (::FileExists(svFilePath) /*|| ::FileExists(pszFilePath)*/)
+	if (::FileExists(filePath.Get()))
 	{
 		return true;
 	}
@@ -91,17 +84,54 @@ FileHandle_t CBaseFileSystem::VReadFromVPK(CBaseFileSystem* pFileSystem, FileHan
 // Purpose: loads files from cache
 // Input  : *this - 
 //			*pszFilePath - 
-//			*pResults - 
+//			*pCache - 
 // Output : true if file exists, false otherwise
 //---------------------------------------------------------------------------------
-bool CBaseFileSystem::VReadFromCache(CBaseFileSystem* pFileSystem, char* pszFilePath, void* pResults)
+bool CBaseFileSystem::VReadFromCache(CBaseFileSystem* pFileSystem, char* pszFilePath, FileSystemCache* pCache)
 {
 	if (VCheckDisk(pszFilePath))
 	{
 		return false;
 	}
 
-	return v_CBaseFileSystem_LoadFromCache(pFileSystem, pszFilePath, pResults);
+	bool result = v_CBaseFileSystem_LoadFromCache(pFileSystem, pszFilePath, pCache);
+	return result;
+}
+
+//---------------------------------------------------------------------------------
+// Purpose: mounts a BSP packfile lump as search path
+// Input  : *this - 
+//			*pPath - 
+//			*pPathID - 
+//			*addType - 
+//---------------------------------------------------------------------------------
+void CBaseFileSystem::VAddMapPackFile(CBaseFileSystem* pFileSystem, const char* pPath, const char* pPathID, SearchPathAdd_t addType)
+{
+	// Since the mounting of the packfile lump is performed before the BSP header
+	// is loaded and parsed, we have to do it here. The internal 'AddMapPackFile'
+	// function has been patched to load the fields in the global 's_MapHeader'
+	// field, instead of the one that is getting initialized (see r5apex.patch).
+	if (s_MapHeader->ident != IDBSPHEADER || s_MapHeader->version != BSPVERSION)
+	{
+		FileHandle_t hBspFile = FileSystem()->Open(pPath, "rb", pPathID);
+		if (hBspFile != FILESYSTEM_INVALID_HANDLE)
+		{
+			memset(s_MapHeader, '\0', sizeof(BSPHeader_t));
+			FileSystem()->Read(s_MapHeader, sizeof(BSPHeader_t), hBspFile);
+		}
+	}
+
+	// If a lump exists, replace the path pointer with that of the lump so that
+	// the internal function loads this instead.
+	char lumpPathBuf[MAX_PATH];
+	V_snprintf(lumpPathBuf, sizeof(lumpPathBuf), "%s.%.4X.bsp_lump", pPath, LUMP_PAKFILE);
+
+	if (FileSystem()->FileExists(lumpPathBuf, pPathID))
+	{
+		pPath = lumpPathBuf;
+	}
+
+	v_CBaseFileSystem_AddMapPackFile(pFileSystem, pPath, pPathID, addType);
 }
 
 //---------------------------------------------------------------------------------
@@ -154,9 +184,9 @@ const char* CBaseFileSystem::VUnmountVPKFile(CBaseFileSystem* pFileSystem, const
 // Input  : *pFile - 
 // Output : string
 //---------------------------------------------------------------------------------
-string CBaseFileSystem::ReadString(FileHandle_t pFile)
+CUtlString CBaseFileSystem::ReadString(FileHandle_t pFile)
 {
-	string svString;
+	CUtlString result;
 	char c = '\0';
 
 	do
@@ -164,11 +194,11 @@ string CBaseFileSystem::ReadString(FileHandle_t pFile)
 		Read(&c, sizeof(char), pFile);
 
 		if (c)
-			svString += c;
+			result += c;
 
 	} while (c);
 
-	return svString;
+	return result;
 }
 
 void VBaseFileSystem::Attach() const
@@ -176,6 +206,7 @@ void VBaseFileSystem::Attach() const
 	DetourAttach((LPVOID*)&v_CBaseFileSystem_Warning, &CBaseFileSystem::Warning);
 	DetourAttach((LPVOID*)&v_CBaseFileSystem_LoadFromVPK, &CBaseFileSystem::VReadFromVPK);
 	DetourAttach((LPVOID*)&v_CBaseFileSystem_LoadFromCache, &CBaseFileSystem::VReadFromCache);
+	DetourAttach((LPVOID*)&v_CBaseFileSystem_AddMapPackFile, &CBaseFileSystem::VAddMapPackFile);
 	DetourAttach((LPVOID*)&v_CBaseFileSystem_MountVPKFile, &CBaseFileSystem::VMountVPKFile);
 	DetourAttach((LPVOID*)&v_CBaseFileSystem_UnmountVPKFile, &CBaseFileSystem::VUnmountVPKFile);
 }
@@ -185,6 +216,7 @@ void VBaseFileSystem::Detach() const
 	DetourDetach((LPVOID*)&v_CBaseFileSystem_Warning, &CBaseFileSystem::Warning);
 	DetourDetach((LPVOID*)&v_CBaseFileSystem_LoadFromVPK, &CBaseFileSystem::VReadFromVPK);
 	DetourDetach((LPVOID*)&v_CBaseFileSystem_LoadFromCache, &CBaseFileSystem::VReadFromCache);
+	DetourDetach((LPVOID*)&v_CBaseFileSystem_AddMapPackFile, &CBaseFileSystem::VAddMapPackFile);
 	DetourDetach((LPVOID*)&v_CBaseFileSystem_MountVPKFile, &CBaseFileSystem::VMountVPKFile);
 	DetourDetach((LPVOID*)&v_CBaseFileSystem_UnmountVPKFile, &CBaseFileSystem::VUnmountVPKFile);
 }

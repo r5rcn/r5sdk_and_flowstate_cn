@@ -5,7 +5,7 @@
 #include "engine/networkstringtable.h"
 #include "public/iserver.h"
 #ifndef CLIENT_DLL
-#include "server/vengineserver_impl.h"
+#include "vengineserver_impl.h"
 #endif // !CLIENT_DLL
 
 enum class server_state_t
@@ -34,14 +34,21 @@ public:
 	int GetNumHumanPlayers(void) const;
 	int GetNumFakeClients(void) const;
 	int GetNumClients(void) const;
-	const char* GetMapName(void) const { return m_szMapname; }
-	const char* GetMapGroupName(void) const { return m_szMapGroupName; }
-	int GetNumClasses(void) const { return m_nServerClasses; }
-	int GetClassBits(void) const { return m_nServerClassBits; }
-	float GetCPUUsage(void) const { return m_fCPUPercent; }
-	bool IsActive(void) const { return m_State >= server_state_t::ss_active; }
-	bool IsLoading(void) const { return m_State == server_state_t::ss_loading; }
-	bool IsDedicated(void) const { return m_bIsDedicated; }
+
+	inline const char* GetMapName(void) const { return m_szMapname; }
+	inline const char* GetMapGroupName(void) const { return m_szMapGroupName; }
+
+	inline int GetNumClasses(void) const { return m_nServerClasses; }
+	inline int GetClassBits(void) const { return m_nServerClassBits; }
+
+	inline CClient* GetClient(int nIndex) { Assert(nIndex < MAX_PLAYERS); return &m_Clients[nIndex]; }
+
+	inline float GetCPUUsage(void) const { return m_fCPUPercent; }
+
+	inline bool IsActive(void) const { return m_State >= server_state_t::ss_active; }
+	inline bool IsLoading(void) const { return m_State == server_state_t::ss_loading; }
+	inline bool IsDedicated(void) const { return m_bIsDedicated; }
+
 	void RejectConnection(int iSocket, netadr_t* pNetAdr, const char* szMessage);
 	static CClient* ConnectClient(CServer* pServer, user_creds_s* pChallenge);
 	static void RunFrame(CServer* pServer);
@@ -74,35 +81,36 @@ private:
 	char                          m_szHostInfo[128];             // see '[r5apex_ds.exe + 0x237740]' for more details. fmt: '[IPv6]:PORT:TIMEi64u'
 	char                          m_nGap0[520];
 	int                           m_nSpawnCount;
-	char                          m_nGap1[116];
+	int                           m_nMaxclients;
+	char                          gap_3C0[64];
+	CClient                       m_Clients[MAX_PLAYERS];
+	char                          gap_25263c0[48];
 	float                         m_fCPUPercent;
 	float                         m_fStartTime;
 	float                         m_fLastCPUCheckTime;
-	char                          m_nGap2[303108];               // TODO: Reverse the rest in this gap.
-#if defined (GAMEDLL_S2) || defined (GAMEDLL_S3)
-	char                          m_nGap3[0x80];
-#endif
+	bool                          m_bUnk252643C[128];            // Bools of MAX_PLAYERS?
 };
 #if defined (GAMEDLL_S0) || defined (GAMEDLL_S1)
-static_assert(sizeof(CServer) == 0x4A440);
+// !TODO: check if struct size is correct for S1!
+static_assert(sizeof(CServer) == 0x25220C0);
 #else
-static_assert(sizeof(CServer) == 0x4A4C0);
+static_assert(sizeof(CServer) == 0x25264C0);
 #endif
 
 extern CServer* g_pServer;
 
 /* ==== CSERVER ========================================================================================================================================================= */
 inline CMemory p_CServer_FrameJob;
-inline auto v_CServer_FrameJob = p_CServer_FrameJob.RCast<void (*)(double flFrameTime, bool bRunOverlays, bool bUniformSnapshotInterval)>();
+inline void(*v_CServer_FrameJob)(double flFrameTime, bool bRunOverlays, bool bUniformSnapshotInterval);
 
 inline CMemory p_CServer_RunFrame;
-inline auto v_CServer_RunFrame = p_CServer_RunFrame.RCast<void (*)(CServer* pServer)>();
+inline void(*v_CServer_RunFrame)(CServer* pServer);
 
 inline CMemory p_CServer_ConnectClient;
-inline auto v_CServer_ConnectClient = p_CServer_ConnectClient.RCast<CClient* (*)(CServer* pServer, user_creds_s* pCreds)>();
+inline CClient*(*v_CServer_ConnectClient)(CServer* pServer, user_creds_s* pCreds);
 
 inline CMemory p_CServer_RejectConnection;
-inline auto v_CServer_RejectConnection = p_CServer_RejectConnection.RCast<void* (*)(CServer* pServer, int iSocket, netadr_t* pNetAdr, const char* szMessage)>();
+inline void*(*v_CServer_RejectConnection)(CServer* pServer, int iSocket, netadr_t* pNetAdr, const char* szMessage);
 
 ///////////////////////////////////////////////////////////////////////////////
 class VServer : public IDetour
@@ -114,7 +122,7 @@ class VServer : public IDetour
 		LogFunAdr("CServer::RunFrame", p_CServer_RunFrame.GetPtr());
 		LogFunAdr("CServer::ConnectClient", p_CServer_ConnectClient.GetPtr());
 		LogFunAdr("CServer::RejectConnection", p_CServer_RejectConnection.GetPtr());
-		LogVarAdr("g_Server[128]", reinterpret_cast<uintptr_t>(g_pServer));
+		LogVarAdr("g_Server", reinterpret_cast<uintptr_t>(g_pServer));
 #endif // !CLIENT_DLL
 	}
 	virtual void GetFun(void) const

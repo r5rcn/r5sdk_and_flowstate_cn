@@ -662,7 +662,7 @@ void function Cl_Survival_AddClient( entity player )
 	if ( GetCurrentPlaylistVarBool( "pc_force_pushtotalk", false ) )
 		player.ClientCommand( "+pushtotalk" )
 	
-	SetConVarFloat( "dof_variable_blur", 0.0 )
+	//SetConVarFloat( "dof_variable_blur", 0.0 )
 
 	WaitingForPlayersOverlay_Setup( player )
 	
@@ -675,7 +675,10 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
-	entity player = GetLocalClientPlayer() //Changed to local client instead of local view to avoid bad player username? idk Colombia
+	entity player = GetLocalViewPlayer()
+	
+	if( GameRules_GetGameMode() != SURVIVAL )
+		player = GetLocalClientPlayer()
 	
 	OnThreadEnd(
 		function() : ( player )
@@ -687,8 +690,6 @@ void function InitSurvivalHealthBar()
 	
 	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
 		WaitFrame()
-
-
 }
 
 
@@ -3018,6 +3019,12 @@ void function UpdateWaitingForPlayersMuteHint()
 
 void function WaitingForPlayers_CreateCustomCameras()
 {
+	if( GetCurrentPlaylistName() == "survival_dev" && s_overlayRui != null )
+	{
+		RuiSetBool( s_overlayRui, "isOpaque", true )
+		return
+	}
+	
 	entity player = GetLocalClientPlayer()
 	
 	WaitingForPlayersCameraLocPair waitingForPlayersCamera = ReturnCameraForThisTime()
@@ -3029,6 +3036,21 @@ void function WaitingForPlayers_CreateCustomCameras()
 	player.ClearMenuCameraEntity()
     player.SetMenuCameraEntityWithAudio( camera )
     camera.SetTargetFOV( 70, true, EASING_CUBIC_INOUT, 0.50 )
+}
+
+void function WaitingForPlayers_RemoveCustomCameras()
+{
+	entity player = GetLocalClientPlayer()
+	
+	player.ClearMenuCameraEntity()
+	SetMapSetting_FogEnabled( true )
+
+	if( GetCurrentPlaylistName() != SURVIVAL )
+		return
+		
+	entity targetCamera = GetEntByScriptName( "target_char_sel_camera_new" )
+	entity camera = CreateClientSidePointCamera( targetCamera.GetOrigin(), targetCamera.GetAngles(), 35.5 )
+	player.SetMenuCameraEntity( camera )
 }
 
 WaitingForPlayersCameraLocPair function NewCameraPair(vector origin, vector angles)
@@ -3075,17 +3097,12 @@ array<WaitingForPlayersCameraLocPair> function GetCamerasForMap( string map )
 	return cutsceneSpawns	
 }
 
-void function WaitingForPlayers_RemoveCustomCameras()
-{
-	entity player = GetLocalClientPlayer()
-	
-	player.ClearMenuCameraEntity()
-	SetMapSetting_FogEnabled( true )
-}
-
 void function OnGamestatePlaying()
 {
 	WaitingForPlayersOverlay_Destroy()
+	
+	if( GetCurrentPlaylistName() == SURVIVAL )
+		GetLocalClientPlayer().ClearMenuCameraEntity()
 }
 
 void function Survival_RunCharacterSelection()
@@ -3228,7 +3245,7 @@ void function ServerCallback_PlayerBootsOnGround()
 
 	DoF_LerpFarDepthToDefault( 0.5 )
 	DoF_LerpNearDepthToDefault( 0.5 )
-	SetConVarFloat( "dof_variable_blur", 0.0 )
+	//SetConVarFloat( "dof_variable_blur", 0.0 )
 }
 
 
@@ -3718,9 +3735,12 @@ void function ServerCallback_MatchEndAnnouncement( bool victory, int winningTeam
 	DeathScreenUpdate()
 	entity clientPlayer = GetLocalClientPlayer()
 
-	if(!IsValid(clientPlayer)) return
+	Assert( IsValid( clientPlayer ) )
+
+	bool isPureSpectator = clientPlayer.GetTeam() == TEAM_SPECTATOR
 	
-	ShowChampionVictoryScreen( winningTeam )
+	if ( clientPlayer.GetTeam() == winningTeam || IsAlive( clientPlayer ) || isPureSpectator )
+		ShowChampionVictoryScreen( winningTeam )
 }
 
 void function ServerCallback_DestroyEndAnnouncement()
@@ -4720,10 +4740,22 @@ void function PlayerHudSetWeaponInspect( bool inspect )
 
 void function ServerCallback_NessyMessage( int state )
 {
-	if ( state == 0 )
-		Obituary_Print_Localized( Localize( "#NESSY_APPEARS" ) )
-	if ( state == 1 )
-		Obituary_Print_Localized( Localize( "#NESSY_SURFACES" ) )
+	switch( state )
+	{
+		case 0:
+			Obituary_Print_Localized( Localize( "#NESSY_APPEARS" ) )
+		break
+		
+		case 1:
+			Obituary_Print_Localized( Localize( "#NESSY_SURFACES" ) )
+		break
+		
+		case 40:
+		//printt("Mantling, zipline use count reset.")
+		entity player = GetLocalClientPlayer()
+		player.p.ziplineUsages = 0
+		break
+	}
 }
 
 

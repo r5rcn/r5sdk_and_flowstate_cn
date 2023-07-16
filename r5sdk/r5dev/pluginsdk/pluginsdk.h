@@ -11,6 +11,8 @@ public:
 	~CPluginSDK();
 
 	bool InitSDK();
+
+	inline void SetSDKModule(const CModule& sdkModule) { m_SDKModule = sdkModule; };
 private:
 
 	IFactory* m_FactoryInstance;
@@ -19,5 +21,5 @@ private:
 	CModule m_GameModule;
 	CModule m_SDKModule;
 };
-constexpr const char* PLUGINSDK_CLASS_VERSION = "VPluginSystem001";
+
 extern CPluginSDK* g_pPluginSDK;

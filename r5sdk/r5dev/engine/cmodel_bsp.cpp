@@ -8,6 +8,7 @@
 #include "core/stdafx.h"
 #include "tier0/memstd.h"
 #include "tier0/jobthread.h"
+#include "tier2/fileutils.h"
 #include "engine/sys_dll2.h"
 #include "engine/host_cmd.h"
 #include "engine/cmodel_bsp.h"
@@ -21,10 +22,14 @@
 #endif // !DEDICATED
 
 vector<string> g_InstalledMaps;
-string s_svLevelName;
+string s_LevelName;
+
+std::regex s_ArchiveRegex{ R"([^_]*_(.*)(.bsp.pak000_dir).*)" };
+
 bool s_bLevelResourceInitialized = false;
 bool s_bBasePaksInitialized = false;
 KeyValues* s_pLevelSetKV = nullptr;
+
 
 //-----------------------------------------------------------------------------
 // Purpose: checks if level has changed
@@ -33,7 +38,7 @@ KeyValues* s_pLevelSetKV = nullptr;
 //-----------------------------------------------------------------------------
 bool Mod_LevelHasChanged(const char* pszLevelName)
 {
-	return (s_svLevelName.compare(pszLevelName) != 0);
+	return (s_LevelName.compare(pszLevelName) != 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -41,17 +46,24 @@ bool Mod_LevelHasChanged(const char* pszLevelName)
 //-----------------------------------------------------------------------------
 void Mod_GetAllInstalledMaps()
 {
+    CUtlVector<CUtlString> fileList;
+    AddFilesToList(fileList, "vpk", "vpk", nullptr, '/');
+
+    std::cmatch regexMatches;
     std::lock_guard<std::mutex> l(g_InstalledMapsMutex);
+
     g_InstalledMaps.clear(); // Clear current list.
 
-    fs::directory_iterator directoryIterator("vpk");
-    std::regex archiveRegex{ R"([^_]*_(.*)(.bsp.pak000_dir).*)" };
-    std::smatch regexMatches;
-
-    for (const fs::directory_entry& directoryEntry : directoryIterator)
+    FOR_EACH_VEC(fileList, i)
     {
-        std::string fileName = directoryEntry.path().u8string();
-        std::regex_search(fileName, regexMatches, archiveRegex);
+        const CUtlString& filePath = fileList[i];
+        const char* pFileName = strrchr(filePath.Get(), '/')+1;
+
+        // Should always point right in front of the last
+        // slash, as the files are loaded from 'vpk/'.
+        Assert(pFileName);
+
+        std::regex_search(pFileName, regexMatches, s_ArchiveRegex);
 
         if (!regexMatches.empty())
         {
@@ -252,6 +264,18 @@ void Mod_ProcessPakQueue()
 #endif // !DEDICATED
                         }
 
+                        // The old gather props is set if a model couldn't be
+                        // loaded properly. If we unload level assets, we just
+                        // enable the new implementation again and re-evaluate
+                        // on the next level load. If we load a missing/bad
+                        // model again, we toggle the old implementation as
+                        // the helper functions for this implementation have
+                        // been restored in the SDK, and modified to support
+                        // stubbing missing model assets. See the function
+                        // 'CMDLCache::GetErrorModel' for more information.
+                        if (old_gather_props->GetBool())
+                            old_gather_props->SetValue(false);
+
                         g_pakLoadApi->UnloadPak(*(RPakHandle_t*)v10);
                         Mod_UnloadPakFile(); // Unload mod pak files.
 
@@ -305,10 +329,10 @@ void Mod_ProcessPakQueue()
                         {
                             if (*qword_167ED7BC0 || WORD2(*g_pPakLoadJobID) != HIWORD(*g_pPakLoadJobID))
                             {
-                                if (!JT_AcquireFifoLock(&*g_pPakFifoLock)
-                                    && !(unsigned __int8)sub_14045BAC0((__int64(__fastcall*)(__int64, _DWORD*, __int64, _QWORD*))g_pPakFifoLockWrapper, &*g_pPakFifoLock, -1i64, 0i64))
+                                if (!JT_AcquireFifoLock(g_pPakFifoLock)
+                                    && !(unsigned __int8)sub_14045BAC0((__int64(__fastcall*)(__int64, _DWORD*, __int64, _QWORD*))g_pPakFifoLockWrapper, g_pPakFifoLock, -1i64, 0i64))
                                 {
-                                    sub_14045A1D0((unsigned __int8(__fastcall*)(_QWORD))g_pPakFifoLockWrapper, &*g_pPakFifoLock, -1i64, 0i64, 0i64, 1);
+                                    sub_14045A1D0((unsigned __int8(__fastcall*)(_QWORD))g_pPakFifoLockWrapper, g_pPakFifoLock, -1i64, 0i64, 0i64, 1);
                                 }
 
                                 sub_140441220(v25, v24);
@@ -317,10 +341,10 @@ void Mod_ProcessPakQueue()
                                     if (*g_bPakFifoLockAcquired)
                                     {
                                         *g_bPakFifoLockAcquired = 0;
-                                        JT_ReleaseFifoLock(&*g_pPakFifoLock);
+                                        JT_ReleaseFifoLock(g_pPakFifoLock);
                                     }
                                 }
-                                JT_ReleaseFifoLock(&*g_pPakFifoLock);
+                                JT_ReleaseFifoLock(g_pPakFifoLock);
                             }
                             FileSystem()->ResetItemCacheSize(256);
                             FileSystem()->PrecacheTaskItem(*g_pMTVFTaskItem);
@@ -335,16 +359,16 @@ void Mod_ProcessPakQueue()
 
         if (s_bBasePaksInitialized && !s_bLevelResourceInitialized)
         {
-            Mod_PreloadLevelPaks(s_svLevelName.c_str());
+            Mod_PreloadLevelPaks(s_LevelName.c_str());
             s_bLevelResourceInitialized = true;
         }
-        *(_DWORD*)v15 = g_pakLoadApi->LoadAsync(v17, g_pMallocPool, 4, 0);
+        *(_DWORD*)v15 = g_pakLoadApi->LoadAsync(v17, AlignedMemAlloc(), 4, 0);
 
         if (strcmp(v17, "common_mp.rpak") == 0 || strcmp(v17, "common_sp.rpak") == 0 || strcmp(v17, "common_pve.rpak") == 0)
-            g_pakLoadApi->LoadAsync("common_sdk.rpak", g_pMallocPool, 4, 0);
+            g_pakLoadApi->LoadAsync("common_sdk.rpak", AlignedMemAlloc(), 4, 0);
 #ifndef DEDICATED
         if (strcmp(v17, "ui_mp.rpak") == 0)
-            g_pakLoadApi->LoadAsync("ui_sdk.rpak", g_pMallocPool, 4, 0);
+            g_pakLoadApi->LoadAsync("ui_sdk.rpak", AlignedMemAlloc(), 4, 0);
 #endif // !DEDICATED
 
     LABEL_37:
@@ -375,7 +399,7 @@ void Mod_LoadPakForMap(const char* pszLevelName)
 	if (Mod_LevelHasChanged(pszLevelName))
 		s_bLevelResourceInitialized = false;
 
-	s_svLevelName = pszLevelName;
+	s_LevelName = pszLevelName;
 
 	// Dedicated should not load loadscreens.
 #ifndef DEDICATED
@@ -429,12 +453,12 @@ void Mod_PreloadLevelPaks(const char* pszLevelName)
             continue;
 
         snprintf(szPathBuffer, sizeof(szPathBuffer), "%s.rpak", pSubKey->GetName());
-        RPakHandle_t nPakId = g_pakLoadApi->LoadAsync(szPathBuffer, g_pMallocPool, 4, 0);
+        RPakHandle_t nPakId = g_pakLoadApi->LoadAsync(szPathBuffer, AlignedMemAlloc(), 4, 0);
 
         if (nPakId == INVALID_PAK_HANDLE)
             Error(eDLL_T::ENGINE, NO_ERROR, "%s: unable to load pak '%s' results '%d'\n", __FUNCTION__, szPathBuffer, nPakId);
         else
-            g_vLoadedPakHandle.push_back(nPakId);
+            g_vLoadedPakHandle.AddToTail(nPakId);
     }
 }
 
@@ -450,7 +474,7 @@ void Mod_UnloadPakFile(void)
 			g_pakLoadApi->UnloadPak(it);
 		}
 	}
-	g_vLoadedPakHandle.clear();
+	g_vLoadedPakHandle.Purge();
 	g_vBadMDLHandles.clear();
 }
 

@@ -145,7 +145,6 @@ void function SV_CL_Init()
 	
 	ShWeaponRack_Init()
 
-
 	//ShGruntChatter_MP_Init()
 	//ShSpectreChatter_MP_Init()
 
@@ -163,7 +162,6 @@ void function SV_CL_Init()
 	ShWeaponInspect_Init()
 	Consumable_Init()
 	MpWeaponGreandeElectricSmoke_Init()
-
 	ShWarpGates_Init()
 
 	Sh_Loot_Vault_Panel_Init()
@@ -279,6 +277,7 @@ void function Server_Init()
 	ScriptMovers_Init()
 	ScriptToys_Init()
 	TitanHotdrop_Init()
+	BubbleShield_Init()
 	Zipline_Init()
 	Leeching_Init()
 	PlayerLeeching_Init()
@@ -322,8 +321,7 @@ void function Server_Init()
 	Achievements_Init()
 
 	SvDevStats_LevelInit()
-	SURVIVAL_Loot_All_InitShared() // need this to precache the weapons
-
+	
 	PilotsPassage_Init()
 	SneakPeek_Init()
 	JumpPad_Init()

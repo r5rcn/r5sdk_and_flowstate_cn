@@ -5,14 +5,14 @@
 //=====================================================================================//
 
 #include "core/stdafx.h"
-#include "core/termutil.h"
 #include "core/logdef.h"
+#include "core/logger.h"
+#include "tier0/utility.h"
 #include "tier1/NetAdr.h"
 #include "tier2/socketcreator.h"
 #include "windows/console.h"
 #include "protoc/sv_rcon.pb.h"
 #include "protoc/cl_rcon.pb.h"
-#include "public/utility/utility.h"
 #include "engine/net.h"
 #include "engine/shared/shared_rcon.h"
 #include "netconsole/netconsole.h"
@@ -41,6 +41,8 @@ CNetCon::~CNetCon(void)
 //-----------------------------------------------------------------------------
 bool CNetCon::Init(void)
 {
+	g_CoreMsgVCallback = &EngineLoggerSink;
+
 	WSAData wsaData;
 	const int nError = ::WSAStartup(MAKEWORD(2, 2), &wsaData);
 
@@ -99,11 +101,11 @@ bool CNetCon::Shutdown(void)
 //-----------------------------------------------------------------------------
 void CNetCon::TermSetup(void)
 {
-	g_svCmdLine = GetCommandLineA();
+	const char* pszCommandLine = GetCommandLineA();
+	const bool bEnableColor = strstr("-ansicolor", pszCommandLine) != nullptr;
 
-	SpdLog_Init();
-	SpdLog_PostInit();
-	Console_Init();
+	SpdLog_Init(bEnableColor);
+	Console_Init(bEnableColor);
 }
 
 //-----------------------------------------------------------------------------

@@ -249,6 +249,8 @@ public:
 	void SetLastUCmdSimulationRemainderTime(float flRemainderTime);
 	void SetTotalExtraClientCmdTimeAttempted(float flAttemptedTime);
 
+	void ProcessUserCmds(CUserCmd* cmds, int numCmds, int totalCmds,
+		int droppedPackets, bool paused);
 	void PlayerRunCommand(CUserCmd* pUserCmd, IMoveHelper* pMover);
 	void SetLastUserCommand(CUserCmd* pUserCmd);
 
@@ -376,7 +378,7 @@ private:
 	float m_fNextSuicideTime;
 	int m_iSuicideCustomKillFlags;
 	int m_preNoClipPhysicsFlags;
-	char m_Commands[8];
+	CUserCmd* m_Commands;
 	void* m_pPhysicsController;
 	void* m_pShadowStand;
 	void* m_pShadowCrouch;
@@ -568,11 +570,11 @@ private:
 	int m_lastUCmdSimulationTicks;
 	float m_lastUCmdSimulationRemainderTime;
 	float m_totalExtraClientCmdTimeAttempted;
+	int m_hPlayerViewEntity;
 	bool m_atLeastOneCommandRunThisServerFrame;
 	bool m_bGamePaused;
 	bool m_bPlayerUnderwater;
 	bool m_wasPhaseShiftedForTriggers;
-	int m_hPlayerViewEntity;
 	bool m_bShouldDrawPlayerWhileUsingViewEntity;
 	char gap_6bf9[3];
 	int m_hConstraintEntity;
@@ -790,10 +792,10 @@ private:
 static_assert(sizeof(CPlayer) == 0x7EF0); // !TODO: backwards compatibility.
 
 inline CMemory p_CPlayer__EyeAngles;
-inline auto v_CPlayer__EyeAngles = p_CPlayer__EyeAngles.RCast<QAngle* (*)(CPlayer* pPlayer, QAngle* pAngles)>();
+inline QAngle*(*v_CPlayer__EyeAngles)(CPlayer* pPlayer, QAngle* pAngles);
 
 inline CMemory p_CPlayer__PlayerRunCommand;
-inline auto v_CPlayer__PlayerRunCommand = p_CPlayer__PlayerRunCommand.RCast<void (*)(CPlayer* pPlayer, CUserCmd* pUserCmd, IMoveHelper* pMover)>();
+inline void(*v_CPlayer__PlayerRunCommand)(CPlayer* pPlayer, CUserCmd* pUserCmd, IMoveHelper* pMover);
 
 ///////////////////////////////////////////////////////////////////////////////
 class VPlayer : public IDetour

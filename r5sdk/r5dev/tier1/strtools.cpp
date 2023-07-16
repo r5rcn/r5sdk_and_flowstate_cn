@@ -1,4 +1,3 @@
-#include "core/stdafx.h"
 #include "tier1/strtools.h"
 
 FORCEINLINE unsigned char tolower_fast(unsigned char c)
@@ -203,7 +202,7 @@ int64_t V_StrTrim(char* pStr)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Converts a UTF8 string into a unicode string
+// Purpose: Converts a UTF-8 string into a unicode string
 //-----------------------------------------------------------------------------
 int V_UTF8ToUnicode(const char* pUTF8, wchar_t* pwchDest, int cubDestSizeInBytes)
 {
@@ -221,7 +220,7 @@ int V_UTF8ToUnicode(const char* pUTF8, wchar_t* pwchDest, int cubDestSizeInBytes
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Converts a unicode string into a UTF8 (standard) string
+// Purpose: Converts a unicode string into a UTF-8 (standard) string
 //-----------------------------------------------------------------------------
 int V_UnicodeToUTF8(const wchar_t* pUnicode, char* pUTF8, int cubDestSizeInBytes)
 {
@@ -240,6 +239,86 @@ int V_UnicodeToUTF8(const wchar_t* pUnicode, char* pUTF8, int cubDestSizeInBytes
 		pUTF8[cubDestSizeInBytes - 1] = 0;
 
 	return cchResult;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Returns the UTF-8 character length
+//-----------------------------------------------------------------------------
+int V_UTF8CharLength(const unsigned char input)
+{
+	if ((input & 0xFE) == 0xFC)
+		return 6;
+	if ((input & 0xFC) == 0xF8)
+		return 5;
+	if ((input & 0xF8) == 0xF0)
+		return 4;
+	else if ((input & 0xF0) == 0xE0)
+		return 3;
+	else if ((input & 0xE0) == 0xC0)
+		return 2;
+	return 1;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Checks if a given string only contains UTF-8 characters
+//-----------------------------------------------------------------------------
+bool V_IsValidUTF8(const char* pszString)
+{
+	char c;
+	const char* it;
+
+	while (true)
+	{
+		while (true)
+		{
+			c = *pszString;
+			it = pszString++;
+			if (c < 0)
+			{
+				break;
+			}
+			if (!c)
+			{
+				return true;
+			}
+		}
+
+		char s = *pszString;
+		if ((*pszString & 0xC0) != 0x80)
+		{
+			break;
+		}
+
+		pszString = it + 2;
+		if (c >= 0xE0u)
+		{
+			int n = (*pszString & 0x3F) | (((s & 0x3F) | ((c & 0xF) << 6)) << 6);
+			if ((*pszString & 0xC0) != 0x80)
+			{
+				return false;
+			}
+
+			pszString = it + 3;
+			if (c >= 0xF0u)
+			{
+				if ((*pszString & 0xC0) != 0x80 || ((n << 6) | (*pszString & 0x3Fu)) > 0x10FFFF)
+				{
+					return false;
+				}
+
+				pszString = it + 4;
+			}
+			else if ((n - 0xD800) <= 0x7FF)
+			{
+				return false;
+			}
+		}
+		else if (c < 0xC2u)
+		{
+			return false;
+		}
+	}
+	return false;
 }
 
 bool V_StringMatchesPattern(const char* pszSource, const char* pszPattern, int nFlags /*= 0 */)
@@ -314,6 +393,40 @@ bool V_StringMatchesPattern(const char* pszSource, const char* pszPattern, int n
 
 		pszSource += nLength;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Compares file paths, ignores case and path separators
+// Input  : *a - 
+//          *b - 
+// Output : true if equal, false otherwise
+//-----------------------------------------------------------------------------
+bool V_ComparePath(const char* a, const char* b)
+{
+	if (strlen(a) != strlen(b))
+	{
+		return false;
+	}
+
+	// Case and separator invariant
+	for (; *a; a++, b++)
+	{
+		if (*a == *b)
+		{
+			continue;
+		}
+		if (tolower_fast(*a) == tolower_fast(*b))
+		{
+			continue;
+		}
+		if ((*a == '/' || *a == '\\') &&
+			(*b == '/' || *b == '\\'))
+		{
+			continue;
+		}
+		return false;
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -600,6 +713,27 @@ bool V_IsAbsolutePath(const char* pStr)
 	return bIsAbsolute;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Sanity-check to verify that a path is a relative path inside the game dir
+// Taken From: engine/cmd.cpp
+//-----------------------------------------------------------------------------
+bool V_IsValidPath(const char* pStr)
+{
+	if (!pStr)
+	{
+		return false;
+	}
+
+	if (Q_strlen(pStr) <= 0    ||
+		V_IsAbsolutePath(pStr) || // to protect absolute paths
+		Q_strstr(pStr, ".."))     // to protect relative paths
+	{
+		return false;
+	}
+
+	return true;
+}
+
 #if defined(_MSC_VER) && _MSC_VER >= 1900
 bool
 #else
@@ -670,19 +804,23 @@ V_MakeAbsolutePath(char* pOut, size_t outLen, const char* pPath, const char* pSt
 //-----------------------------------------------------------------------------
 // Purpose: Strip off the last directory from dirName
 // Input  : *dirName - 
-//			maxlen - 
-// Output : Returns true on success, false on failure.
+//			maxLen - 
+//			*newLen - 
+// Output : Returns the new length of the string
 //-----------------------------------------------------------------------------
-bool V_StripLastDir(char* dirName, size_t maxlen)
+size_t V_StripLastDir(char* dirName, size_t maxLen)
 {
-	if (dirName[0] == 0 ||
-		!V_stricmp(dirName, "./") ||
-		!V_stricmp(dirName, ".\\"))
-		return false;
+	Assert(dirName);
+
+	if (dirName[0] == '\0')
+		return 0;
 
 	size_t len = V_strlen(dirName);
+	Assert(len < maxLen);
 
-	Assert(len < maxlen);
+	if (!V_stricmp(dirName, "./") ||
+		!V_stricmp(dirName, ".\\"))
+		return len;
 
 	// skip trailing slash
 	if (PATHSEPARATOR(dirName[len - 1]))
@@ -695,9 +833,8 @@ bool V_StripLastDir(char* dirName, size_t maxlen)
 	{
 		if (PATHSEPARATOR(dirName[len - 1]))
 		{
-			dirName[len] = 0;
-			V_FixSlashes(dirName, CORRECT_PATH_SEPARATOR);
-			return true;
+			dirName[len] = '\0';
+			return len;
 		}
 		else if (dirName[len - 1] == ':')
 		{
@@ -708,22 +845,33 @@ bool V_StripLastDir(char* dirName, size_t maxlen)
 	}
 
 	// If we hit a drive letter, then we're done.
-	// Ex: If they passed in c:\, then V_StripLastDir should return "" and false.
+	// Ex: If they passed in c:\, then V_StripLastDir should
+	// turn the string into "" and return 0.
 	if (bHitColon)
 	{
-		dirName[0] = 0;
-		return false;
+		dirName[0] = '\0';
+		return 0;
 	}
 
-	// Allow it to return an empty string and true. This can happen if something like "tf2/" is passed in.
-	// The correct behavior is to strip off the last directory ("tf2") and return true.
-	if (len == 0 && !bHitColon)
+	// Allow it to return an empty string and 0. This can happen if something like "tf2/" is passed in.
+	// The correct behavior is to strip off the last directory ("tf2") and return the new length.
+	if (len == 0)
 	{
-		V_snprintf(dirName, maxlen, ".%c", CORRECT_PATH_SEPARATOR);
-		return true;
+		int ret = V_snprintf(dirName, maxLen, ".%c", CORRECT_PATH_SEPARATOR);
+
+		// snprintf failed, turn the string into "" and return 0.
+		if (ret < 0)
+		{
+			Assert(0);
+
+			dirName[0] = '\0';
+			return 0;
+		}
+
+		return ret;
 	}
 
-	return true;
+	return len;
 }
 
 //-----------------------------------------------------------------------------

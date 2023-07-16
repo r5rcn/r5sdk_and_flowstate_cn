@@ -116,6 +116,8 @@ protected:
 		virtual void            Next(void) = 0;
 		virtual bool            IsValid(void) = 0;
 		virtual ConCommandBase* Get(void) = 0;
+
+		virtual ~ICVarIteratorInternal(void) { }
 	};
 
 	virtual ICVarIteratorInternal* FactoryInternalIterator(void) = 0;

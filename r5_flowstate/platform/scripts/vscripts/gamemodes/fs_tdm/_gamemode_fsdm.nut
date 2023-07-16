@@ -629,16 +629,16 @@ void function __HighPingCheck(entity player)
 		player.ForceStand()
 		HolsterAndDisableWeapons( player )
 
-		Message(player, "自动踢出", "管理员已启动ping值限制: " + FlowState_MaxPingAllowed() + " ms. \n 你的延迟过高: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
+		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
 		
 		wait 3
 
 		if(!IsValid(player)) return
 		Warning("[Flowstate] -> Kicking " + player.GetPlayerName() + ":" + player.GetPlatformUID() + " -> [High Ping!]")
-		KickPlayerById( player.GetPlatformUID() )
+		KickPlayerById( player.GetPlatformUID(), "Your ping is too high for admin limit." )
 		UpdatePlayerCounts()
 	} else if(GameRules_GetGameMode() == "fs_dm"){
-		Message(player, "FLOWSTATE", "你的延迟: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
+		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms." , 5)
 	}
 }
 
@@ -2432,7 +2432,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"剩余 15 分钟!","", 5)
+						Message(player,"15 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
@@ -2442,7 +2442,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"剩余 10 分钟!","", 5)
+						Message(player,"10 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
@@ -2452,7 +2452,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"剩余 5 分钟!","", 5)
+						Message(player,"5 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
@@ -2462,7 +2462,7 @@ void function SimpleChampionUI()
 				{
 					if( IsValid(player) )
 					{
-						Message(player,"剩余 2 分钟!","", 5)
+						Message(player,"2 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
@@ -2470,7 +2470,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"剩余 1 分钟!","", 5, "")
+						Message(player,"1 MINUTE REMAINING!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
@@ -2478,7 +2478,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"剩余 30 秒!","", 5, "")
+						Message(player,"30 SECONDS REMAINING!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
@@ -2486,7 +2486,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"剩余 10 秒!","", 5, "")
+						Message(player,"10 SECONDS REMAINING!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
@@ -2558,7 +2558,7 @@ void function SimpleChampionUI()
 	{
 		if( !IsValid( player ) ) continue
 		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		if( GetCurrentPlaylistName() == "movement_gym" ) {
+		if( GetCurrentPlaylistName() == "fs_movementgym" ) {
 					Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n        With help from AyeZee#6969, Julefox#0050 & @CafeFPS", 7, "UI_Menu_RoundSummary_Results" )
 				}
 		player.SetThirdPersonShoulderModeOff()	
@@ -2602,7 +2602,7 @@ void function SimpleChampionUI()
 			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
 
 		foreach( player in GetPlayerArray() )
-			Message( player, "服务器优化开始", "服务器需要重启来清除卡顿", 6.0 )
+			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
 		
 		wait 6.0
 		
@@ -3138,6 +3138,9 @@ void function AssignCharacter( entity player, int index )
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
+	if( !IsValid( player ) || !player.p.isConnected )
+		return
+	
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )
 	{
@@ -3608,7 +3611,7 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
         if (sPlayer.GetPlayerName() == args[0]) 
 		{
 			Warning("[Flowstate] -> 正在踢出 " + sPlayer.GetPlayerName() + ":" + sPlayer.GetPlatformUID() + " -> [由管理员!]")
-			KickPlayerById( sPlayer.GetPlatformUID() )
+			KickPlayerById( sPlayer.GetPlatformUID(), "Kicked by admin" )
             return true
         }
     }

@@ -918,22 +918,17 @@ static CURLcode imap_state_capability_resp(struct connectdata *conn,
       line += wordlen;
     }
   }
-  else if(imapcode == 'O') {
-    if(data->set.use_ssl && !conn->ssl[FIRSTSOCKET].use) {
-      /* We don't have a SSL/TLS connection yet, but SSL is requested */
-      if(imapc->tls_supported)
-        /* Switch to TLS connection now */
-        result = imap_perform_starttls(conn);
-      else if(data->set.use_ssl == CURLUSESSL_TRY)
-        /* Fallback and carry on with authentication */
-        result = imap_perform_authentication(conn);
-      else {
-        failf(data, "STARTTLS not supported.");
-        result = CURLE_USE_SSL_FAILED;
-      }
+  else if(data->set.use_ssl && !conn->ssl[FIRSTSOCKET].use) {
+    if(imapcode == 'O' && imapc->tls_supported) {
+      /* Switch to TLS connection now */
+      result = imap_perform_starttls(conn);
     }
-    else
+    else if(data->set.use_ssl <= CURLUSESSL_TRY)
       result = imap_perform_authentication(conn);
+    else {
+      failf(data, "STARTTLS not supported.");
+      result = CURLE_USE_SSL_FAILED;
+    }
   }
   else
     result = imap_perform_authentication(conn);
@@ -950,6 +945,10 @@ static CURLcode imap_state_starttls_resp(struct connectdata *conn,
   struct Curl_easy *data = conn->data;
 
   (void)instate; /* no use for this yet */
+
+  /* Pipelining in response is forbidden. */
+  if(conn->proto.imapc.pp.cache_size)
+    return CURLE_WEIRD_SERVER_REPLY;
 
   if(imapcode != 'O') {
     if(data->set.use_ssl != CURLUSESSL_TRY) {
@@ -1140,6 +1139,12 @@ static CURLcode imap_state_fetch_resp(struct connectdata *conn, int imapcode,
       if(chunk > (size_t)size)
         /* The conversion from curl_off_t to size_t is always fine here */
         chunk = (size_t)size;
+
+      if (!chunk) {
+          /* no size, we're done with the data */
+          state(conn, IMAP_STOP);
+          return CURLE_OK;
+      }
 
       result = Curl_client_write(conn, CLIENTWRITE_BODY, pp->cache, chunk);
       if(result)

@@ -19,7 +19,7 @@
 #include "mathlib/mathlib.h"
 
 //#include "tier0/memalloc.h"
-//#include "tier0/memdbgon.h"
+#include "tier0/memdbgon.h"
 
 #pragma warning (disable:4100)
 #pragma warning (disable:4514)
@@ -251,7 +251,7 @@ void CUtlBlockMemory<T, I>::ChangeSize(int nBlocks)
 	for (int i = m_nBlocks; i < nBlocksOld; ++i)
 	{
 		UTLBLOCKMEMORY_TRACK_FREE();
-		MemAllocSingleton()->Free(m_pMemory[i]);
+		free((void*)m_pMemory[i]);
 	}
 
 	if (m_pMemory)
@@ -305,12 +305,12 @@ void CUtlBlockMemory<T, I>::Purge()
 	for (int i = 0; i < m_nBlocks; ++i)
 	{
 		UTLBLOCKMEMORY_TRACK_FREE();
-		MemAllocSingleton()->Free(m_pMemory[i]);
+		free((void*)m_pMemory[i]);
 	}
 	m_nBlocks = 0;
 
 	UTLBLOCKMEMORY_TRACK_FREE();
-	MemAllocSingleton()->Free(m_pMemory);
+	free((void*)m_pMemory);
 	m_pMemory = 0;
 }
 

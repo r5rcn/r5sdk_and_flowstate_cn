@@ -68,31 +68,12 @@ void function InitSystemPanelMain( var panel )
 		AddPanelFooterOption( panel, RIGHT, BUTTON_BACK, false, "#BUTTON_RETURN_TO_MAIN", "", ReturnToMain_OnActivate )
 	#endif
 	AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_VIEW_CINEMATIC", "#VIEW_CINEMATIC", ViewCinematic, IsLobby )
-	AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_LEFT, true, "返回主菜单", "返回主菜单", BackToMainMenu, IsLobby )
 }
 
 void function ViewCinematic( var button )
 {
 	CloseActiveMenu()
 	thread PlayVideoMenu( false, "intro", "Apex_Opening_Movie", eVideoSkipRule.INSTANT )
-}
-
-void function BackToMainMenu( var button )
-{
-	ConfirmDialogData data
-	data.headerText = "#EXIT_TO_MAIN"
-	data.messageText = ""
-	data.resultCallback = OnBackToMainMenu
-	data.yesText = ["YES_RETURN_TO_TITLE_MENU", "#GAMEUI_YES"]
-
-	OpenConfirmDialogFromData( data )
-	AdvanceMenu( GetMenu( "ConfirmDialog" ) )
-}
-
-void function OnBackToMainMenu( int result )
-{
-	if ( result == eDialogResult.YES )
-		ClientCommand( "disconnect" )
 }
 
 void function TryChangeCharacters()
@@ -321,19 +302,7 @@ void function UpdateSystemPanel( var panel )
 	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
-	{
-		string hostname = GetConVarString("pylon_matchmaking_hostname")
-		string datacenterName = ""
-
-		if (hostname == "ms.r5reloaded.com")
-			datacenterName = "R5Reloaded"
-		else if (hostname == "ms.cnr5apex.cn")
-			datacenterName = "R5Reloaded CN"
-		else
-			datacenterName = "第三方"
-
-		Hud_SetText( dataCenterElem, datacenterName + "服务器: " + MyPing() + " ms.")
-	}
+		Hud_SetText( dataCenterElem, "R5Reloaded 服务器: " + MyPing() + " ms.")
 }
 
 void function ToggleSetHunter(bool enable)

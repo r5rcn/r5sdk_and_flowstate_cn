@@ -68,7 +68,7 @@ void function CheckAfkKickThread(entity player)
 				break
 
 			case eAntiAfkPlayerState.AFK:
-				KickPlayerById( player.GetPlatformUID() )
+				KickPlayerById( player.GetPlatformUID(), "你挂机了太长时间." )
 				break
 		}
     }

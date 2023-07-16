@@ -189,7 +189,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	player.SetShieldHealth( 75 )
 	player.AllowMantle()
 	
-	thread Flowstate_InitAFKThreadForPlayer(player)
+	//thread Flowstate_InitAFKThreadForPlayer(player)
 	
 	switch(GetGameState())
     {
@@ -258,7 +258,7 @@ void function SetSpectatorAnotherTry(entity player)
 	wait 3
 	if(!FS_PROPHUNT.InProgress || !IsValid(player) || GetPlayerArray_Alive().len() == 0) 
 	{
-		Message(player, "FS 躲猫猫", "你将会在下一回合出生")
+		Message(player, "FS PROPHUNT", "You will spawn next round")
 		return
 	}
 	array<entity> playersON = GetPlayerArray_Alive()
@@ -271,7 +271,7 @@ void function SetSpectatorAnotherTry(entity player)
 	
 	if(playersON.len() == 0) 
 	{
-		Message(player, "FS 躲猫猫", "你将会在下一回合出生")
+		Message(player, "FS PROPHUNT", "You will spawn next round")
 		return
 	}
 	
@@ -285,7 +285,7 @@ void function SetSpectatorAnotherTry(entity player)
 			player.StartObserverMode( OBS_MODE_IN_EYE )
 			Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
 		} else {
-			Message(player, "FS 躲猫猫", "你将会在下一回合出生")
+			Message(player, "FS PROPHUNT", "You will spawn next round")
 		}
 	}catch(e420){}
 }
@@ -572,7 +572,7 @@ void function CheckForPlayersPlaying()
 			{
 				if(!IsValid(player)) continue
 				
-				Message(player, "注意", "玩家数不足 回合结束", 5)
+				Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
 			}
 		}
 		
@@ -718,7 +718,7 @@ void function PROPHUNT_Lobby()
 			{
 				if(!IsValid(player)) continue
 				
-				Message(player, "躲猫猫", "正在等待其他玩家", 2, "")
+				Message(player, "PROPHUNT", "Waiting another player to start", 2, "")
 			}
 			
 			wait 5
@@ -731,7 +731,7 @@ void function PROPHUNT_Lobby()
 		{
 			if(!IsValid(player)) continue
 			
-			Message(player, "躲猫猫", "正在开始", 3, "")
+			Message(player, "PROPHUNT", "STARTING", 3, "")
 		}
 		
 		wait 5

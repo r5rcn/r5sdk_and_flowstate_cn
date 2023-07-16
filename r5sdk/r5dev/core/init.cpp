@@ -15,19 +15,20 @@
 #include "tier0/cpu.h"
 #include "tier0/commandline.h"
 #include "tier0/platform_internal.h"
+#include "tier0/sigcache.h"
 #include "tier1/cmd.h"
 #include "tier1/cvar.h"
 #include "vpc/IAppSystem.h"
 #include "vpc/keyvalues.h"
+#include "vpc/rson.h"
 #include "vpc/interfaces.h"
-#include "vstdlib/callback.h"
-#include "vstdlib/completion.h"
+#include "common/callback.h"
+#include "common/completion.h"
 #include "vstdlib/keyvaluessystem.h"
 #include "common/opcodes.h"
 #include "common/netmessages.h"
 #include "launcher/prx.h"
 #include "launcher/launcher.h"
-#include "launcher/IApplication.h"
 #include "filesystem/basefilesystem.h"
 #include "filesystem/filesystem.h"
 #include "datacache/mdlcache.h"
@@ -46,19 +47,16 @@
 #include "vgui/vgui_debugpanel.h"
 #include "vgui/vgui_fpspanel.h"
 #include "vguimatsurface/MatSystemSurface.h"
-#include "client/vengineclient_impl.h"
-#include "client/cdll_engine_int.h"
+#include "engine/client/vengineclient_impl.h"
+#include "engine/client/cdll_engine_int.h"
+#include "engine/client/datablock_receiver.h"
 #endif // !DEDICATED
 #ifndef CLIENT_DLL
 #include "engine/server/server.h"
-#include "server/persistence.h"
-#include "server/vengineserver_impl.h"
+#include "engine/server/persistence.h"
+#include "engine/server/vengineserver_impl.h"
+#include "engine/server/datablock_sender.h"
 #endif // !CLIENT_DLL
-#include "squirrel/sqinit.h"
-#include "squirrel/sqapi.h"
-#include "squirrel/sqvm.h"
-#include "squirrel/sqscript.h"
-#include "squirrel/sqstdaux.h"
 #include "studiorender/studiorendercontext.h"
 #include "rtech/rtech_game.h"
 #include "rtech/rtech_utils.h"
@@ -67,11 +65,13 @@
 #include "rtech/rui/rui.h"
 #include "engine/client/cl_ents_parse.h"
 #include "engine/client/cl_main.h"
+#include "engine/client/cl_splitscreen.h"
 #endif // !DEDICATED
 #include "engine/client/client.h"
 #ifndef DEDICATED
 #include "engine/client/clientstate.h"
 #endif // !DEDICATED
+#include "localize/localize.h"
 #include "engine/enginetrace.h"
 #include "engine/traceinit.h"
 #include "engine/common.h"
@@ -81,6 +81,7 @@
 #include "engine/host_cmd.h"
 #include "engine/host_state.h"
 #include "engine/modelloader.h"
+#include "engine/cmd.h"
 #include "engine/net.h"
 #include "engine/net_chan.h"
 #include "engine/networkstringtable.h"
@@ -102,27 +103,32 @@
 #include "engine/gl_rsurf.h"
 #include "engine/debugoverlay.h"
 #endif // !DEDICATED
+#include "vscript/languages/squirrel_re/include/squirrel.h"
+#include "vscript/languages/squirrel_re/include/sqvm.h"
+#include "vscript/languages/squirrel_re/include/sqstdaux.h"
+#include "vscript/languages/squirrel_re/vsquirrel.h"
+#include "vscript/vscript.h"
+#include "game/shared/r1/weapon_bolt.h"
 #include "game/shared/util_shared.h"
 #include "game/shared/usercmd.h"
 #include "game/shared/animation.h"
+#include "game/shared/vscript_shared.h"
 #ifndef CLIENT_DLL
 #include "game/server/ai_node.h"
 #include "game/server/ai_network.h"
 #include "game/server/ai_networkmanager.h"
 #include "game/server/ai_utility.h"
 #include "game/server/detour_impl.h"
-#include "game/server/fairfight_impl.h"
 #include "game/server/gameinterface.h"
 #include "game/server/movehelper_server.h"
 #include "game/server/physics_main.h"
 #endif // !CLIENT_DLL
 #ifndef DEDICATED
 #include "game/client/viewrender.h"
+#include "game/client/input.h"
 #include "game/client/movehelper_client.h"
 #endif // !DEDICATED
 #include "public/edict.h"
-#include "public/utility/binstream.h"
-#include "public/utility/sigcache.h"
 #ifndef DEDICATED
 #include "public/idebugoverlay.h"
 #include "inputsystem/inputsystem.h"
@@ -143,7 +149,7 @@
 
 void Systems_Init()
 {
-	spdlog::info("+-------------------------------------------------------------+\n");
+	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
 	QuerySystemInfo();
 
 	DetourRegister();
@@ -153,8 +159,9 @@ void Systems_Init()
 	DetourInit();
 	initTimer.End();
 
-	spdlog::info("+-------------------------------------------------------------+\n");
-	spdlog::info("{:16s} '{:10.6f}' seconds ('{:12d}' clocks)\n", "Detour->InitDB()", initTimer.GetDuration().GetSeconds(), initTimer.GetDuration().GetCycles());
+	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	DevMsg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->InitDB()",
+		initTimer.GetDuration().GetSeconds(), initTimer.GetDuration().GetCycles());
 
 	initTimer.Start();
 
@@ -163,9 +170,9 @@ void Systems_Init()
 	DetourUpdateThread(GetCurrentThread());
 
 	// Hook functions
-	for (const IDetour* pDetour : g_DetourVector)
+	for (const IDetour* Detour : g_DetourVec)
 	{
-		pDetour->Attach();
+		Detour->Attach();
 	}
 
 	// Patch instructions
@@ -180,10 +187,12 @@ void Systems_Init()
 	}
 
 	initTimer.End();
-	spdlog::info("{:16s} '{:10.6f}' seconds ('{:12d}' clocks)\n", "Detour->Attach()", initTimer.GetDuration().GetSeconds(), initTimer.GetDuration().GetCycles());
-	spdlog::info("+-------------------------------------------------------------+\n");
+	DevMsg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->Attach()",
+		initTimer.GetDuration().GetSeconds(), initTimer.GetDuration().GetCycles());
+	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	DevMsg(eDLL_T::NONE, "\n");
 
-	ConVar::StaticInit();
+	ConVar_StaticInit();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -207,17 +216,19 @@ void Systems_Shutdown()
 	DetourUpdateThread(GetCurrentThread());
 
 	// Unhook functions
-	for (const IDetour* pDetour : g_DetourVector)
+	for (const IDetour* Detour : g_DetourVec)
 	{
-		pDetour->Detach();
+		Detour->Detach();
 	}
 
 	// Commit the transaction
 	DetourTransactionCommit();
 
 	shutdownTimer.End();
-	spdlog::info("{:16s} '{:10.6f}' seconds ('{:12d}' clocks)\n", "Detour->Detach()", shutdownTimer.GetDuration().GetSeconds(), shutdownTimer.GetDuration().GetCycles());
-	spdlog::info("+-------------------------------------------------------------+\n");
+	DevMsg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->Detach()",
+		shutdownTimer.GetDuration().GetSeconds(), shutdownTimer.GetDuration().GetCycles());
+	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	DevMsg(eDLL_T::NONE, "\n");
 }
 
 /////////////////////////////////////////////////////
@@ -237,7 +248,8 @@ void Winsock_Init()
 	int nError = ::WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (nError != 0)
 	{
-		Error(eDLL_T::COMMON, NO_ERROR, "%s: Failed to start Winsock: (%s)\n", __FUNCTION__, NET_ErrorString(WSAGetLastError()));
+		Error(eDLL_T::COMMON, NO_ERROR, "%s: Failed to start Winsock: (%s)\n",
+			__FUNCTION__, NET_ErrorString(WSAGetLastError()));
 	}
 }
 void Winsock_Shutdown()
@@ -245,7 +257,8 @@ void Winsock_Shutdown()
 	int nError = ::WSACleanup();
 	if (nError != 0)
 	{
-		Error(eDLL_T::COMMON, NO_ERROR, "%s: Failed to stop Winsock: (%s)\n", __FUNCTION__, NET_ErrorString(WSAGetLastError()));
+		Error(eDLL_T::COMMON, NO_ERROR, "%s: Failed to stop Winsock: (%s)\n",
+			__FUNCTION__, NET_ErrorString(WSAGetLastError()));
 	}
 }
 void QuerySystemInfo()
@@ -262,22 +275,20 @@ void QuerySystemInfo()
 
 		if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) // Only log the primary device.
 		{
-			char szDeviceName[128];
-			wcstombs(szDeviceName, dd.DeviceString, sizeof(szDeviceName));
-			spdlog::info("{:25s}: '{:s}'\n", "GPU model identifier", szDeviceName);
+			DevMsg(eDLL_T::NONE, "%-25s: '%s'\n", "GPU model identifier", dd.DeviceString);
 		}
 	}
 #endif // !DEDICATED
 
 	const CPUInformation& pi = GetCPUInformation();
 
-	spdlog::info("{:25s}: '{:s}'\n","CPU model identifier", pi.m_szProcessorBrand);
-	spdlog::info("{:25s}: '{:s}'\n","CPU vendor tag", pi.m_szProcessorID);
-	spdlog::info("{:25s}: '{:12d}' ('{:2d}' {:s})\n", "CPU core count", pi.m_nPhysicalProcessors, pi.m_nLogicalProcessors, "logical");
-	spdlog::info("{:25s}: '{:12d}' ({:12s})\n", "CPU core speed", pi.m_Speed, "Cycles");
-	spdlog::info("{:20s}{:s}: '{:12d}' (0x{:<10X})\n", "L1 cache", "(KiB)", pi.m_nL1CacheSizeKb, pi.m_nL1CacheDesc);
-	spdlog::info("{:20s}{:s}: '{:12d}' (0x{:<10X})\n", "L2 cache", "(KiB)", pi.m_nL2CacheSizeKb, pi.m_nL2CacheDesc);
-	spdlog::info("{:20s}{:s}: '{:12d}' (0x{:<10X})\n", "L3 cache", "(KiB)", pi.m_nL3CacheSizeKb, pi.m_nL3CacheDesc);
+	DevMsg(eDLL_T::NONE, "%-25s: '%s'\n","CPU model identifier", pi.m_szProcessorBrand);
+	DevMsg(eDLL_T::NONE, "%-25s: '%s'\n","CPU vendor tag", pi.m_szProcessorID);
+	DevMsg(eDLL_T::NONE, "%-25s: '%12hhu' ('%2hhu' %s)\n", "CPU core count", pi.m_nPhysicalProcessors, pi.m_nLogicalProcessors, "logical");
+	DevMsg(eDLL_T::NONE, "%-25s: '%12lld' ('%6.1f' %s)\n", "CPU core speed", pi.m_Speed, float(pi.m_Speed / 1000000), "MHz");
+	DevMsg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L1 cache", "(KiB)", pi.m_nL1CacheSizeKb, pi.m_nL1CacheDesc);
+	DevMsg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L2 cache", "(KiB)", pi.m_nL2CacheSizeKb, pi.m_nL2CacheDesc);
+	DevMsg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L3 cache", "(KiB)", pi.m_nL3CacheSizeKb, pi.m_nL3CacheDesc);
 
 	MEMORYSTATUSEX statex{};
 	statex.dwLength = sizeof(statex);
@@ -290,13 +301,13 @@ void QuerySystemInfo()
 		DWORDLONG availPhysical = (statex.ullAvailPhys / 1024) / 1024;
 		DWORDLONG availVirtual = (statex.ullAvailVirtual / 1024) / 1024;
 
-		spdlog::info("{:20s}{:s}: '{:12d}' ('{:9d}' {:s})\n", "Total system memory", "(MiB)", totalPhysical, totalVirtual, "virtual");
-		spdlog::info("{:20s}{:s}: '{:12d}' ('{:9d}' {:s})\n", "Avail system memory", "(MiB)", availPhysical, availVirtual, "virtual");
+		DevMsg(eDLL_T::NONE, "%-20s%s: '%12llu' ('%9llu' %s)\n", "Total system memory", "(MiB)", totalPhysical, totalVirtual, "virtual");
+		DevMsg(eDLL_T::NONE, "%-20s%s: '%12llu' ('%9llu' %s)\n", "Avail system memory", "(MiB)", availPhysical, availVirtual, "virtual");
 	}
 	else
 	{
-		spdlog::error("Unable to retrieve system memory information: {:s}\n", 
-			std::system_category().message(static_cast<int>(::GetLastError())));
+		Error(eDLL_T::COMMON, NO_ERROR, "Unable to retrieve system memory information: %s\n",
+			std::system_category().message(static_cast<int>(::GetLastError())).c_str());
 	}
 }
 
@@ -326,19 +337,18 @@ void CheckCPU() // Respawn's engine and our SDK utilize POPCNT, SSE3 and SSSE3 (
 
 void DetourInit() // Run the sigscan
 {
-	LPSTR pCommandLine = GetCommandLineA();
-
-	bool bLogAdr = (strstr(pCommandLine, "-sig_toconsole") != nullptr);
+	const bool bLogAdr = CommandLine()->CheckParm("-sig_toconsole") ? true : false;
+	const bool bNoSmap = CommandLine()->CheckParm("-nosmap") ? true : false;
 	bool bInitDivider = false;
 
-	g_SigCache.SetDisabled((strstr(pCommandLine, "-nosmap") != nullptr));
+	g_SigCache.SetDisabled(bNoSmap);
 	g_SigCache.LoadCache(SIGDB_FILE);
 
-	for (const IDetour* pDetour : g_DetourVector)
+	for (const IDetour* Detour : g_DetourVec)
 	{
-		pDetour->GetCon(); // Constants.
-		pDetour->GetFun(); // Functions.
-		pDetour->GetVar(); // Variables.
+		Detour->GetCon(); // Constants.
+		Detour->GetFun(); // Functions.
+		Detour->GetVar(); // Variables.
 
 		if (bLogAdr)
 		{
@@ -347,7 +357,7 @@ void DetourInit() // Run the sigscan
 				bInitDivider = true;
 				spdlog::debug("+---------------------------------------------------------------------+\n");
 			}
-			pDetour->GetAdr();
+			Detour->GetAdr();
 			spdlog::debug("+---------------------------------------------------------------------+\n");
 		}
 	}
@@ -364,9 +374,9 @@ void DetourInit() // Run the sigscan
 void DetourAddress() // Test the sigscan results
 {
 	spdlog::debug("+---------------------------------------------------------------------+\n");
-	for (const IDetour* pDetour : g_DetourVector)
+	for (const IDetour* Detour : g_DetourVec)
 	{
-		pDetour->GetAdr();
+		Detour->GetAdr();
 		spdlog::debug("+---------------------------------------------------------------------+\n");
 	}
 }
@@ -378,7 +388,6 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VJobThread);
 	REGISTER(VThreadTools);
 	REGISTER(VTSListBase);
-	REGISTER(VMemStd);
 
 	// Tier1
 	REGISTER(VCommandLine);
@@ -388,6 +397,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	// VPC
 	REGISTER(VAppSystem);
 	REGISTER(VKeyValues);
+	REGISTER(VRSON);
 	REGISTER(VFactory);
 
 	// VstdLib
@@ -404,7 +414,6 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VLauncher);
 
 	REGISTER(VAppSystemGroup);
-	REGISTER(VApplication);
 
 	// FileSystem
 	REGISTER(VBaseFileSystem);
@@ -431,10 +440,9 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	// StaticPropMgr
 	REGISTER(VStaticPropMgr);
 
+#ifndef DEDICATED
 	// MaterialSystem
 	REGISTER(VMaterialSystem);
-
-#ifndef DEDICATED
 	REGISTER(VMaterialGlue);
 	REGISTER(VShaderGlue);
 
@@ -449,6 +457,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	// Client
 	REGISTER(HVEngineClient);
 	REGISTER(VDll_Engine_Int);
+	REGISTER(VClientDataBlockReceiver);
 #endif // !DEDICATED
 
 #ifndef CLIENT_DLL
@@ -457,6 +466,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VServer); // REGISTER SERVER ONLY!
 	REGISTER(VPersistence); // REGISTER SERVER ONLY!
 	REGISTER(HVEngineServer); // REGISTER SERVER ONLY!
+	REGISTER(VServerDataBlockSender); // REGISTER SERVER ONLY!
 
 #endif // !CLIENT_DLL
 
@@ -465,14 +475,8 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 #ifndef DEDICATED
 	REGISTER(VClientState);
 	REGISTER(VCL_Main);
+	REGISTER(VSplitScreen);
 #endif // !DEDICATED
-
-	// Squirrel
-	REGISTER(VSqInit);
-	REGISTER(VSqapi);
-	REGISTER(HSQVM);
-	REGISTER(VSquirrelVM);
-	REGISTER(VSqStdAux);
 
 	// RTech
 	REGISTER(V_RTechGame);
@@ -485,16 +489,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 #endif // !DEDICATED
 
 	// Engine
-	REGISTER(VTraceInit);
 	REGISTER(VCommon);
-	REGISTER(VModel_BSP);
-	REGISTER(VHost);
-	REGISTER(VHostCmd);
-	REGISTER(VHostState);
-	REGISTER(VModelLoader);
-	REGISTER(VNet);
-	REGISTER(VNetChan);
-	REGISTER(VNetworkStringTableContainer);
 
 	REGISTER(VSys_Dll);
 	REGISTER(VSys_Dll2);
@@ -502,6 +497,19 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VEngine);
 	REGISTER(VEngineTrace);
 	REGISTER(VModelInfo);
+
+	REGISTER(VTraceInit);
+	REGISTER(VModel_BSP);
+	REGISTER(VHost);
+	REGISTER(VHostCmd);
+	REGISTER(VHostState);
+	REGISTER(VModelLoader);
+	REGISTER(VCmd);
+	REGISTER(VNet);
+	REGISTER(VNetChan);
+	REGISTER(VNetworkStringTableContainer);
+
+	REGISTER(VLocalize);
 
 #ifndef DEDICATED
 	REGISTER(HVideoMode_Common);
@@ -524,10 +532,22 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VDebugOverlay); // !TODO: This also needs to be exposed to server dll!!!
 #endif // !DEDICATED
 
+	// VScript
+	REGISTER(VSquirrel);
+	REGISTER(VScript);
+	REGISTER(VScriptShared);
+
+	// Squirrel
+	REGISTER(VSquirrelAPI);
+	REGISTER(VSquirrelAUX);
+	REGISTER(VSquirrelVM);
+
 	// Game/shared
 	REGISTER(VUserCmd);
 	REGISTER(VAnimation);
 	REGISTER(VUtil_Shared);
+
+	REGISTER(V_Weapon_Bolt);
 
 #ifndef CLIENT_DLL
 
@@ -535,7 +555,6 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VAI_Network);
 	REGISTER(VAI_NetworkManager);
 	REGISTER(VRecast);
-	REGISTER(VFairFight);
 	REGISTER(VServerGameDLL);
 	REGISTER(VMoveHelperServer);
 	REGISTER(VPhysics_Main); // REGISTER SERVER ONLY
@@ -547,6 +566,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 
 #ifndef DEDICATED
 	REGISTER(V_ViewRender);
+	REGISTER(VInput);
 	REGISTER(VMoveHelperClient);
 #endif // !DEDICATED
 

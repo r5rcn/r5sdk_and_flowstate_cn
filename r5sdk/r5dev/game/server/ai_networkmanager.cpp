@@ -10,7 +10,6 @@
 #include "tier1/cmd.h"
 #include "mathlib/crc32.h"
 #include "public/edict.h"
-#include "public/utility/utility.h"
 #include "filesystem/filesystem.h"
 #include "game/server/ai_node.h"
 #include "game/server/ai_network.h"
@@ -74,13 +73,12 @@ void CAI_NetworkBuilder::SaveNetworkGraph(CAI_Network* pNetwork)
 	else
 	{
 		uint32_t nLen = FileSystem()->Size(pNavMesh);
-		uint8_t* pBuf = MemAllocSingleton()->Alloc<uint8_t>(nLen);
+		std::unique_ptr<uint8_t[]> pBuf(new uint8_t[nLen]);
 
-		FileSystem()->Read(pBuf, nLen, pNavMesh);
+		FileSystem()->Read(pBuf.get(), nLen, pNavMesh);
 		FileSystem()->Close(pNavMesh);
 
-		nNavMeshHash = crc32::update(NULL, pBuf, nLen);
-		MemAllocSingleton()->Free(pBuf);
+		nNavMeshHash = crc32::update(NULL, pBuf.get(), nLen);
 	}
 
 	// Large NavMesh CRC.
@@ -184,11 +182,10 @@ void CAI_NetworkBuilder::SaveNetworkGraph(CAI_Network* pNetwork)
 
 	if (pNetwork->m_iNumNodes > 0)
 	{
-		uint32_t* unkNodeBlock = MemAllocSingleton()->Alloc<uint32_t>(pNetwork->m_iNumNodes * sizeof(uint32_t));
+		std::unique_ptr<uint32[]> unkNodeBlock(new uint32_t[pNetwork->m_iNumNodes * sizeof(uint32_t)]);
 		memset(&unkNodeBlock, '\0', pNetwork->m_iNumNodes * sizeof(uint32_t));
 
-		FileSystem()->Write(&*unkNodeBlock, pNetwork->m_iNumNodes * sizeof(uint32_t), pAIGraph);
-		MemAllocSingleton()->Free(unkNodeBlock);
+		FileSystem()->Write(unkNodeBlock.get(), pNetwork->m_iNumNodes * sizeof(uint32_t), pAIGraph);
 	}
 
 	// TODO: This is traverse nodes i think? these aren't used in r2 ains so we can get away with just writing count=0 and skipping
@@ -329,13 +326,12 @@ void CAI_NetworkManager::LoadNetworkGraph(CAI_NetworkManager* pAINetworkManager,
 	else
 	{
 		uint32_t nLen = FileSystem()->Size(pNavMesh);
-		uint8_t* pBuf = MemAllocSingleton()->Alloc<uint8_t>(nLen);
+		std::unique_ptr<uint8_t[]> pBuf(new uint8_t[nLen]);
 
-		FileSystem()->Read(pBuf, nLen, pNavMesh);
+		FileSystem()->Read(pBuf.get(), nLen, pNavMesh);
 		FileSystem()->Close(pNavMesh);
 
-		nNavMeshHash = crc32::update(NULL, pBuf, nLen);
-		MemAllocSingleton()->Free(pBuf);
+		nNavMeshHash = crc32::update(NULL, pBuf.get(), nLen);
 	}
 
 	FileHandle_t pAIGraph = FileSystem()->Open(szGraphPath, "rb", "GAME");

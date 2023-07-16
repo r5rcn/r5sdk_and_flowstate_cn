@@ -7,6 +7,7 @@
 
 #include "core/stdafx.h"
 #include "engine/net.h"
+#include "engine/server/server.h"
 #include "engine/client/client.h"
 #include "filesystem/filesystem.h"
 #include "networksystem/bansystem.h"
@@ -24,16 +25,16 @@ void CBanSystem::Load(void)
 		return;
 
 	uint32_t nLen = FileSystem()->Size(pFile);
-	char* pBuf = MemAllocSingleton()->Alloc<char>(nLen + 1);
+	std::unique_ptr<char[]> pBuf(new char[nLen + 1]);
 
-	int nRead = FileSystem()->Read(pBuf, nLen, pFile);
+	int nRead = FileSystem()->Read(pBuf.get(), nLen, pFile);
 	FileSystem()->Close(pFile);
 
-	pBuf[nRead] = '\0'; // Null terminate the string buffer containing our banned list.
+	pBuf.get()[nRead] = '\0'; // Null terminate the string buffer containing our banned list.
 
 	try
 	{
-		nlohmann::json jsIn = nlohmann::json::parse(pBuf);
+		nlohmann::json jsIn = nlohmann::json::parse(pBuf.get());
 
 		size_t nTotalBans = 0;
 		if (!jsIn.is_null())
@@ -58,8 +59,6 @@ void CBanSystem::Load(void)
 	{
 		Warning(eDLL_T::SERVER, "%s: Exception while parsing banned list:\n%s\n", __FUNCTION__, ex.what());
 	}
-
-	MemAllocSingleton()->Free(pBuf);
 }
 
 //-----------------------------------------------------------------------------
@@ -200,7 +199,7 @@ void CBanSystem::KickPlayerByName(const char* playerName, const char* reason)
 	if (!VALID_CHARSTAR(playerName))
 		return;
 
-	AuthorPlayerByName(playerName, false);
+	AuthorPlayerByName(playerName, false, reason);
 }
 
 //-----------------------------------------------------------------------------
@@ -213,7 +212,7 @@ void CBanSystem::KickPlayerById(const char* playerHandle, const char* reason)
 	if (!VALID_CHARSTAR(playerHandle))
 		return;
 
-	AuthorPlayerById(playerHandle, false);
+	AuthorPlayerById(playerHandle, false, reason);
 }
 
 //-----------------------------------------------------------------------------
@@ -226,7 +225,7 @@ void CBanSystem::BanPlayerByName(const char* playerName, const char* reason)
 	if (!VALID_CHARSTAR(playerName))
 		return;
 
-	AuthorPlayerByName(playerName, true);
+	AuthorPlayerByName(playerName, true, reason);
 }
 
 //-----------------------------------------------------------------------------
@@ -239,7 +238,7 @@ void CBanSystem::BanPlayerById(const char* playerHandle, const char* reason)
 	if (!VALID_CHARSTAR(playerHandle))
 		return;
 
-	AuthorPlayerById(playerHandle, true);
+	AuthorPlayerById(playerHandle, true, reason);
 }
 
 //-----------------------------------------------------------------------------
@@ -296,7 +295,7 @@ void CBanSystem::AuthorPlayerByName(const char* playerName, const bool shouldBan
 
 	for (int i = 0; i < g_ServerGlobalVariables->m_nMaxClients; i++)
 	{
-		CClient* pClient = g_pClient->GetClient(i);
+		CClient* pClient = g_pServer->GetClient(i);
 		if (!pClient)
 			continue;
 
@@ -349,7 +348,7 @@ void CBanSystem::AuthorPlayerById(const char* playerHandle, const bool shouldBan
 
 		for (int i = 0; i < g_ServerGlobalVariables->m_nMaxClients; i++)
 		{
-			CClient* pClient = g_pClient->GetClient(i);
+			CClient* pClient = g_pServer->GetClient(i);
 			if (!pClient)
 				continue;
 

@@ -12,9 +12,9 @@
 #endif
 
 #include "mathlib/vector.h"
+#include "tier1/string_t.h"
 #include "public/iservernetworkable.h"
 #include "public/iserverentity.h"
-#include "public/string_t.h"
 #include "engine/gl_model_private.h"
 #include "game/shared/collisionproperty.h"
 #include "networkproperty.h"
@@ -254,7 +254,7 @@ protected:
 };
 
 inline CMemory p_CBaseEntity__GetBaseEntity;
-inline auto v_CBaseEntity__GetBaseEntity = p_CBaseEntity__GetBaseEntity.RCast<CBaseEntity* (*)(CBaseEntity* thisp)>();
+inline CBaseEntity*(*v_CBaseEntity__GetBaseEntity)(CBaseEntity* thisp);
 
 ///////////////////////////////////////////////////////////////////////////////
 class VBaseEntity : public IDetour

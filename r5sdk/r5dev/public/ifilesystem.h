@@ -37,10 +37,50 @@ struct FileSystemStatistics
 		nSeeks;
 };
 
+struct FileSystemCacheDescriptor
+{
+	const char* pszFilePath;
+	const char* pszFileName;
+	const char* pszFileExt;
+
+	void* pUnk0; // Ptr to ptr of some dynamically allocated buffer.
+
+	int nFileSize;
+	int nFileFlags; // Might be wrong.
+
+	void* pUnk1; // Ptr to some data; compressed perhaps?
+
+	int nUnk0;
+	int nUnk1;
+
+	int nUnk2;
+	int nUnk3;
+	int nUnk4;
+
+	int nPadding;
+};
+
+struct FileSystemCacheBuffer
+{
+	byte* pData; // Actual file buffer.
+	void* pUnk;
+	int nUnk0;
+	volatile LONG nLock;
+	int nUnk1;
+	int nUnk2; // Used to index into arrays.
+};
+
+struct FileSystemCache
+{
+	int nUnk0; // Most of the time, this is set to '1'.
+	FileSystemCacheDescriptor* pDescriptor;
+	FileSystemCacheBuffer* pBuffer;
+};
+
 //-----------------------------------------------------------------------------
 // File system allocation functions. Client must free on failure
 //-----------------------------------------------------------------------------
-typedef void* (*FSAllocFunc_t)(const char* pszFilename, unsigned nBytes);
+typedef void* (*FSAllocFunc_t)(const char* pszFileName, unsigned nBytes);
 
 
 //-----------------------------------------------------------------------------
@@ -206,7 +246,7 @@ public:
 	// remember it in case you add search paths with this path ID.
 	virtual void			MarkPathIDByRequestOnly(const char* pPathID, bool bRequestOnly) = 0;
 	// converts a partial path into a full path
-	virtual const char* RelativePathToFullPath(const char* pFileName, const char* pPathID, char* pLocalPath, int localPathBufferSize, PathTypeFilter_t pathFilter = FILTER_NONE, PathTypeQuery_t* pPathType = NULL) = 0;
+	virtual const char* RelativePathToFullPath(const char* pFileName, const char* pPathID, char* pLocalPath, size_t localPathBufferSize, PathTypeFilter_t pathFilter = FILTER_NONE, PathTypeQuery_t* pPathType = NULL) = 0;
 #if IsGameConsole()
 	// Given a relative path, gets the PACK file that contained this file and its offset and size. Can be used to prefetch a file to a HDD for caching reason.
 	virtual bool            GetPackFileInfoFromRelativePath(const char* pFileName, const char* pPathID, char* pPackPath, int nPackPathBufferSize, int64& nPosition, int64& nLength) = 0;
@@ -220,7 +260,7 @@ public:
 	//--------------------------------------------------------
 	virtual void			RemoveFile(char const* pRelativePath, const char* pathID = 0) = 0;                  // Deletes a file (on the WritePath)
 	virtual bool			RenameFile(char const* pOldPath, char const* pNewPath, const char* pathID = 0) = 0; // Renames a file (on the WritePath)
-	virtual void			CreateDirHierarchy(const char* path, const char* pathID = 0) = 0;                   // create a local directory structure
+	virtual int				CreateDirHierarchy(const char* path, const char* pathID = 0) = 0;                   // create a local directory structure
 	virtual bool			IsDirectory(const char* pFileName, const char* pathID = 0) = 0;                     // File I/O and info
 	virtual void			FileTimeToString(char* pStrip, int maxCharsIncludingTerminator, long fileTime) = 0;
 
@@ -386,7 +426,7 @@ public:
 	//--------------------------------------------------------
 	// Cache/VPK operations
 	//--------------------------------------------------------
-	virtual bool ReadFromCache(const char* pPath, void* pResult) = 0;
+	virtual bool ReadFromCache(const char* pPath, FileSystemCache* pCache) = 0;
 
 	virtual bool __fastcall sub_14037FFA0(__int64 a1, unsigned int a2, __int64 a3) = 0;
 

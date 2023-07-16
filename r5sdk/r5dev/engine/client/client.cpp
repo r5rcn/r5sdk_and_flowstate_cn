@@ -10,208 +10,9 @@
 ///////////////////////////////////////////////////////////////////////////////////
 #include "core/stdafx.h"
 #include "tier1/cvar.h"
+#include "tier1/strtools.h"
 #include "engine/server/server.h"
 #include "engine/client/client.h"
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the client from buffer by index
-//---------------------------------------------------------------------------------
-CClient* CClient::GetClient(int nIndex) const
-{
-	return reinterpret_cast<CClient*>(
-		(reinterpret_cast<uintptr_t>(g_pClient) + (nIndex * sizeof(CClient))));
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the client's team number
-//---------------------------------------------------------------------------------
-int64_t CClient::GetTeamNum() const
-{
-	return m_iTeamNum;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the handle of this client
-//---------------------------------------------------------------------------------
-edict_t CClient::GetHandle(void) const
-{
-	return m_nHandle;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the userID of this client
-//---------------------------------------------------------------------------------
-int CClient::GetUserID(void) const
-{
-	return m_nUserID;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the nucleusID of this client
-//---------------------------------------------------------------------------------
-uint64_t CClient::GetNucleusID(void) const
-{
-	return m_nNucleusID;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the signon state of this client
-//---------------------------------------------------------------------------------
-SIGNONSTATE CClient::GetSignonState(void) const
-{
-	return m_nSignonState;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the persistence state of this client
-//---------------------------------------------------------------------------------
-PERSISTENCE CClient::GetPersistenceState(void) const
-{
-	return m_nPersistenceState;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the net channel of this client
-//---------------------------------------------------------------------------------
-CNetChan* CClient::GetNetChan(void) const
-{
-	return m_NetChannel;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the pointer to the server object
-//---------------------------------------------------------------------------------
-CServer* CClient::GetServer(void) const
-{
-	return m_pServer;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the command tick
-//---------------------------------------------------------------------------------
-int CClient::GetCommandTick(void) const
-{
-	return m_nCommandTick;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the name of this client (managed by server)
-//---------------------------------------------------------------------------------
-const char* CClient::GetServerName(void) const
-{
-	return m_szServerName;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: gets the name of this client (obtained from connectionless packet)
-//---------------------------------------------------------------------------------
-const char* CClient::GetClientName(void) const
-{
-	return m_szClientName;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: sets the handle of this client
-//---------------------------------------------------------------------------------
-void CClient::SetHandle(edict_t nHandle)
-{
-	m_nHandle = nHandle;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: sets the userID of this client
-//---------------------------------------------------------------------------------
-void CClient::SetUserID(uint32_t nUserID)
-{
-	m_nUserID = nUserID;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: sets the nucleusID of this client
-//---------------------------------------------------------------------------------
-void CClient::SetNucleusID(uint64_t nNucleusID)
-{
-	m_nNucleusID = nNucleusID;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: sets the signon state of this client
-//---------------------------------------------------------------------------------
-void CClient::SetSignonState(SIGNONSTATE nSignonState)
-{
-	m_nSignonState = nSignonState;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: sets the persistence state of this client
-//---------------------------------------------------------------------------------
-void CClient::SetPersistenceState(PERSISTENCE nPersistenceState)
-{
-	m_nPersistenceState = nPersistenceState;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: sets the net channel of this client
-// !TODO  : Remove this and rebuild INetChannel
-//---------------------------------------------------------------------------------
-void CClient::SetNetChan(CNetChan* pNetChan)
-{
-	m_NetChannel = pNetChan;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: checks if client is connected to server
-// Output : true if connected, false otherwise
-//---------------------------------------------------------------------------------
-bool CClient::IsConnected(void) const
-{
-	return m_nSignonState >= SIGNONSTATE::SIGNONSTATE_CONNECTED;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: checks if client is spawned to server
-// Output : true if connected, false otherwise
-//---------------------------------------------------------------------------------
-bool CClient::IsSpawned(void) const
-{
-	return m_nSignonState >= SIGNONSTATE::SIGNONSTATE_NEW;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: checks if client is active to server
-// Output : true if connected, false otherwise
-//---------------------------------------------------------------------------------
-bool CClient::IsActive(void) const
-{
-	return m_nSignonState == SIGNONSTATE::SIGNONSTATE_FULL;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: checks if client's persistence data is available
-// Output : true if available, false otherwise
-//---------------------------------------------------------------------------------
-bool CClient::IsPersistenceAvailable(void) const
-{
-	return m_nPersistenceState >= PERSISTENCE::PERSISTENCE_AVAILABLE;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: checks if client's persistence data is ready
-// Output : true if ready, false otherwise
-//---------------------------------------------------------------------------------
-bool CClient::IsPersistenceReady(void) const
-{
-	return m_nPersistenceState == PERSISTENCE::PERSISTENCE_READY;
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: checks if client is a fake client
-// Output : true if connected, false otherwise
-//---------------------------------------------------------------------------------
-bool CClient::IsFakeClient(void) const
-{
-	return m_bFakePlayer;
-}
 
 //---------------------------------------------------------------------------------
 // Purpose: checks if this client is an actual human player
@@ -298,7 +99,7 @@ void CClient::Disconnect(const Reputation_t nRepLvl, const char* szReason, ...)
 	{
 		char szBuf[1024];
 		{/////////////////////////////
-			va_list vArgs{};
+			va_list vArgs;
 			va_start(vArgs, szReason);
 
 			vsnprintf(szBuf, sizeof(szBuf), szReason, vArgs);
@@ -310,11 +111,53 @@ void CClient::Disconnect(const Reputation_t nRepLvl, const char* szReason, ...)
 	}
 }
 
-bool CClient::SendNetMsg(CNetMessage* pMsg, char bLocal, bool bForceReliable, bool bVoice)
+//---------------------------------------------------------------------------------
+// Purpose: activate player
+// Input  : *pClient - 
+//---------------------------------------------------------------------------------
+void CClient::VActivatePlayer(CClient* pClient)
 {
-	return v_CClient_SendNetMsg(this, pMsg, bLocal, bForceReliable, bVoice);
+	pClient->SetPersistenceState(PERSISTENCE::PERSISTENCE_READY); // Set the client instance to 'ready'.
+	int nUserID = pClient->GetUserID();
+
+	if (!g_ServerPlayer[nUserID].m_bPersistenceEnabled && sv_showconnecting->GetBool())
+	{
+		g_ServerPlayer[nUserID].m_bPersistenceEnabled = true;
+		CNetChan* pNetChan = pClient->GetNetChan();
+
+		DevMsg(eDLL_T::SERVER, "Enabled persistence for client #%d; channel %s(%s) ('%llu')\n",
+			nUserID, pNetChan->GetName(), pNetChan->GetAddress(), pClient->GetNucleusID());
+	}	///////////////////////////////////////////////////////////////////////
+
+	v_CClient_ActivatePlayer(pClient);
 }
 
+//---------------------------------------------------------------------------------
+// Purpose: send a net message with replay.
+//			set 'CNetMessage::m_nGroup' to 'NoReplay' to disable replay.
+// Input  : *pMsg - 
+//			bLocal - 
+//			bForceReliable - 
+//			bVoice - 
+//---------------------------------------------------------------------------------
+bool CClient::SendNetMsgEx(CNetMessage* pMsg, char bLocal, bool bForceReliable, bool bVoice)
+{
+	if (!ShouldReplayMessage(pMsg))
+	{
+		// Don't copy the message into the replay buffer.
+		pMsg->m_nGroup = NetMessageGroup::NoReplay;
+	}
+
+	return v_CClient_SendNetMsgEx(this, pMsg, bLocal, bForceReliable, bVoice);
+}
+
+//---------------------------------------------------------------------------------
+// Purpose: send a snapshot
+// Input  : *pClient - 
+//			*pFrame - 
+//			nTick - 
+//			nTickAck - 
+//---------------------------------------------------------------------------------
 void* CClient::VSendSnapshot(CClient* pClient, CClientFrame* pFrame, int nTick, int nTickAck)
 {
 	return v_CClient_SendSnapshot(pClient, pFrame, nTick, nTickAck);
@@ -348,6 +191,19 @@ bool CClient::VProcessStringCmd(CClient* pClient, NET_StringCmd* pMsg)
 	if (!nCmdQuotaLimit)
 		return true;
 
+	const char* pCmd = pMsg->cmd;
+	// Just skip if the cmd pointer is null, we still check if the
+	// client sent too many commands and take appropriate actions.
+	// The internal function discards the command if it's null.
+	if (pCmd && !V_IsValidUTF8(pCmd))
+	{
+		Warning(eDLL_T::SERVER, "Removing client '%s' from slot #%i ('%llu' sent invalid string command!)\n",
+			pClient_Adj->GetNetChan()->GetAddress(), pClient_Adj->GetUserID(), pClient_Adj->GetNucleusID());
+
+		pClient_Adj->Disconnect(Reputation_t::REP_MARK_BAD, "#DISCONNECT_INVALID_STRINGCMD");
+		return true;
+	}
+
 	if (flStartTime - pSlot->m_flStringCommandQuotaTimeStart >= 1.0)
 	{
 		pSlot->m_flStringCommandQuotaTimeStart = flStartTime;
@@ -357,13 +213,10 @@ bool CClient::VProcessStringCmd(CClient* pClient, NET_StringCmd* pMsg)
 
 	if (pSlot->m_nStringCommandQuotaCount > nCmdQuotaLimit)
 	{
-		const char* pszAddress = pClient_Adj->GetNetChan()->GetAddress();
-		const uint64_t nNucleusID = pClient_Adj->GetNucleusID();
+		Warning(eDLL_T::SERVER, "Removing client '%s' from slot #%i ('%llu' exceeded string command quota!)\n",
+			pClient_Adj->GetNetChan()->GetAddress(), pClient_Adj->GetUserID(), pClient_Adj->GetNucleusID());
 
 		pClient_Adj->Disconnect(Reputation_t::REP_MARK_BAD, "#DISCONNECT_STRINGCMD_OVERFLOW");
-
-		Warning(eDLL_T::SERVER, "Removed client '%s' from slot #%i ('%llu' exceeded string command quota!)\n",
-			pszAddress, nUserID, nNucleusID);
 		return true;
 	}
 #endif // !CLIENT_DLL
@@ -371,5 +224,15 @@ bool CClient::VProcessStringCmd(CClient* pClient, NET_StringCmd* pMsg)
 	return v_CClient_ProcessStringCmd(pClient, pMsg);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-CClient* g_pClient = nullptr;
+//---------------------------------------------------------------------------------
+// Purpose: internal hook to 'CClient::SendNetMsgEx'
+// Input  : *pClient - 
+//			*pMsg - 
+//			bLocal - 
+//			bForceReliable - 
+//			bVoice - 
+//---------------------------------------------------------------------------------
+bool CClient::VSendNetMsgEx(CClient* pClient, CNetMessage* pMsg, char bLocal, bool bForceReliable, bool bVoice)
+{
+	return pClient->SendNetMsgEx(pMsg, bLocal, bForceReliable, bVoice);
+}

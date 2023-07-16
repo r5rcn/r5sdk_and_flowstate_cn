@@ -8,13 +8,13 @@
 #include "public/igame.h"
 
 inline CMemory p_CGame__AttachToWindow;
-inline auto v_CGame__AttachToWindow= p_CGame__AttachToWindow.RCast<void (*)(void)>();
+inline void (*v_CGame__AttachToWindow)(void);
 
 inline CMemory p_CGame__PlayStartupVideos;
-inline auto v_CGame__PlayStartupVideos = p_CGame__PlayStartupVideos.RCast<void (*)(void)>();
+inline void(*v_CGame__PlayStartupVideos)(void);
 
 inline CMemory p_CGame__WindowProc;
-inline auto v_CGame__WindowProc = p_CGame__WindowProc.RCast<int (*)(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)>();
+inline int(*v_CGame__WindowProc)(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
 // Purpose: Main game interface, including message pump and window creation
 //-----------------------------------------------------------------------------

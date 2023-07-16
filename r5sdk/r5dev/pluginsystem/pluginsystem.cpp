@@ -8,6 +8,8 @@
 
 #include "core/stdafx.h"
 #include "pluginsystem.h"
+#include <filesystem/filesystem.h>
+#include <tier2/fileutils.h>
 
 //-----------------------------------------------------------------------------
 // Purpose: initialize the plugin system
@@ -15,33 +17,26 @@
 //-----------------------------------------------------------------------------
 void CPluginSystem::PluginSystem_Init()
 {
-	const fs::path path("bin\\x64_retail\\plugins\\");
-	const string pathString(path.u8string());
+	FileSystem()->CreateDirHierarchy("bin\\x64_retail\\plugins");
 
-	CreateDirectories(pathString);
-	if (fs::is_directory(path))
+	CUtlVector< CUtlString > pluginPaths;
+	AddFilesToList(pluginPaths, "bin\\x64_retail\\plugins", "dll");
+
+	for (int i = 0; i < pluginPaths.Count(); ++i)
 	{
-		for (auto& it : fs::directory_iterator(path))
+		CUtlString& path = pluginPaths[i];
+
+		bool addInstance = true;
+		for (auto& inst : pluginInstances)
 		{
-			if (!fs::is_regular_file(it))
-				continue;
-
-			if (auto path = it.path();
-				path.has_filename() &&
-				path.has_extension() &&
-				path.extension().compare(".dll") == 0)
-			{
-				bool addInstance = true;
-				for (auto& inst : pluginInstances)
-				{
-					if (inst.m_svPluginFullPath.compare(pathString) == 0)
-						addInstance = false;
-				}
-
-				if (addInstance)
-					pluginInstances.push_back(PluginInstance_t(path.filename().u8string(), pathString));
-			}
+			if (inst.m_svPluginFullPath.compare(path.Get()) == 0)
+				addInstance = false;
 		}
+
+		const char* baseFileName = V_UnqualifiedFileName(path.Get());
+
+		if (addInstance)
+			pluginInstances.push_back(PluginInstance_t(baseFileName, path.Get()));
 	}
 }
 
@@ -59,20 +54,23 @@ bool CPluginSystem::LoadPluginInstance(PluginInstance_t& pluginInst)
 	if (loadedPlugin == INVALID_HANDLE_VALUE || loadedPlugin == 0)
 		return false;
 
-	CModule pluginModule = CModule(pluginInst.m_svPluginName);
+	CModule pluginModule(pluginInst.m_svPluginName.c_str());
 
-	// Pass selfModule here on load function, we have to do this because local listen/dedi/client dll's are called different, refer to a comment on the pluginsdk.
-	auto onLoadFn = pluginModule.GetExportedFunction("PluginInstance_OnLoad").RCast<PluginInstance_t::OnLoad>();
+	// Pass selfModule here on load function, we have to do
+	// this because local listen/dedi/client dll's are called
+	// different, refer to a comment on the pluginsdk.
+	PluginInstance_t::OnLoad onLoadFn = pluginModule.GetExportedSymbol(
+		"PluginInstance_OnLoad").RCast<PluginInstance_t::OnLoad>();
+
 	Assert(onLoadFn);
 
-	if (!onLoadFn(pluginInst.m_svPluginName.c_str()))
+	if (!onLoadFn(pluginInst.m_svPluginName.c_str(), g_SDKDll.GetModuleName().c_str()))
 	{
 		FreeLibrary(loadedPlugin);
 		return false;
 	}
 
 	pluginInst.m_hModule = pluginModule;
-
 	return pluginInst.m_bIsLoaded = true;
 }
 
@@ -86,7 +84,10 @@ bool CPluginSystem::UnloadPluginInstance(PluginInstance_t& pluginInst)
 	if (!pluginInst.m_bIsLoaded)
 		return false;
 
-	auto onUnloadFn = pluginInst.m_hModule.GetExportedFunction("PluginInstance_OnUnload").RCast<PluginInstance_t::OnUnload>();
+	PluginInstance_t::OnUnload onUnloadFn = 
+		pluginInst.m_hModule.GetExportedSymbol(
+		"PluginInstance_OnUnload").RCast<PluginInstance_t::OnUnload>();
+
 	Assert(onUnloadFn);
 
 	if (onUnloadFn)

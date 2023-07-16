@@ -9,24 +9,30 @@ class CClient;
 
 /* ==== SV_MAIN ======================================================================================================================================================= */
 inline CMemory p_SV_InitGameDLL;
-inline auto v_SV_InitGameDLL = p_SV_InitGameDLL.RCast<void(*)(void)>();
+inline void(*v_SV_InitGameDLL)(void);
 
 inline CMemory p_SV_ShutdownGameDLL;
-inline auto v_SV_ShutdownGameDLL = p_SV_ShutdownGameDLL.RCast<void(*)(void)>();
+inline void(*v_SV_ShutdownGameDLL)(void);
 
 inline CMemory p_SV_ActivateServer;
-inline auto v_SV_ActivateServer = p_SV_ActivateServer.RCast<bool(*)(void)>();
+inline bool(*v_SV_ActivateServer)(void);
 
 inline CMemory p_SV_CreateBaseline;
-inline auto v_SV_CreateBaseline = p_SV_CreateBaseline.RCast<bool(*)(void)>();
+inline bool(*v_SV_CreateBaseline)(void);
 
 inline CMemory p_CGameServer__SpawnServer;
-inline auto CGameServer__SpawnServer = p_CGameServer__SpawnServer.RCast<bool(*)(void* thisptr, const char* pszMapName, const char* pszMapGroupName)>();
+inline bool(*CGameServer__SpawnServer)(void* thisptr, const char* pszMapName, const char* pszMapGroupName);
 
 inline CMemory p_SV_BroadcastVoiceData;
-inline auto v_SV_BroadcastVoiceData = p_SV_BroadcastVoiceData.RCast<void(__fastcall*)(CClient* cl, int nBytes, char* data)>();
+inline void(*v_SV_BroadcastVoiceData)(CClient* cl, int nBytes, char* data);
 
 inline bool* s_bIsDedicated = nullptr;
+
+// Returns true if this is a dedicated server.
+inline bool IsDedicated()
+{
+	return *s_bIsDedicated;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +73,7 @@ class HSV_Main : public IDetour
 		v_SV_ShutdownGameDLL       = p_SV_ShutdownGameDLL.RCast<void(*)(void)>();
 		v_SV_ActivateServer        = p_SV_ActivateServer.RCast<bool(*)(void)>();
 		v_SV_CreateBaseline        = p_SV_CreateBaseline.RCast<bool(*)(void)>();
-		v_SV_BroadcastVoiceData = p_SV_BroadcastVoiceData.RCast<void(__fastcall*)(CClient* cl, int nBytes, char* data)>();
+		v_SV_BroadcastVoiceData = p_SV_BroadcastVoiceData.RCast<void(*)(CClient* cl, int nBytes, char* data)>();
 
 		CGameServer__SpawnServer = p_CGameServer__SpawnServer.RCast<bool(*)(void*, const char*, const char*)>();
 	}

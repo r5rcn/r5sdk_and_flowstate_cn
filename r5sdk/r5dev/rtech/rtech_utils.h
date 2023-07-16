@@ -2,9 +2,7 @@
 #include "tier0/jobthread.h"
 #include "vpklib/packedstore.h"
 #include "rtech/rtech_game.h"
-#ifndef DEDICATED
 #include "public/rendersystem/schema/texture.g.h"
-#endif // !DEDICATED
 
 #define PAK_MAX_TYPES 64
 #define PAK_PARAM_SIZE 0xB0
@@ -376,31 +374,23 @@ static_assert(sizeof(RPakDecompState_t) == 136);
 static_assert(sizeof(RPakPatchCompressedHeader_t) == 16);
 
 /* ==== RTECH =========================================================================================================================================================== */
-#if !defined (DEDICATED)
-inline CMemory p_RTech_CreateDXTexture;
-inline auto RTech_CreateDXTexture = p_RTech_CreateDXTexture.RCast<void(*)(TextureHeader_t*, int64_t)>();
-
-inline CMemory p_GetStreamOverlay;
-inline auto GetStreamOverlay = p_GetStreamOverlay.RCast<void(*)(const char* mode, char* buf, size_t bufSize)>();
-#endif
-
 // [ PIXIE ]: I'm very unsure about this, but it really seems like it
 inline CMemory p_RTech_FindFreeSlotInFiles;
-inline auto RTech_FindFreeSlotInFiles = p_RTech_FindFreeSlotInFiles.RCast<int32_t(*)(int32_t*)>();
+inline int32_t(*RTech_FindFreeSlotInFiles)(int32_t*);
 
 inline CMemory p_RTech_OpenFile;
-inline auto RTech_OpenFile = p_RTech_OpenFile.RCast<int32_t(*)(const char*, void*, int64_t*)>();
+inline int32_t(*RTech_OpenFile)(const char*, void*, int64_t*);
 
 inline CMemory p_RTech_RegisterAsset;
-inline auto RTech_RegisterAsset = p_RTech_RegisterAsset.RCast<void(*)(int, int, const char*, void*, void*, void*, void*, int, int, uint32_t, int, int)>();
+inline void(*RTech_RegisterAsset)(int, int, const char*, void*, void*, void*, void*, int, int, uint32_t, int, int);
 
 #ifdef GAMEDLL_S3
 inline CMemory p_Pak_ProcessGuidRelationsForAsset;
-inline auto RTech_Pak_ProcessGuidRelationsForAsset = p_Pak_ProcessGuidRelationsForAsset.RCast<void(__fastcall*)(PakFile_t*, RPakAssetEntry_t*)>();
+inline void(*RTech_Pak_ProcessGuidRelationsForAsset)(PakFile_t*, RPakAssetEntry_t*);
 #endif
 
 inline CMemory p_StreamDB_Init;
-inline auto v_StreamDB_Init = p_StreamDB_Init.RCast<void (*)(const char* pszLevelName)>();
+inline void(*v_StreamDB_Init)(const char* pszLevelName);
 
 inline RPakLoadedInfo_t* g_pLoadedPakInfo;
 inline int16_t* g_pRequestedPakCount;
@@ -431,10 +421,7 @@ public:
 	static void PakProcessGuidRelationsForAsset(PakFile_t* pak, RPakAssetEntry_t* asset);
 #endif // GAMEDLL_S3
 
-#if !defined (DEDICATED)
-	static void CreateDXTexture(TextureHeader_t* textureHeader, int64_t cpuArg);
 	void** LoadShaderSet(void** VTablePtr);
-#endif // !DEDICATED
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -445,14 +432,9 @@ class V_RTechUtils : public IDetour
 {
 	virtual void GetAdr(void) const
 	{
-#if !defined (DEDICATED)
-		LogFunAdr("RTech::CreateDXTexture", p_RTech_CreateDXTexture.GetPtr());
-#endif // !DEDICATED
 		LogFunAdr("RTech::FindFreeSlotInFiles", p_RTech_FindFreeSlotInFiles.GetPtr());
 		LogFunAdr("RTech::OpenFile", p_RTech_OpenFile.GetPtr());
-#if !defined (DEDICATED)
-		LogFunAdr("GetStreamOverlay", p_GetStreamOverlay.GetPtr());
-#endif // !DEDICATED
+
 		LogFunAdr("StreamDB_Init", p_StreamDB_Init.GetPtr());
 		LogVarAdr("s_FileArray", reinterpret_cast<uintptr_t>(s_pFileArray));
 		LogVarAdr("s_FileArrayMutex", reinterpret_cast<uintptr_t>(s_pFileArrayMutex));
@@ -471,17 +453,6 @@ class V_RTechUtils : public IDetour
 	}
 	virtual void GetFun(void) const 
 	{
-#if !defined (DEDICATED)
-#if defined (GAMEDLL_S0) || defined (GAMEDLL_S1)
-		p_RTech_CreateDXTexture = g_GameDll.FindPatternSIMD("48 8B C4 48 89 48 08 53 55 41 55");
-		RTech_CreateDXTexture = p_RTech_CreateDXTexture.RCast<void(*)(TextureHeader_t*, int64_t)>(); /*48 8B C4 48 89 48 08 53 55 41 55*/
-#elif defined (GAMEDLL_S2) || defined (GAMEDLL_S3)
-		p_RTech_CreateDXTexture = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 4C 8B C7 48 8B D5 48 8B CB 48 83 C4 60").FollowNearCallSelf();
-		RTech_CreateDXTexture = p_RTech_CreateDXTexture.RCast<void(*)(TextureHeader_t*, int64_t)>(); /*E8 ? ? ? ? 4C 8B C7 48 8B D5 48 8B CB 48 83 C4 60*/
-#endif
-		p_GetStreamOverlay = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 80 7C 24 ?? ?? 0F 84 ?? ?? ?? ?? 48 89 9C 24 ?? ?? ?? ??").FollowNearCallSelf();
-		GetStreamOverlay = p_GetStreamOverlay.RCast<void(*)(const char*, char*, size_t)>(); /*E8 ? ? ? ? 80 7C 24 ? ? 0F 84 ? ? ? ? 48 89 9C 24 ? ? ? ?*/
-#endif // !DEDICATED
 		p_StreamDB_Init = g_GameDll.FindPatternSIMD("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 54 41 56 41 57 48 83 EC 40 48 8B E9");
 		v_StreamDB_Init = p_StreamDB_Init.RCast<void (*)(const char*)>(); /*48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 54 41 56 41 57 48 83 EC 40 48 8B E9*/
 
@@ -496,7 +467,7 @@ class V_RTechUtils : public IDetour
 
 #ifdef GAMEDLL_S3
 		p_Pak_ProcessGuidRelationsForAsset = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 48 8B 86 ?? ?? ?? ?? 42 8B 0C B0").FollowNearCallSelf();
-		RTech_Pak_ProcessGuidRelationsForAsset = p_Pak_ProcessGuidRelationsForAsset.RCast<void(__fastcall*)(PakFile_t*, RPakAssetEntry_t*)>(); /*E8 ? ? ? ? 48 8B 86 ? ? ? ? 42 8B 0C B0*/
+		RTech_Pak_ProcessGuidRelationsForAsset = p_Pak_ProcessGuidRelationsForAsset.RCast<void(*)(PakFile_t*, RPakAssetEntry_t*)>(); /*E8 ? ? ? ? 48 8B 86 ? ? ? ? 42 8B 0C B0*/
 #endif
 	}
 	virtual void GetVar(void) const

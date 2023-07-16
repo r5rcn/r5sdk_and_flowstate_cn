@@ -5,7 +5,10 @@
 //=============================================================================//
 
 #include "core/stdafx.h"
+#include "tier0/frametask.h"
 #include "tier1/cvar.h"
+#include "vpc/keyvalues.h"
+#include "common/callback.h"
 #include "engine/net.h"
 #include "engine/net_chan.h"
 #ifndef CLIENT_DLL
@@ -16,128 +19,20 @@
 
 
 //-----------------------------------------------------------------------------
-// Purpose: gets the netchannel name
-// Output : const char*
-//-----------------------------------------------------------------------------
-const char* CNetChan::GetName(void) const
-{
-	return this->m_Name;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel address
-// Output : const char*
-//-----------------------------------------------------------------------------
-const char* CNetChan::GetAddress(bool onlyBase) const
-{
-	return this->remote_address.ToString(onlyBase);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel port in host byte order
-// Output : int
-//-----------------------------------------------------------------------------
-int CNetChan::GetPort(void) const
-{
-	return int(ntohs(this->remote_address.GetPort()));
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel data rate
-// Output : int
-//-----------------------------------------------------------------------------
-int CNetChan::GetDataRate(void) const
-{
-	return this->m_Rate;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel buffer size (NET_FRAMES_BACKUP)
-// Output : int
-//-----------------------------------------------------------------------------
-int CNetChan::GetBufferSize(void) const
-{
-	return NET_FRAMES_BACKUP;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel latency
-// Input  : flow - 
+// Purpose: gets the netchannel network loss
 // Output : float
 //-----------------------------------------------------------------------------
-float CNetChan::GetLatency(int flow) const
+float CNetChan::GetNetworkLoss() const
 {
-	return this->m_DataFlow[flow].latency;
-}
+	float v1 = *&m_DataFlow[1].frames[0].one;
+	if (!v1 && !m_nSequencesSkipped_MAYBE)
+		return 0.0f;
 
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel average choke
-// Input  : flow - 
-// Output : float
-//-----------------------------------------------------------------------------
-float CNetChan::GetAvgChoke(int flow) const
-{
-	return this->m_DataFlow[flow].avgchoke;
-}
+	float v4 = (v1 + m_nSequencesSkipped_MAYBE);
+	if (v1 + m_nSequencesSkipped_MAYBE < 0)
+		v4 = v4 + float(2 ^ 64);
 
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel average latency
-// Input  : flow - 
-// Output : float
-//-----------------------------------------------------------------------------
-float CNetChan::GetAvgLatency(int flow) const
-{
-	return this->m_DataFlow[flow].avglatency;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel average loss
-// Input  : flow - 
-// Output : float
-//-----------------------------------------------------------------------------
-float CNetChan::GetAvgLoss(int flow) const
-{
-	return this->m_DataFlow[flow].avgloss;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel average packets
-// Input  : flow - 
-// Output : float
-//-----------------------------------------------------------------------------
-float CNetChan::GetAvgPackets(int flow) const
-{
-	return this->m_DataFlow[flow].avgpacketspersec;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel average data
-// Input  : flow - 
-// Output : float
-//-----------------------------------------------------------------------------
-float CNetChan::GetAvgData(int flow) const
-{
-	return this->m_DataFlow[flow].avgbytespersec;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel total data
-// Input  : flow - 
-// Output : int64_t
-//-----------------------------------------------------------------------------
-int64_t CNetChan::GetTotalData(int flow) const
-{
-	return this->m_DataFlow[flow].totalbytes;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel total packets
-// Input  : flow - 
-// Output : int64_t
-//-----------------------------------------------------------------------------
-int64_t CNetChan::GetTotalPackets(int flow) const
-{
-	return this->m_DataFlow[flow].totalpackets;
+	return m_nSequencesSkipped_MAYBE / v4;
 }
 
 //-----------------------------------------------------------------------------
@@ -149,11 +44,11 @@ int CNetChan::GetSequenceNr(int flow) const
 {
 	if (flow == FLOW_OUTGOING)
 	{
-		return this->m_nOutSequenceNr;
+		return m_nOutSequenceNr;
 	}
 	else if (flow == FLOW_INCOMING)
 	{
-		return this->m_nInSequenceNr;
+		return m_nInSequenceNr;
 	}
 
 	return NULL;
@@ -170,54 +65,15 @@ double CNetChan::GetTimeConnected(void) const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: gets the netchannel timeout
-// Output : float
+// Purpose: shutdown netchannel
+// Input  : *this - 
+//			*szReason - 
+//			bBadRep - 
+//			bRemoveNow - 
 //-----------------------------------------------------------------------------
-float CNetChan::GetTimeoutSeconds(void) const
+void CNetChan::_Shutdown(CNetChan* pChan, const char* szReason, uint8_t bBadRep, bool bRemoveNow)
 {
-	return this->m_Timeout;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the netchannel socket
-// Output : int
-//-----------------------------------------------------------------------------
-int CNetChan::GetSocket(void) const
-{
-	return this->m_Socket;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets a const reference to m_StreamVoice
-//-----------------------------------------------------------------------------
-const bf_write& CNetChan::GetStreamVoice(void) const
-{
-	return this->m_StreamVoice;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets a const reference to remote_address
-//-----------------------------------------------------------------------------
-const netadr_t& CNetChan::GetRemoteAddress(void) const
-{
-	return this->remote_address;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: checks if the reliable stream is overflowed
-// Output : true if overflowed, false otherwise
-//-----------------------------------------------------------------------------
-bool CNetChan::IsOverflowed(void) const
-{
-	return this->m_StreamReliable.IsOverflowed();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: clears the netchannel
-//-----------------------------------------------------------------------------
-void CNetChan::Clear(bool bStopProcessing)
-{
-	v_NetChan_Clear(this, bStopProcessing);
+	v_NetChan_Shutdown(pChan, szReason, bBadRep, bRemoveNow);
 }
 
 //-----------------------------------------------------------------------------
@@ -226,7 +82,7 @@ void CNetChan::Clear(bool bStopProcessing)
 //			*pMsg - 
 // Output : true on success, false on failure
 //-----------------------------------------------------------------------------
-bool CNetChan::ProcessMessages(CNetChan* pChan, bf_read* pMsg)
+bool CNetChan::_ProcessMessages(CNetChan* pChan, bf_read* pMsg)
 {
 #ifndef CLIENT_DLL
 	if (!ThreadInServerFrameThread() || !net_processTimeBudget->GetInt())
@@ -267,31 +123,48 @@ bool CNetChan::ProcessMessages(CNetChan* pChan, bf_read* pMsg)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: sets the remote frame times
-// Input  : flFrameTime - 
-//			flFrameTimeStdDeviation - 
+// Purpose: send message
+// Input  : &msg - 
+//			bForceReliable - 
+//			bVoice - 
+// Output : true on success, false on failure
 //-----------------------------------------------------------------------------
-void CNetChan::SetRemoteFramerate(float flFrameTime, float flFrameTimeStdDeviation)
+bool CNetChan::SendNetMsg(INetMessage& msg, bool bForceReliable, bool bVoice)
 {
-	m_flRemoteFrameTime = flFrameTime;
-	m_flRemoteFrameTimeStdDeviation = flFrameTimeStdDeviation;
-}
+	if (remote_address.GetType() == netadrtype_t::NA_NULL)
+		return false;
 
-//-----------------------------------------------------------------------------
-// Purpose: sets the remote cpu statistics
-// Input  : nStats - 
-//-----------------------------------------------------------------------------
-void CNetChan::SetRemoteCPUStatistics(uint8_t nStats)
-{
-	m_nServerCPU = nStats;
+	bf_write* pStream = &m_StreamUnreliable;
+
+	if (msg.IsReliable() || bForceReliable)
+		pStream = &m_StreamReliable;
+
+	if (bVoice)
+		pStream = &m_StreamVoice;
+
+	if (pStream != &m_StreamUnreliable ||
+		pStream->GetNumBytesLeft() >= NET_UNRELIABLE_STREAM_MINSIZE)
+	{
+		AcquireSRWLockExclusive(&LOCK);
+
+		pStream->WriteUBitLong(msg.GetType(), NETMSG_TYPE_BITS);
+		if (!pStream->IsOverflowed())
+			msg.WriteToBuffer(pStream);
+
+		ReleaseSRWLockExclusive(&LOCK);
+	}
+
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void VNetChan::Attach() const
 {
-	DetourAttach(&v_NetChan_ProcessMessages, &CNetChan::ProcessMessages);
+	DetourAttach((PVOID*)&v_NetChan_Shutdown, &CNetChan::_Shutdown);
+	DetourAttach((PVOID*)&v_NetChan_ProcessMessages, &CNetChan::_ProcessMessages);
 }
 void VNetChan::Detach() const
 {
-	DetourDetach(&v_NetChan_ProcessMessages, &CNetChan::ProcessMessages);
+	DetourDetach((PVOID*)&v_NetChan_Shutdown, &CNetChan::_Shutdown);
+	DetourDetach((PVOID*)&v_NetChan_ProcessMessages, &CNetChan::_ProcessMessages);
 }

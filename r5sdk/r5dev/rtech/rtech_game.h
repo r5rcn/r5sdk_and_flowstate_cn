@@ -1,9 +1,12 @@
 #pragma once
 #include "tier0/tslist.h"
 
-typedef int RPakHandle_t;
-constexpr int INVALID_PAK_HANDLE = -1;
+#define PLATFORM_PAK_PATH "paks\\Win64\\"
+#define PLATFORM_PAK_OVERRIDE_PATH "paks\\Win32\\"
 
+#define INVALID_PAK_HANDLE -1
+
+typedef int RPakHandle_t;
 enum class ePakStatus : int
 {
 	PAK_STATUS_FREED = 0,
@@ -26,25 +29,25 @@ enum class ePakStatus : int
 
 /* ==== RTECH_GAME ====================================================================================================================================================== */
 inline CMemory p_CPakFile_LoadAsync;
-inline auto CPakFile_LoadAsync = p_CPakFile_LoadAsync.RCast<RPakHandle_t(*)(const char* szPakFileName, void* pMalloc, int nIdx, bool bUnk)>();
+inline RPakHandle_t(*CPakFile_LoadAsync)(const char* szPakFileName, CAlignedMemAlloc* pMalloc, int nIdx, bool bUnk);
 
 inline CMemory p_CPakFile_LoadPak;
-inline auto CPakFile_LoadPak = p_CPakFile_LoadPak.RCast<unsigned int (*)(void* thisptr, void* a2, uint64_t a3)>();
+inline unsigned int (*CPakFile_LoadPak)(void* thisptr, void* a2, uint64_t a3);
 
 inline CMemory p_CPakFile_UnloadPak;
-inline auto CPakFile_UnloadPak = p_CPakFile_UnloadPak.RCast<void (*)(RPakHandle_t handle)>();
+inline void(*CPakFile_UnloadPak)(RPakHandle_t handle);
 
 inline CMemory p_CPakFile_OpenFileOffset; // Offset to inlined 'CPakFile::LoadPak_OpenFile'.
 
 class CPakFile
 {
 public:
-	static RPakHandle_t LoadAsync(const char* szPakFileName, void* pMalloc = g_pMallocPool, int nIdx = NULL, bool bUnk = false);
+	static RPakHandle_t LoadAsync(const char* szPakFileName, CAlignedMemAlloc* pMalloc = AlignedMemAlloc(), int nIdx = NULL, bool bUnk = false);
 	static void UnloadPak(RPakHandle_t handle);
 };
 
 extern CPakFile* g_pakLoadApi;
-extern vector<RPakHandle_t> g_vLoadedPakHandle;
+extern CUtlVector<RPakHandle_t> g_vLoadedPakHandle;
 
 ///////////////////////////////////////////////////////////////////////////////
 class V_RTechGame : public IDetour
@@ -62,7 +65,7 @@ class V_RTechGame : public IDetour
 		CPakFile_LoadPak = p_CPakFile_LoadPak.RCast<unsigned int (*)(void*, void*, uint64_t)>();
 
 		p_CPakFile_LoadAsync = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 89 03 8B 0B").FollowNearCallSelf();
-		CPakFile_LoadAsync = p_CPakFile_LoadAsync.RCast<RPakHandle_t(*)(const char*, void*, int, bool)>();
+		CPakFile_LoadAsync = p_CPakFile_LoadAsync.RCast<RPakHandle_t(*)(const char*, CAlignedMemAlloc*, int, bool)>();
 
 		p_CPakFile_UnloadPak = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 85 FF 74 0C").FollowNearCallSelf();
 		CPakFile_UnloadPak = p_CPakFile_UnloadPak.RCast<void (*)(RPakHandle_t)>();

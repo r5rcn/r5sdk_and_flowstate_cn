@@ -1,16 +1,13 @@
 #pragma once
 
-#define MAIN_WORKER_DLL "gamesdk.dll"
-#define SERVER_WORKER_DLL "dedicated.dll"
-#define CLIENT_WORKER_DLL "bin\\x64_retail\\client.dll"
+// Change this each time the settings format has changed.
+#define SDK_LAUNCHER_VERSION 1
 
-#define MAIN_GAME_DLL "r5apex.exe"
-#define SERVER_GAME_DLL "r5apex_ds.exe"
+// Uncomment this line to compile the launcher for dedicated server builds.
+//#define DEDI_LAUNCHER
 
-#define GAME_CFG_PATH "platform\\cfg\\"
-
+#define GAME_CFG_PATH "platform\\cfg\\system\\"
 #define DEFAULT_WINDOW_CLASS_NAME "Respawn001"
-
 #define LAUNCHER_SETTING_FILE "launcher.vdf"
 
 //-----------------------------------------------------------------------------

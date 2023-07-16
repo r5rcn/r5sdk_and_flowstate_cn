@@ -4,14 +4,13 @@
 //
 //=============================================================================
 
-#include "core/stdafx.h"
 #include "tier1/utlstring.h"
 #include "tier1/utlvector.h"
 #include "tier1/strtools.h"
 #include <ctype.h>
 
 // NOTE: This has to be the last file included!
-//#include "tier0/memdbgon.h"
+#include "tier0/memdbgon.h"
 
 static const int64 k_nMillion = 1000000;
 
@@ -20,7 +19,7 @@ static const int64 k_nMillion = 1000000;
 //-----------------------------------------------------------------------------
 static ptrdiff_t IndexOf(const char *pstrToSearch, const char *pstrTarget)
 {
-	const char *pstrHit = V_strstr(pstrToSearch, pstrTarget);
+	const char *pstrHit = V_strstr(pstrTarget, pstrToSearch);
 	if (pstrHit == NULL)
 	{
 		return -1;	// Not found.
@@ -103,7 +102,7 @@ void CUtlBinaryBlock::Get( void *pValue, int64 nLen ) const
 	}
 }
 
-void CUtlBinaryBlock::SetLength(int64 nLength )
+void CUtlBinaryBlock::SetLength( int64 nLength )
 {
 	//MEM_ALLOC_CREDIT();
 	Assert( !m_Memory.IsReadOnly() );
@@ -431,11 +430,18 @@ void CUtlString::StripTrailingSlash()
 
 	int64 nLastChar = Length() - 1;
 	char c = m_Storage[ nLastChar ];
-	if ( c == '\\' || c == '/' )
+
+	if ( PATHSEPARATOR( c ) )
 	{
 		m_Storage[ nLastChar ] = 0;
 		m_Storage.SetLength( m_Storage.Length() - 1 );
 	}
+}
+
+// Find a substring
+ptrdiff_t CUtlString::Find(const char* szTarget) const
+{
+	return IndexOf( szTarget, Get() );
 }
 
 CUtlString CUtlString::Slice( int64 nStart, int64 nEnd )
@@ -477,6 +483,7 @@ CUtlString CUtlString::Right( int64 nChars )
 {
 	return Slice( -nChars );
 }
+
 
 // Get a string with the specified substring removed
 
@@ -598,11 +605,16 @@ CUtlString CUtlString::UnqualifiedFilename() const
 	return CUtlString( pFilename );
 }
 
-CUtlString CUtlString::DirName()
+CUtlString CUtlString::DirName( bool bStripTrailingSlash ) const
 {
 	CUtlString ret( this->String() );
-	V_StripLastDir( (char*)ret.m_Storage.Get(), ret.m_Storage.Length() );
-	V_StripTrailingSlash( (char*)ret.m_Storage.Get() );
+	size_t len = V_StripLastDir( (char*)ret.m_Storage.Get(), ret.m_Storage.Length() );
+
+	ret.SetLength( len );
+
+	if (bStripTrailingSlash)
+		ret.StripTrailingSlash();
+
 	return ret;
 }
 
@@ -613,13 +625,16 @@ CUtlString CUtlString::StripExtension() const
 	return CUtlString( szTemp );
 }
 
-CUtlString CUtlString::StripFilename() const
+CUtlString CUtlString::StripFilename( bool bStripTrailingSlash ) const
 {
 	const char *pFilename = V_UnqualifiedFileName( Get() ); // NOTE: returns 'Get()' on failure, never NULL
 	int64 nCharsToCopy = pFilename - Get();
 	CUtlString result;
 	result.SetDirect( Get(), nCharsToCopy );
-	result.StripTrailingSlash();
+
+	if ( bStripTrailingSlash )
+		result.StripTrailingSlash();
+
 	return result;
 }
 
@@ -800,7 +815,7 @@ char *CUtlStringBuilder::InternalPrepareBuffer(size_t nChars, bool bCopyOld, siz
 		if (bWasHeap && bCopyOld)
 		{
 			// maybe we'll get lucky and get the same buffer back.
-			pszString = MemAllocSingleton()->Realloc(pszOld, nNewSize + 1);
+			pszString = (char*)realloc(pszOld, nNewSize + 1);
 			if (!pszString)
 			{
 				SetError();
@@ -814,9 +829,9 @@ char *CUtlStringBuilder::InternalPrepareBuffer(size_t nChars, bool bCopyOld, siz
 			// if we aren't doing a copy, don't use realloc since it will
 			// copy the data if it needs to make a new allocation.
 			if (bWasHeap)
-				MemAllocSingleton()->Free(pszOld);
+				free(pszOld);
 
-			pszString = MemAllocSingleton()->Alloc<char>(nNewSize + 1);
+			pszString = (char*)malloc(nNewSize + 1);
 			if (!pszString)
 			{
 				SetError();
@@ -852,7 +867,7 @@ char *CUtlStringBuilder::InternalPrepareBuffer(size_t nChars, bool bCopyOld, siz
 			if (bCopyOld)
 				memcpy(pszString, pszOldString, nChars); // null will be added at end of func.
 
-			MemAllocSingleton()->Free(pszOldString);
+			free(pszOldString);
 		}
 	}
 
@@ -934,7 +949,7 @@ size_t CUtlStringBuilder::ReplaceInternal(const char *pstrTarget, const char *ps
 				char *pstrNew;
 				if (nNewLength > Capacity())
 				{
-					pstrNew = MemAllocSingleton()->Alloc<char>(nNewLength + 1);
+					pstrNew = (char*)malloc(nNewLength + 1);
 					if (!pstrNew)
 					{
 						SetError();
@@ -1187,7 +1202,7 @@ bool CUtlStringBuilder::Data::MoveToHeap()
 	{
 		// try to recover the string at the point of failure, to help with debugging
 		size_t nLen = Length();
-		char *pszHeapString = MemAllocSingleton()->Alloc<char>(nLen + 1);
+		char* pszHeapString = (char*)malloc(nLen + 1);
 		if (pszHeapString)
 		{
 			// get the string copy before corrupting the stack union

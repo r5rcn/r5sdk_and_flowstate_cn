@@ -1,5 +1,4 @@
 #pragma once
-#include "sdklauncher_const.h"
 
 struct LogList_t
 {
@@ -42,11 +41,13 @@ private:
 	static void GetVirtualItem(const std::unique_ptr<Forms::RetrieveVirtualItemEventArgs>& pEventArgs, Forms::Control* pSender);
 	static void ForwardCommandToGame(Forms::Control* pSender);
 
-	eLaunchMode BuildParameter(string& svParameter);
 	const char* GetControlValue(Forms::Control* pControl);
+	uint64_t GetProcessorAffinity(string& szParameter);
+
+	eLaunchMode BuildParameter(string& svParameter);
 
 	void AppendParameterInternal(string& svParameterList, const char* szParameter, const char* szArgument = nullptr);
-	void AppendReservedCoreCount(string& svParameter);
+	void AppendProcessorParameters(string& svParameter);
 	void AppendConsoleParameters(string& svParameter);
 	void AppendVideoParameters(string& svParameter);
 	void AppendHostParameters(string& svParameter);
@@ -102,7 +103,8 @@ private:
 	UIX::UIXLabel* m_ReservedCoresLabel;
 	UIX::UIXTextBox* m_WorkerThreadsTextBox;
 	UIX::UIXLabel* m_WorkerThreadsLabel;
-	UIX::UIXCheckBox* m_SingleCoreDediToggle;
+	UIX::UIXTextBox* m_ProcessorAffinityTextBox;
+	UIX::UIXLabel* m_ProcessorAffinityLabel;
 	UIX::UIXCheckBox* m_NoAsyncJobsToggle;
 	UIX::UIXCheckBox* m_NetEncryptionToggle;
 	UIX::UIXCheckBox* m_NetRandomKeyToggle;

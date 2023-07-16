@@ -10,31 +10,18 @@
 #include "tier0/commandline.h"
 #include "tier1/strtools.h"
 #include "launcher/launcher.h"
-
-int HWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
-	// !TODO [AMOS]: 'RemoveSpuriousGameParameters()' is inline with 'LauncherMain()' in S0 and S1,
-	// and its the only function where we could append our own command line parameters early enough
-	// programatically (has to be after 'CommandLine()->CreateCmdLine()', but before 'SetPriorityClass()')
-	// For S0 and S1 we should modify the command line buffer passed to the entry point instead (here).
-#if defined (GAMEDLL_S0) || defined (GAMEDLL_S1)
-	string svCmdLine = lpCmdLine;
-	if (!strstr(GetCommandLineA(), "-launcher"))
-	{
-		svCmdLine = LoadConfigFile(SDK_DEFAULT_CFG);
-	}
-	return v_WinMain(hInstance, hPrevInstance, const_cast<LPSTR>(svCmdLine.c_str()), nShowCmd);
-#else
-	return v_WinMain(hInstance, hPrevInstance, lpCmdLine, nShowCmd);
-#endif
-}
+#include <eiface.h>
 
 int LauncherMain(HINSTANCE hInstance)
 {
-	SpdLog_PostInit();
+	// Flush buffers every 5 seconds for every logger.
+	// Has to be done here, don't move this to SpdLog
+	// init, as this could cause deadlocks on certain
+	// compilers (VS2017)!!!
+	spdlog::flush_every(std::chrono::seconds(5));
 
 	int results = v_LauncherMain(hInstance);
-	spdlog::info("{:s} returned: {:s}\n", __FUNCTION__, ExitCodeToString(results));
+	DevMsg(eDLL_T::NONE, "%s returned: %s\n", __FUNCTION__, ExitCodeToString(results));
 	return results;
 }
 
@@ -74,76 +61,21 @@ void RemoveSpuriousGameParameters()
 // as all there are required to run the game with the game sdk.
 void AppendSDKParametersPreInit()
 {
-#ifdef DEDICATED
-	CommandLine()->AppendParm("-collate", "");
-	CommandLine()->AppendParm("-multiple", "");
-	CommandLine()->AppendParm("-noorigin", "");
-	CommandLine()->AppendParm("-nodiscord", "");
-	CommandLine()->AppendParm("-noshaderapi", "");
-	CommandLine()->AppendParm("-nobakedparticles", "");
-	CommandLine()->AppendParm("-novid", "");
-	CommandLine()->AppendParm("-nomenuvid", "");
-	CommandLine()->AppendParm("-nosound", "");
-	CommandLine()->AppendParm("-nomouse", "");
-	CommandLine()->AppendParm("-nojoy", "");
-	CommandLine()->AppendParm("-nosendtable", "");
-#endif
-	// Assume default configs if the game isn't launched with the SDKLauncher.
-	if (!CommandLine()->FindParm("-launcher"))
+	const bool bDedicated = IsDedicated();
+	if (bDedicated)
 	{
-		string svArguments = LoadConfigFile(SDK_DEFAULT_CFG);
-		ParseAndApplyConfigFile(svArguments);
-	}
-}
-
-string LoadConfigFile(const string& svConfig)
-{
-	fs::path cfgPath = fs::current_path() /= svConfig; // Get cfg path for default startup.
-	ifstream cfgFile(cfgPath);
-	string svArguments;
-
-	if (cfgFile.good() && cfgFile)
-	{
-		stringstream ss;
-		ss << cfgFile.rdbuf();
-		svArguments = ss.str();
-	}
-	else
-	{
-		spdlog::error("{:s}: '{:s}' does not exist!\n", __FUNCTION__, svConfig);
-		cfgFile.close();
-		return "";
-	}
-	cfgFile.close();
-
-	return svArguments;
-}
-
-void ParseAndApplyConfigFile(const string& svConfig)
-{
-	stringstream ss(svConfig);
-	string svInput;
-
-	if (!svConfig.empty())
-	{
-		while (std::getline(ss, svInput, '\n'))
-		{
-			string::size_type nPos = svInput.find(' ');
-			if (!svInput.empty()
-				&& nPos > 0
-				&& nPos < svInput.size()
-				&& nPos != svInput.size())
-			{
-				string svValue = svInput.substr(nPos + 1);
-				string svArgument = svInput.erase(svInput.find(' '));
-
-				CommandLine()->AppendParm(svArgument.c_str(), svValue.c_str());
-			}
-			else
-			{
-				CommandLine()->AppendParm(svInput.c_str(), "");
-			}
-		}
+		CommandLine()->AppendParm("-collate", "");
+		CommandLine()->AppendParm("-multiple", "");
+		CommandLine()->AppendParm("-noorigin", "");
+		CommandLine()->AppendParm("-nodiscord", "");
+		CommandLine()->AppendParm("-noshaderapi", "");
+		CommandLine()->AppendParm("-nobakedparticles", "");
+		CommandLine()->AppendParm("-novid", "");
+		CommandLine()->AppendParm("-nomenuvid", "");
+		CommandLine()->AppendParm("-nosound", "");
+		CommandLine()->AppendParm("-nomouse", "");
+		CommandLine()->AppendParm("-nojoy", "");
+		CommandLine()->AppendParm("-nosendtable", "");
 	}
 }
 
@@ -164,7 +96,7 @@ LONG WINAPI TopLevelExceptionFilter(EXCEPTION_POINTERS* pExceptionPointers)
 {
 	// Don't run the unhandled exception filter from the
 	// game if we have a valid vectored exception filter.
-	if (g_CrashHandler && g_CrashHandler->Handled())
+	if (g_CrashHandler)
 	{
 		return NULL;
 	}
@@ -174,7 +106,6 @@ LONG WINAPI TopLevelExceptionFilter(EXCEPTION_POINTERS* pExceptionPointers)
 
 void VLauncher::Attach(void) const
 {
-	DetourAttach((LPVOID*)&v_WinMain, &HWinMain);
 	DetourAttach((LPVOID*)&v_LauncherMain, &LauncherMain);
 	DetourAttach((LPVOID*)&v_TopLevelExceptionFilter, &TopLevelExceptionFilter);
 #if !defined (GAMEDLL_S0) && !defined (GAMEDLL_S1)
@@ -183,7 +114,6 @@ void VLauncher::Attach(void) const
 }
 void VLauncher::Detach(void) const
 {
-	DetourDetach((LPVOID*)&v_WinMain, &HWinMain);
 	DetourDetach((LPVOID*)&v_LauncherMain, &LauncherMain);
 	DetourDetach((LPVOID*)&v_TopLevelExceptionFilter, &TopLevelExceptionFilter);
 #if !defined (GAMEDLL_S0) && !defined (GAMEDLL_S1)

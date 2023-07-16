@@ -17,11 +17,10 @@ History:
 #include "core/resource.h"
 #include "tier0/frametask.h"
 #include "tier0/commandline.h"
-#include "tier1/cvar.h"
 #include "windows/id3dx.h"
 #include "windows/console.h"
 #include "windows/resource.h"
-#include "squirrel/sqtype.h"
+#include "engine/cmd.h"
 #include "gameui/IConsole.h"
 
 //-----------------------------------------------------------------------------
@@ -163,7 +162,7 @@ void CConsole::RunFrame(void)
         {
             if (m_Style == ImGuiStyle_t::MODERN)
             {
-                static const ImGuiStyle& style = ImGui::GetStyle();
+                const ImGuiStyle& style = ImGui::GetStyle();
                 m_ivSuggestWindowPos.y = m_ivSuggestWindowPos.y + style.WindowPadding.y + 1.5f;
             }
 
@@ -236,9 +235,11 @@ void CConsole::DrawSurface(void)
         return;
     }
 
+    const ImGuiStyle& style = ImGui::GetStyle();
+
     // Reserve enough left-over height and width for 1 separator + 1 input text
-    const float flFooterHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-    const float flFooterWidthReserve  = ImGui::GetStyle().ItemSpacing.y + ImGui::GetWindowWidth();
+    const float flFooterHeightReserve = style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+    const float flFooterWidthReserve  = style.ItemSpacing.y + ImGui::GetWindowWidth();
 
     ImVec2 fontSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "#", nullptr, nullptr);
     ///////////////////////////////////////////////////////////////////////
@@ -412,24 +413,24 @@ void CConsole::SuggestPanel(void)
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) &&
                 suggest.m_nFlags != COMMAND_COMPLETION_MARKER)
             {
-                std::function<void(const ConVarFlagsToString_t&)> fnAddHint = [&](const ConVarFlagsToString_t& cvarInfo)
+                std::function<void(const ConVarFlags::FlagDesc_t&)> fnAddHint = [&](const ConVarFlags::FlagDesc_t& cvarInfo)
                 {
-                    const int hintTexIdx = GetFlagTextureIndex(cvarInfo.m_nFlag);
+                    const int hintTexIdx = GetFlagTextureIndex(cvarInfo.bit);
                     const MODULERESOURCE& hintRes = m_vFlagIcons[hintTexIdx];
 
                     ImGui::Image(hintRes.m_idIcon, ImVec2(float(hintRes.m_nWidth), float(hintRes.m_nHeight)));
                     ImGui::SameLine();
-                    ImGui::Text("%s", cvarInfo.m_pszDesc);
+                    ImGui::Text("%s", cvarInfo.shortdesc);
                 };
 
                 ImGui::BeginTooltip();
                 bool bFlagSet = false;
 
                 // Reverse loop to display the most significant flag first.
-                for (int j = IM_ARRAYSIZE(g_PrintConVarFlags); (j--) > 0;)
+                for (int j = IM_ARRAYSIZE(g_ConVarFlags.m_FlagsToDesc); (j--) > 0;)
                 {
-                    const ConVarFlagsToString_t& info = g_PrintConVarFlags[j];
-                    if (suggest.m_nFlags & info.m_nFlag)
+                    const ConVarFlags::FlagDesc_t& info = g_ConVarFlags.m_FlagsToDesc[j];
+                    if (suggest.m_nFlags & info.bit)
                     {
                         bFlagSet = true;
                         fnAddHint(info);
@@ -437,7 +438,7 @@ void CConsole::SuggestPanel(void)
                 }
                 if (!bFlagSet) // Display the FCVAR_NONE flag if no flags are set.
                 {
-                    fnAddHint(g_PrintConVarFlags[FCVAR_NONE]);
+                    fnAddHint(g_ConVarFlags.m_FlagsToDesc[0]);
                 }
 
                 ImGui::EndTooltip();
@@ -588,7 +589,7 @@ void CConsole::FindFromPartial(void)
 
     for (const CSuggest& suggest : m_vsvCommandBases)
     {
-        if (m_vSuggest.size() >= con_suggestion_limit->GetSizeT())
+        if (m_vSuggest.size() >= size_t(con_suggestion_limit->GetInt()))
         {
             return;
         }
@@ -766,7 +767,7 @@ void CConsole::ClampLogSize(void)
 //-----------------------------------------------------------------------------
 void CConsole::ClampHistorySize(void)
 {
-    while (m_vHistory.size() > con_max_history->GetSizeT())
+    while (m_vHistory.size() > size_t(con_max_history->GetInt()))
     {
         m_vHistory.erase(m_vHistory.begin());
     }

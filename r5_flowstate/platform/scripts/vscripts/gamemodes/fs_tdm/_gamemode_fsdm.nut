@@ -3611,7 +3611,7 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
         if (sPlayer.GetPlayerName() == args[0]) 
 		{
 			Warning("[Flowstate] -> 正在踢出 " + sPlayer.GetPlayerName() + ":" + sPlayer.GetPlatformUID() + " -> [由管理员!]")
-			KickPlayerById( sPlayer.GetPlatformUID(), "Kicked by admin" )
+			KickPlayerById( sPlayer.GetPlatformUID(), "被管理员踢出" )
             return true
         }
     }

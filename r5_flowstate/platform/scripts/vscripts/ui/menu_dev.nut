@@ -97,9 +97,9 @@ void function InitDevMenu( var newMenuArg )
 			Hud_SetEnabled( button, false )
 		}
 
-		AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "%[B_BUTTON|]% Back", "Back" )
+		AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "%[B_BUTTON|]% 返回", "返回" )
 		AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, BackOnePage_Activate )
-		AddMenuFooterOption( menu, LEFT, BUTTON_Y, true, "%[Y_BUTTON|]% Repeat Last Dev Command:", "Repeat Last Dev Command:", RepeatLastCommand_Activate )
+		AddMenuFooterOption( menu, LEFT, BUTTON_Y, true, "%[Y_BUTTON|]% 重复上一次指令:", "重复上一次指令:", RepeatLastCommand_Activate )
 		AddMenuFooterOption( menu, LEFT, BUTTON_BACK, true, "%[BACK|]% Bind Selection to Gamepad", "", BindCommandToGamepad_Activate )
 		file.footerHelpTxtLabel = GetElementsByClassname( menu, "FooterHelpTxt" )[0]
 
@@ -278,56 +278,57 @@ void function SetupDefaultDevCommandsMP()
 	
 	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1")
 	{
-		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
-		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
-		SetupDevCommand( "TDM: Save Current Weapons", "saveguns" )
-		SetupDevCommand( "TDM: Reset Saved Weapons", "resetguns" )
+		SetupDevMenu( "TDM: 修改主武器", SetDevMenu_TDMPrimaryWeapons )
+		SetupDevMenu( "TDM: 修改副武器", SetDevMenu_TDMSecondaryWeapons )
+		SetupDevCommand( "TDM: 保存当前武器", "saveguns" )
+		SetupDevCommand( "TDM: 重置已保存武器", "resetguns" )
 	}
 
 	if(GetCheatsState()){
 		
-		SetupDevMenu( "Abilities", SetDevMenu_Abilities )
-		SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
+		SetupDevMenu( "修改技能", SetDevMenu_Abilities )
+		SetupDevMenu( "修改武器", SetDevMenu_Weapons )
 		//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
 		
 		if ( IsSurvivalMenuEnabled() )
 		{
-			SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
+			SetupDevMenu( "更换传奇", SetDevMenu_SurvivalCharacter )
 			//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
-			SetupDevMenu( "Survival", SetDevMenu_Survival )
-			SetupDevMenu( "Custom: Weapons", SetDevMenu_SurvivalLoot, "weapon_custom" )
-			SetupDevMenu( "Custom: Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )			
-			SetupDevMenu( "Survival: Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
-			SetupDevMenu( "Survival: Attachments", SetDevMenu_SurvivalLoot, "attachment" )
-			SetupDevMenu( "Survival: Helmets", SetDevMenu_SurvivalLoot, "helmet" )
-			SetupDevMenu( "Survival: Armors", SetDevMenu_SurvivalLoot, "armor" )
-			SetupDevMenu( "Survival: Backpacks", SetDevMenu_SurvivalLoot, "backpack" )
-			SetupDevMenu( "Survival: Incap Shields", SetDevMenu_SurvivalLoot, "incapshield" )
+			// SetupDevMenu( "Survival", SetDevMenu_Survival )
+			SetupDevMenu( "生存物品", SetDevMenu_Survival )
+			SetupDevMenu( "自定义: 武器", SetDevMenu_SurvivalLoot, "weapon_custom" )
+			SetupDevMenu( "自定义: 配件", SetDevMenu_SurvivalLoot, "attachment_custom" )			
+			SetupDevMenu( "大逃杀: 武器", SetDevMenu_SurvivalLoot, "main_weapon" )
+			SetupDevMenu( "大逃杀: 配件", SetDevMenu_SurvivalLoot, "attachment" )
+			SetupDevMenu( "大逃杀: 头盔", SetDevMenu_SurvivalLoot, "helmet" )
+			SetupDevMenu( "大逃杀: 护甲", SetDevMenu_SurvivalLoot, "armor" )
+			SetupDevMenu( "大逃杀: 背包", SetDevMenu_SurvivalLoot, "backpack" )
+			SetupDevMenu( "大逃杀: 击倒护盾", SetDevMenu_SurvivalLoot, "incapshield" )
 			//SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
 
 			string itemsString = "ordnance ammo health custom_pickup data_knife"
 
-			SetupDevMenu( "Survival: Consumables", SetDevMenu_SurvivalLoot, itemsString )
+			SetupDevMenu( "大逃杀: 消耗品", SetDevMenu_SurvivalLoot, itemsString )
 
 			//SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
 		}
 
-		SetupDevMenu( "Respawn Player(s)", SetDevMenu_RespawnPlayers )
-		SetupDevMenu( "Set Respawn Behaviour Override", SetDevMenu_RespawnOverride )
+		SetupDevMenu( "重生玩家", SetDevMenu_RespawnPlayers )
+		SetupDevMenu( "设置重生行为覆盖", SetDevMenu_RespawnOverride )
 
 		//SetupDevMenu( "Spawn NPC [IMC]", SetDevMenu_AISpawn, TEAM_IMC )
 		//SetupDevMenu( "Spawn NPC [Militia]", SetDevMenu_AISpawn, TEAM_MILITIA )
 		//SetupDevMenu( "Spawn NPC [Team 4]", SetDevMenu_AISpawn, TEAM_NPC )
 
 
-		SetupDevCommand( "Toggle NoClip", "noclip" )
+		SetupDevCommand( "开启穿墙", "noclip" )
 
-		SetupDevCommand( "Recharge Abilities", "recharge" )
-		SetupDevCommand( "Infinite Ammo", "infinite_ammo" )
+		SetupDevCommand( "重置技能CD", "recharge" )
+		SetupDevCommand( "无限弹药", "infinite_ammo" )
 
 		//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
-		SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
-		SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
+		SetupDevCommand( "开始空降", "script thread SkydiveTest()" )
+		SetupDevCommand( "生成死亡之箱", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
 		//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
 		//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
 		//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
@@ -353,7 +354,7 @@ void function SetupDefaultDevCommandsMP()
 
 		// SetupDevCommand( "Export leveled_weapons.def / r2_weapons.fgd", "script thread LeveledWeaponDump()" )
 
-		SetupDevCommand( "Summon Players to player 0", "script summonplayers()" )
+		SetupDevCommand( "召唤其余玩家至玩家0处", "script summonplayers()" )
 		//SetupDevCommand( "Display Titanfall spots", "script thread ShowAllTitanFallSpots()" )
 		//SetupDevCommand( "Toggle check inside Titanfall Blocker", "script thread DevCheckInTitanfallBlocker()" )
 		//SetupDevCommand( "Test Dropship Intro Spawns with Bots", "script thread DebugTestDropshipStartSpawnsForAll()" )
@@ -364,12 +365,12 @@ void function SetupDefaultDevCommandsMP()
 		//SetupDevCommand( "Max Activity (Conger Mode)", "script SetMaxActivityMode(4)" )
 		//SetupDevCommand( "Max Activity (Disabled)", "script SetMaxActivityMode(0)" )
 
-		SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
-		SetupDevCommand( "Toggle HUD", "ToggleHUD" )
+		SetupDevCommand( "切换查看skybox", "script thread ToggleSkyboxView()" )
+		SetupDevCommand( "开关HUD", "ToggleHUD" )
 
-		SetupDevCommand( "Melee: Equip Bolo Sword", "script thread SetupHeirloom()" )
-		SetupDevCommand( "Melee: Equip Shadow Hands", "script thread SetupShadowHands()" )
-		SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )		
+		SetupDevCommand( "传家宝: 装备尼泊尔军刀", "script thread SetupHeirloom()" )
+		SetupDevCommand( "近战: 装备暗影近战", "script thread SetupShadowHands()" )
+		SetupDevCommand( "近战: 取消装备（空手）", "script thread UnEquipMelee()" )		
 		
 		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 		//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
@@ -377,14 +378,14 @@ void function SetupDefaultDevCommandsMP()
 		//SetupDevCommand( "Jump Randomly Forever", "script_client thread JumpRandomlyForever()" )
 
 		//SetupDevCommand( "Toggle Zeroing Mode", "script ToggleZeroingMode()" )
-		SetupDevCommand( "Enable God Mode", "script EnableDemigod( gp()[0] )" )
-		SetupDevCommand( "Disable God Mode", "script DisableDemigod( gp()[0] )" )
+		SetupDevCommand( "开启无敌模式", "script EnableDemigod( gp()[0] )" )
+		SetupDevCommand( "关闭无敌模式", "script DisableDemigod( gp()[0] )" )
 		//SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
 
-		SetupDevCommand( "Toggle Third Person Mode", "ToggleThirdPerson" )
+		SetupDevCommand( "切换第三人称模式", "ToggleThirdPerson" )
 
-		SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
-
+		// SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
+		SetupDevMenu( "双持模式", SetDevMenu_Prototypes )
 		// This adds CAPTURE MODE every time you load a level.
 		// Capture mode doesn't work, so I am commenting this out.
 		// Coded in sh_capturemode.nut
@@ -393,7 +394,7 @@ void function SetupDefaultDevCommandsMP()
 	}
 	else
 	{
-		SetupDevCommand( "Cheats are disabled! Type 'sv_cheats 1' in console to enable dev menu if you're the server admin.", "empty" )
+		SetupDevCommand( "sv_cheats处于关闭状态, 如果您是服务器管理员，请在控制台输入 'sv_cheats 1' 以开启作弊模式.", "empty" )
 	}
 }
 
@@ -718,15 +719,15 @@ void function SetDevMenu_RespawnPlayers( var _ )
 
 void function SetupRespawnPlayersDevMenu()
 {
-	SetupDevCommand( "Respawn me", "respawn" )
-	SetupDevCommand( "Respawn all players", "respawn all" )
-	SetupDevCommand( "Respawn all dead players", "respawn alldead" )
-	SetupDevCommand( "Respawn random player", "respawn random" )
-	SetupDevCommand( "Respawn random dead player", "respawn randomdead" )
-	SetupDevCommand( "Respawn bots", "respawn bots" )
-	SetupDevCommand( "Respawn dead bots", "respawn deadbots" )
-	SetupDevCommand( "Respawn my teammates", "respawn allies" )
-	SetupDevCommand( "Respawn my enemies", "respawn enemies" )
+	SetupDevCommand( "重生自己", "respawn" )
+	SetupDevCommand( "重生所有玩家", "respawn all" )
+	SetupDevCommand( "重生所有以死亡玩家", "respawn alldead" )
+	SetupDevCommand( "随机重生一名玩家", "respawn random" )
+	SetupDevCommand( "随机重生一名已死亡玩家", "respawn randomdead" )
+	SetupDevCommand( "重生bot", "respawn bots" )
+	SetupDevCommand( "重生已死亡bot", "respawn deadbots" )
+	SetupDevCommand( "重生队友", "respawn allies" )
+	SetupDevCommand( "重生敌人", "respawn enemies" )
 	//foreach ( player in gp() )
 	//{
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
@@ -735,36 +736,36 @@ void function SetupRespawnPlayersDevMenu()
 void function SetupTDMPrimaryWeapsons()
 {
 	//Assault Rifles
-	SetupDevCommand( "R-301", "tgive p mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "Flatline", "tgive p mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3")
-	SetupDevCommand( "Hemlok", "tgive p mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l3" )
-	SetupDevCommand( "Havoc", "tgive p mp_weapon_energy_ar optic_cq_hcog_bruiser stock_tactical_l3 energy_mag_l1 hopup_turbocharger" )
+	SetupDevCommand( "R-301卡宾枪", "tgive p mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "VK-47平行步枪", "tgive p mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3")
+	SetupDevCommand( "赫姆洛克连发突击步枪", "tgive p mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l3" )
+	SetupDevCommand( "哈沃克步枪", "tgive p mp_weapon_energy_ar optic_cq_hcog_bruiser stock_tactical_l3 energy_mag_l1 hopup_turbocharger" )
 	//LMGs
-	SetupDevCommand( "Spitfire", "tgive p mp_weapon_lmg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l2" )
-	SetupDevCommand( "Devotion", "tgive p mp_weapon_esaw optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 energy_mag_l1 hopup_turbocharger" )
-	SetupDevCommand( "L-STAR EMG", "tgive p mp_weapon_lstar energy_mag_l3 optic_cq_hcog_bruiser" )
+	SetupDevCommand( "M800喷火轻机枪", "tgive p mp_weapon_lmg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l2" )
+	SetupDevCommand( "专注轻机枪", "tgive p mp_weapon_esaw optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 energy_mag_l1 hopup_turbocharger" )
+	SetupDevCommand( "L-STAR能量机枪", "tgive p mp_weapon_lstar energy_mag_l3 optic_cq_hcog_bruiser" )
 	//SMGs
-	SetupDevCommand( "R-99 SMG", "tgive p mp_weapon_r97 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "Alternator SMG", "tgive p mp_weapon_alternator_smg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "Prowler Burst SMG", "tgive p mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3" )
-	SetupDevCommand( "Volt SMG", "tgive p mp_weapon_volt_smg optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 energy_mag_l3" )
-	SetupDevCommand( "CAR SMG", "tgive p mp_weapon_car optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 bullets_mag_l3" )
+	SetupDevCommand( "R99冲锋枪", "tgive p mp_weapon_r97 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "转换者冲锋枪", "tgive p mp_weapon_alternator_smg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "猎兽冲锋枪", "tgive p mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3" )
+	SetupDevCommand( "电能冲锋枪", "tgive p mp_weapon_volt_smg optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 energy_mag_l3" )
+	SetupDevCommand( "CAR冲锋枪", "tgive p mp_weapon_car optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 bullets_mag_l3" )
 	//Marksman Weapons
-	SetupDevCommand( "G7 Scout", "tgive p mp_weapon_g2 optic_ranged_hcog stock_sniper_l3 barrel_stabilizer_l3 bullets_mag_l3 hopup_double_tap" )
-	SetupDevCommand( "Triple Take", "tgive p mp_weapon_doubletake energy_mag_l3 optic_ranged_hcog stock_sniper_l3 hopup_energy_choke" )
+	SetupDevCommand( "G7侦查枪", "tgive p mp_weapon_g2 optic_ranged_hcog stock_sniper_l3 barrel_stabilizer_l3 bullets_mag_l3 hopup_double_tap" )
+	SetupDevCommand( "三重式狙击枪", "tgive p mp_weapon_doubletake energy_mag_l3 optic_ranged_hcog stock_sniper_l3 hopup_energy_choke" )
 	//Pistols
-	SetupDevCommand( "RE-45", "tgive p mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "P2020", "tgive p mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
-	SetupDevCommand( "Wingman", "tgive p mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3" )
+	// SetupDevCommand( "RE-45自动手枪", "tgive p mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "P2020手枪", "tgive p mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
+	SetupDevCommand( "辅助手枪", "tgive p mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
 	//Shotguns
-	SetupDevCommand( "EVA-8", "tgive p mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
-	SetupDevCommand( "Mozambique", "tgive p mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
-	SetupDevCommand( "Peacekeeper", "tgive p mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
-	//SetupDevCommand( "Mastiff","tgive p mp_weapon_mastiff shotgun_bolt_l3")
+	SetupDevCommand( "EVA-8自动霰弹枪", "tgive p mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
+	SetupDevCommand( "莫桑比克", "tgive p mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
+	SetupDevCommand( "和平捍卫者霰弹枪", "tgive p mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
+	SetupDevCommand( "獒犬霰弹枪","tgive p mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
-	SetupDevCommand( "Longbow", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 sniper_mag_l3" )
-	SetupDevCommand( "Charge Rifle", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
-	//SetupDevCommand( "Kraber", "tgive p mp_weapon_sniper" )
+	SetupDevCommand( "长弓精确步枪", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
+	SetupDevCommand( "充能步枪", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
+	//SetupDevCommand( "克雷贝尔狙击枪", "tgive p mp_weapon_sniper" )
 	
 
 	//foreach ( player in gp() )
@@ -776,36 +777,36 @@ void function SetupTDMPrimaryWeapsons()
 void function SetupTDMSecondaryWeapsons()
 {
 	//Assault Rifles
-	SetupDevCommand( "R-301", "tgive s mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "Flatline", "tgive s mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3")
-	SetupDevCommand( "Hemlok", "tgive s mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l3" )
-	SetupDevCommand( "Havoc", "tgive s mp_weapon_energy_ar optic_cq_hcog_bruiser stock_tactical_l3 energy_mag_l1 hopup_turbocharger" )
+	SetupDevCommand( "R-301卡宾枪", "tgive s mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "VK-47平行步枪", "tgive s mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3")
+	SetupDevCommand( "赫姆洛克连发突击步枪", "tgive s mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l3" )
+	SetupDevCommand( "哈沃克步枪", "tgive s mp_weapon_energy_ar optic_cq_hcog_bruiser stock_tactical_l3 energy_mag_l1 hopup_turbocharger" )
 	//LMGs
-	SetupDevCommand( "Spitfire", "tgive s mp_weapon_lmg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l2" )
-	SetupDevCommand( "Devotion", "tgive s mp_weapon_esaw optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 energy_mag_l1 hopup_turbocharger" )
-	SetupDevCommand( "L-STAR EMG", "tgive s mp_weapon_lstar energy_mag_l3 optic_cq_hcog_bruiser" )
+	SetupDevCommand( "M800喷火轻机枪", "tgive s mp_weapon_lmg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 highcal_mag_l2" )
+	SetupDevCommand( "专注轻机枪", "tgive s mp_weapon_esaw optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 energy_mag_l1 hopup_turbocharger" )
+	SetupDevCommand( "L-STAR能量机枪", "tgive s mp_weapon_lstar energy_mag_l3 optic_cq_hcog_bruiser" )
 	//SMGs
-	SetupDevCommand( "R-99 SMG", "tgive s mp_weapon_r97 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "Alternator SMG", "tgive s mp_weapon_alternator_smg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "Prowler Burst SMG", "tgive s mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3" )
-	SetupDevCommand( "Volt SMG", "tgive s mp_weapon_volt_smg optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 energy_mag_l3" )
-	SetupDevCommand( "CAR SMG", "tgive s mp_weapon_car optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 bullets_mag_l3" )
+	SetupDevCommand( "R99冲锋枪", "tgive s mp_weapon_r97 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "转换者冲锋枪", "tgive s mp_weapon_alternator_smg optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "猎兽冲锋枪", "tgive s mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3" )
+	SetupDevCommand( "电能冲锋枪", "tgive s mp_weapon_volt_smg optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 energy_mag_l3" )
+	SetupDevCommand( "CAR冲锋枪", "tgive s mp_weapon_car optic_cq_hcog_classic barrel_stabilizer_l3 stock_tactical_l3 bullets_mag_l3" )
 	//Marksman Weapons
-	SetupDevCommand( "G7 Scout", "tgive s mp_weapon_g2 optic_ranged_hcog stock_sniper_l3 barrel_stabilizer_l3 bullets_mag_l3 hopup_double_tap" )
-	SetupDevCommand( "Triple Take", "tgive s mp_weapon_doubletake energy_mag_l3 optic_ranged_hcog stock_sniper_l3 hopup_energy_choke" )
+	SetupDevCommand( "G7侦查枪", "tgive s mp_weapon_g2 optic_ranged_hcog stock_sniper_l3 barrel_stabilizer_l3 bullets_mag_l3 hopup_double_tap" )
+	SetupDevCommand( "三重式狙击枪", "tgive s mp_weapon_doubletake energy_mag_l3 optic_ranged_hcog stock_sniper_l3 hopup_energy_choke" )
 	//Pistols
-	SetupDevCommand( "RE-45", "tgive s mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
-	SetupDevCommand( "P2020", "tgive s mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
-	SetupDevCommand( "Wingman", "tgive s mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3" )
+	// SetupDevCommand( "RE-45自动手枪", "tgive s mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
+	SetupDevCommand( "P2020手枪", "tgive s mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
+	SetupDevCommand( "辅助手枪", "tgive s mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
 	//Shotguns
-	SetupDevCommand( "EVA-8", "tgive s mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
-	SetupDevCommand( "Mozambique", "tgive s mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
-	SetupDevCommand( "Peacekeeper", "tgive s mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
-	//SetupDevCommand( "Mastiff","tgive s mp_weapon_mastiff shotgun_bolt_l3")
+	SetupDevCommand( "EVA-8自动霰弹枪", "tgive s mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
+	SetupDevCommand( "莫桑比克", "tgive s mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
+	SetupDevCommand( "和平捍卫者霰弹枪", "tgive s mp_weapon_energy_shotgun shotgun_bolt_l3 optic_cq_threat hopup_energy_choke" )
+	SetupDevCommand( "獒犬霰弹枪","tgive s mp_weapon_mastiff shotgun_bolt_l3")
 	//Sniper Rifles
-	SetupDevCommand( "Longbow", "tgive s mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
-	SetupDevCommand( "Charge Rifle", "tgive s mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
-	//SetupDevCommand( "Kraber", "tgive s mp_weapon_sniper" )
+	SetupDevCommand( "长弓精确步枪", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
+	SetupDevCommand( "充能步枪", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
+	//SetupDevCommand( "克雷贝尔狙击枪", "tgive s mp_weapon_sniper" )
 	
 
 	//foreach ( player in gp() )
@@ -822,10 +823,10 @@ void function SetDevMenu_RespawnOverride( var _ )
 
 void function SetupRespawnOverrideDevMenu()
 {
-	SetupDevCommand( "Use gamemode behaviour", "set_respawn_override off" )
-	SetupDevCommand( "Override: Allow all respawning", "set_respawn_override allow" )
-	SetupDevCommand( "Override: Deny all respawning", "set_respawn_override deny" )
-	SetupDevCommand( "Override: Allow bot respawning", "set_respawn_override allowbots" )
+	SetupDevCommand( "使用游戏模式默认", "set_respawn_override off" )
+	SetupDevCommand( "覆盖: 允许所有重生", "set_respawn_override allow" )
+	SetupDevCommand( "覆盖: 禁止所有重生", "set_respawn_override deny" )
+	SetupDevCommand( "覆盖: 允许bot重生", "set_respawn_override allowbots" )
 }
 
 
@@ -870,8 +871,8 @@ void function SetDevMenu_Prototypes( var _ )
 
 void function SetupPrototypesDevMenu()
 {
-	SetupDevCommand( "Toggle Akimbo With Current Weapon", "script DEV_ToggleAkimboWeapon(gp()[0])" )
-	SetupDevCommand( "Toggle Akimbo With Holstered Weapon", "script DEV_ToggleAkimboWeaponAlt(gp()[0])" )
+	SetupDevCommand( "切换主手武器双持", "script DEV_ToggleAkimboWeapon(gp()[0])" )
+	SetupDevCommand( "切换副手武器双持", "script DEV_ToggleAkimboWeaponAlt(gp()[0])" )
 	// SetupDevCommand( "Change to Shadow Squad", "script Dev_ShadowFormEnable( GP() )" )
 }
 
@@ -944,7 +945,7 @@ void function OnDevButton_Activate( var button )
 {
 	if ( level.ui.disableDev )
 	{
-		Warning( "Dev commands disabled on matchmaking servers." )
+		Warning( "Dev命令在匹配服务器中被禁用" )
 		return
 	}
 

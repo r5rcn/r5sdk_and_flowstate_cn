@@ -59,7 +59,7 @@ void function InitFRChallengesSettingsWpnSelector( var newMenuArg )
 	AddTab( file.menu, file.buymenu5, "冲锋枪" )
 	AddTab( file.menu, file.buymenu2, "突击步枪 轻机枪" )
 	AddTab( file.menu, file.buymenu3, "神射手 狙击枪" )
-	AddTab( file.menu, file.buymenu4, "监视武器" )
+	AddTab( file.menu, file.buymenu4, "检视武器" )
 	
 	SetTabNavigationEnabled( file.menu, true )
 	EmitUISound( "UI_InGame_Inventory_Open" )

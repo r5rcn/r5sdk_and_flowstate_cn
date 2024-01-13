@@ -521,6 +521,7 @@ CURLcode Curl_init_userdefined(struct UserDefined *set)
   set->ftp_use_eprt = TRUE;   /* FTP defaults to EPRT operations */
   set->ftp_use_pret = FALSE;  /* mainly useful for drftpd servers */
   set->ftp_filemethod = FTPFILE_MULTICWD;
+  set->ftp_skip_ip = TRUE;    /* skip PASV IP by default */
 
   set->dns_cache_timeout = 60; /* Timeout every 60 seconds by default */
 
@@ -665,7 +666,7 @@ CURLcode Curl_open(struct Curl_easy **curl)
     Curl_initinfo(data);
 
     /* most recent connection is not yet defined */
-    data->state.lastconnect = NULL;
+    data->state.lastconnect_id = -1;
 
     data->progress.flags |= PGRS_HIDE;
     data->state.current_speed = -1; /* init to negative == impossible */
@@ -986,7 +987,7 @@ CURLcode Curl_setopt(struct Curl_easy *data, CURLoption option,
      * Send authentication (user+password) when following locations, even when
      * hostname changed.
      */
-    data->set.http_disable_hostname_check_before_authentication =
+    data->set.allow_auth_to_other_hosts =
       (0 != va_arg(param, long)) ? TRUE : FALSE;
     break;
 
@@ -1024,6 +1025,7 @@ CURLcode Curl_setopt(struct Curl_easy *data, CURLoption option,
     }
     else
       data->set.httpreq = HTTPREQ_GET;
+    data->set.upload = FALSE;
     break;
 
   case CURLOPT_COPYPOSTFIELDS:
@@ -3639,7 +3641,8 @@ ConnectionExists(struct Curl_easy *data,
         /* This protocol requires credentials per connection,
            so verify that we're using the same name and password as well */
         if(strcmp(needle->user, check->user) ||
-           strcmp(needle->passwd, check->passwd)) {
+           strcmp(needle->passwd, check->passwd) ||
+           !Curl_safecmp(needle->oauth_bearer, check->oauth_bearer)) {
           /* one of them was different */
           continue;
         }
@@ -4430,6 +4433,7 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
 #endif
 
     protop = "file"; /* protocol string */
+    *prot_missing = !url_has_scheme;
   }
   else {
     /* clear path */
@@ -4593,14 +4597,30 @@ static CURLcode parseurlandfillconn(struct Curl_easy *data,
 
     size_t plen = strlen(path); /* new path, should be 1 byte longer than
                                    the original */
-    size_t urllen = strlen(data->change.url); /* original URL length */
-
     size_t prefixlen = strlen(conn->host.name);
 
-    if(!*prot_missing)
-      prefixlen += strlen(protop) + strlen("://");
+    if(!*prot_missing) {
+      size_t protolen = strlen(protop);
 
-    reurl = malloc(urllen + 2); /* 2 for zerobyte + slash */
+      if(curl_strnequal(protop, data->change.url, protolen))
+        prefixlen += protolen;
+      else {
+        failf(data, "<url> malformed");
+        return CURLE_URL_MALFORMAT;
+      }
+
+      if(curl_strnequal("://", &data->change.url[protolen], 3))
+        prefixlen += 3;
+      /* only file: is allowed to omit one or both slashes */
+      else if(curl_strnequal("file:", data->change.url, 5))
+        prefixlen += 1 + (data->change.url[5] == '/');
+      else {
+        failf(data, "<url> malformed");
+        return CURLE_URL_MALFORMAT;
+      }
+    }
+
+    reurl = malloc(prefixlen + plen + 1);
     if(!reurl)
       return CURLE_OUT_OF_MEMORY;
 

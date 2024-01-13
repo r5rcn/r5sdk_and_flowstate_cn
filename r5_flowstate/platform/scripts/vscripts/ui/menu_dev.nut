@@ -186,7 +186,7 @@ void function ClearCodeDevMenu()
 void function UpdateDevMenuButtons()
 {
 	file.devCommands.clear()
-	
+
 	if ( file.initializingCodeDevMenu )
 		return
 
@@ -272,24 +272,24 @@ void function SetupDefaultDevCommandsMP()
 {
 	//Player is fully connected at this point, a check was made before
 	RunClientScript("DEV_SendCheatsStateToUI")
-	
+
 	if(GetCurrentPlaylistName() == "map_editor_deprecated")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
-	
+
 	if(GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1")
 	{
-		SetupDevMenu( "TDM模式: 修改主武器", SetDevMenu_TDMPrimaryWeapons )
-		SetupDevMenu( "TDM模式: 修改副武器", SetDevMenu_TDMSecondaryWeapons )
-		SetupDevCommand( "TDM模式: 保存当前武器", "saveguns" )
-		SetupDevCommand( "TDM模式: 重置已保存武器", "resetguns" )
+		SetupDevMenu( "TDM: 修改主武器", SetDevMenu_TDMPrimaryWeapons )
+		SetupDevMenu( "TDM: 修改副武器", SetDevMenu_TDMSecondaryWeapons )
+		SetupDevCommand( "TDM: 保存当前武器", "saveguns" )
+		SetupDevCommand( "TDM: 重置已保存武器", "resetguns" )
 	}
 
 	if(GetCheatsState()){
-		
+
 		SetupDevMenu( "修改技能", SetDevMenu_Abilities )
 		SetupDevMenu( "修改武器", SetDevMenu_Weapons )
 		//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
-		
+
 		if ( IsSurvivalMenuEnabled() )
 		{
 			SetupDevMenu( "更换传奇", SetDevMenu_SurvivalCharacter )
@@ -321,7 +321,7 @@ void function SetupDefaultDevCommandsMP()
 		//SetupDevMenu( "Spawn NPC [Team 4]", SetDevMenu_AISpawn, TEAM_NPC )
 
 
-		SetupDevCommand( "开启飞天穿墙", "noclip" )
+		SetupDevCommand( "开启穿墙", "noclip" )
 
 		SetupDevCommand( "重置技能CD", "recharge" )
 		SetupDevCommand( "无限弹药", "infinite_ammo" )
@@ -354,7 +354,7 @@ void function SetupDefaultDevCommandsMP()
 
 		// SetupDevCommand( "Export leveled_weapons.def / r2_weapons.fgd", "script thread LeveledWeaponDump()" )
 
-		SetupDevCommand( "召唤其余玩家至玩家0处", "script summonplayers()" )
+		SetupDevCommand( "召唤其余玩家至玩家0号处", "script summonplayers()" )
 		//SetupDevCommand( "Display Titanfall spots", "script thread ShowAllTitanFallSpots()" )
 		//SetupDevCommand( "Toggle check inside Titanfall Blocker", "script thread DevCheckInTitanfallBlocker()" )
 		//SetupDevCommand( "Test Dropship Intro Spawns with Bots", "script thread DebugTestDropshipStartSpawnsForAll()" )
@@ -368,10 +368,10 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevCommand( "切换查看skybox", "script thread ToggleSkyboxView()" )
 		SetupDevCommand( "开关HUD", "ToggleHUD" )
 
-		SetupDevCommand( "传家宝: 装备尼泊尔军刀", "script thread SetupHeirloom()" )
+		SetupDevCommand( "传家宝: 装备Bolo Sword", "script thread SetupHeirloom()" )
 		SetupDevCommand( "近战: 装备暗影近战", "script thread SetupShadowHands()" )
 		SetupDevCommand( "近战: 取消装备（空手）", "script thread UnEquipMelee()" )		
-		
+
 		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 		//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
 		//SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )
@@ -384,8 +384,8 @@ void function SetupDefaultDevCommandsMP()
 
 		SetupDevCommand( "切换第三人称模式", "ToggleThirdPerson" )
 
-		// SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
-		SetupDevMenu( "双持模式", SetDevMenu_Prototypes )
+		SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
+
 		// This adds CAPTURE MODE every time you load a level.
 		// Capture mode doesn't work, so I am commenting this out.
 		// Coded in sh_capturemode.nut
@@ -435,20 +435,20 @@ void function SetDevMenu_Weapons( var _ )
 }
 void function SetDevMenu_TDMPrimaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMPrimaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMPrimaryWeapons )
 }
 void function SetDevMenu_TDMSecondaryWeapons( var _ )
 {
-	thread ChangeToThisMenu( SetupTDMSecondaryWeapsons )
+	thread ChangeToThisMenu( SetupTDMSecondaryWeapons )
 }
 void function SetDevMenu_SurvivalCharacter( var _ )
 {
 	thread ChangeToThisMenu( SetupChangeSurvivalCharacterClass )
 }
 
-void function SetDevMenu_Editor( var _ ) 
+void function SetDevMenu_Editor( var _ )
 {
-	thread ChangeToThisMenu( SetupEditor ) 
+	thread ChangeToThisMenu( SetupEditor )
 }
 
 void function DEV_InitLoadoutDevSubMenu()
@@ -733,7 +733,7 @@ void function SetupRespawnPlayersDevMenu()
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
 }
-void function SetupTDMPrimaryWeapsons()
+void function SetupTDMPrimaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301卡宾枪", "tgive p mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -766,7 +766,7 @@ void function SetupTDMPrimaryWeapsons()
 	SetupDevCommand( "长弓精确步枪", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
 	SetupDevCommand( "充能步枪", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
 	//SetupDevCommand( "克雷贝尔狙击枪", "tgive p mp_weapon_sniper" )
-	
+
 
 	//foreach ( player in gp() )
 	//{
@@ -774,7 +774,7 @@ void function SetupTDMPrimaryWeapsons()
 	//}
 }
 
-void function SetupTDMSecondaryWeapsons()
+void function SetupTDMSecondaryWeapons()
 {
 	//Assault Rifles
 	SetupDevCommand( "R-301卡宾枪", "tgive s mp_weapon_rspn101 optic_cq_hcog_bruiser stock_tactical_l3 barrel_stabilizer_l3 bullets_mag_l3" )
@@ -807,7 +807,7 @@ void function SetupTDMSecondaryWeapsons()
 	SetupDevCommand( "长弓精确步枪", "tgive p mp_weapon_dmr optic_sniper_variable barrel_stabilizer_l3 stock_sniper_l3 highcal_mag_l3" )
 	SetupDevCommand( "充能步枪", "tgive p mp_weapon_defender optic_sniper_threat stock_sniper_l3" )
 	//SetupDevCommand( "克雷贝尔狙击枪", "tgive s mp_weapon_sniper" )
-	
+
 
 	//foreach ( player in gp() )
 	//{
@@ -945,7 +945,7 @@ void function OnDevButton_Activate( var button )
 {
 	if ( level.ui.disableDev )
 	{
-		Warning( "Dev命令在匹配服务器中被禁用" )
+		Warning( "Dev命令在服务器中被禁用" )
 		return
 	}
 

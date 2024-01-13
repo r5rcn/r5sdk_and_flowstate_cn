@@ -1320,7 +1320,10 @@ struct UrlState {
   /* buffers to store authentication data in, as parsed from input options */
   struct timeval keeps_speed; /* for the progress meter really */
 
-  struct connectdata *lastconnect; /* The last connection, NULL if undefined */
+  long lastconnect_id; /* The last connection, -1 if undefined */
+  long padding; /* padding to keep structure compatible with apex legends,
+                the game uses this version of libcurl, and we hook in code
+                to solve any potential security bugs or server crashers */
 
   char *headerbuff; /* allocated buffer to store headers in */
   size_t headersize;   /* size of the allocation */
@@ -1693,7 +1696,7 @@ struct UserDefined {
   bool http_keep_sending_on_error; /* for HTTP status codes >= 300 */
   bool http_follow_location; /* follow HTTP redirects */
   bool http_transfer_encoding; /* request compressed HTTP transfer-encoding */
-  bool http_disable_hostname_check_before_authentication;
+  bool allow_auth_to_other_hosts;
   bool include_header;   /* include received protocol headers in data output */
   bool http_set_referer; /* is a custom referer used */
   bool http_auto_referer; /* set "correct" referer when following location: */

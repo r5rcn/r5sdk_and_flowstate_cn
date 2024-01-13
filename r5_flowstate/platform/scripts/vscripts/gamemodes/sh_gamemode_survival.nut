@@ -24,10 +24,6 @@ global function GetMusicForJump
 global function CanWeaponInspect
 global function PositionIsInMapBounds
 global function Survival_IsPlayerHealing
-
-global function PlayerIsMarkedAsCanBeRespawned
-
-global function IsSurvivalMode
 #endif
 
 
@@ -144,7 +140,7 @@ struct
 void function GamemodeSurvivalShared_Init()
 {
 	
-	//printt("GamemodeSurvivalShared_Init")
+	printt("GamemodeSurvivalShared_Init")
 	RegisterSignal("GameStateChanged")
 	
 	#if SERVER || CLIENT
@@ -691,23 +687,5 @@ bool function PositionIsInMapBounds( vector pos )
 bool function Survival_IsPlayerHealing( entity player )
 {
 	return player.GetPlayerNetBool( "isHealing" )
-}
-bool function PlayerIsMarkedAsCanBeRespawned( entity player )
-{
-	int respawnStatus = player.GetPlayerNetInt( "respawnStatus" )
-	switch ( respawnStatus )
-	{
-		case eRespawnStatus.WAITING_FOR_DELIVERY:
-		case eRespawnStatus.WAITING_FOR_PICKUP:
-		case eRespawnStatus.WAITING_FOR_DROPPOD:
-			return true
-	}
-
-	return false
-}
-
-bool function IsSurvivalMode()
-{
-	return GameRules_GetGameMode() == SURVIVAL
 }
 #endif

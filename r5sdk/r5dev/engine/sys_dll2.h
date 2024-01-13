@@ -1,6 +1,6 @@
 #pragma once
 #include "vpc/interfaces.h"
-#include "appframework/engine_launcher_api.h"
+#include "common/engine_launcher_api.h"
 
 class CEngineAPI : public IEngineAPI
 {
@@ -33,6 +33,9 @@ public:
 	static InitReturnVal_t VInit(CEngineAPI* thisp);
 	static bool VModInit(CEngineAPI* pEngineAPI, const char* pModName, const char* pGameDir);
 	static void VSetStartupInfo(CEngineAPI* pEngineAPI, StartupInfo_t* pStartupInfo);
+
+	static void PumpMessages();
+	static bool MainLoop();
 //private:
 	void* m_hEditorHWnd;
 	bool m_bRunningSimulation;
@@ -40,28 +43,31 @@ public:
 };
 
 inline CMemory p_CEngineAPI_Init;
-inline auto CEngineAPI_Init = p_CEngineAPI_Init.RCast<InitReturnVal_t(*)(CEngineAPI* thisp)>();
+inline InitReturnVal_t(*CEngineAPI_Init)(CEngineAPI* thisp);
 
 inline CMemory p_CEngineAPI_Shutdown;
-inline auto CEngineAPI_Shutdown = p_CEngineAPI_Shutdown.RCast<void (*)(void)>();
+inline void(*CEngineAPI_Shutdown)(void);
 
 inline CMemory p_CEngineAPI_Connect;
-inline auto CEngineAPI_Connect = p_CEngineAPI_Connect.RCast<bool (*)(CEngineAPI* thisptr, CreateInterfaceFn factory)>();
+inline bool(*CEngineAPI_Connect)(CEngineAPI* thisptr, CreateInterfaceFn factory);
 
 inline CMemory p_CEngineAPI_ModInit;
-inline auto CEngineAPI_ModInit = p_CEngineAPI_ModInit.RCast<bool (*)(CEngineAPI* pEngineAPI, const char* pModName, const char* pGameDir)>();
+inline bool(*CEngineAPI_ModInit)(CEngineAPI* pEngineAPI, const char* pModName, const char* pGameDir);
 
 inline CMemory p_CEngineAPI_MainLoop;
-inline auto CEngineAPI_MainLoop = p_CEngineAPI_MainLoop.RCast<bool(*)(void)>();
+inline bool(*CEngineAPI_MainLoop)(void);
+
+inline CMemory p_CEngineAPI_PumpMessages;
+inline void(*CEngineAPI_PumpMessages)(void);
 
 inline CMemory p_CEngineAPI_SetStartupInfo;
-inline auto v_CEngineAPI_SetStartupInfo = p_CEngineAPI_SetStartupInfo.RCast<void (*)(CEngineAPI* pEngineAPI, StartupInfo_t* pStartupInfo)>();
+inline void(*v_CEngineAPI_SetStartupInfo)(CEngineAPI* pEngineAPI, StartupInfo_t* pStartupInfo);
 
 inline CMemory p_ResetMTVFTaskItem;
-inline auto v_ResetMTVFTaskItem = p_ResetMTVFTaskItem.RCast<void*(*)(void)>();
+inline void*(*v_ResetMTVFTaskItem)(void);
 
 inline CMemory p_PakFile_Init;
-inline auto PakFile_Init = p_PakFile_Init.RCast<void (*)(char* buffer, char* source, char vpk_file)>();
+inline void(*PakFile_Init)(char* buffer, char* source, char vpk_file);
 
 inline bool* g_bTextMode = nullptr;
 inline char* g_szBaseDir = nullptr; // static size = 260
@@ -78,6 +84,7 @@ class VSys_Dll2 : public IDetour
 		LogFunAdr("CEngineAPI::Connect", p_CEngineAPI_Connect.GetPtr());
 		LogFunAdr("CEngineAPI::ModInit", p_CEngineAPI_ModInit.GetPtr());
 		LogFunAdr("CEngineAPI::MainLoop", p_CEngineAPI_MainLoop.GetPtr());
+		LogFunAdr("CEngineAPI::PumpMessages", p_CEngineAPI_PumpMessages.GetPtr());
 #if defined (GAMEDLL_S2) || defined (GAMEDLL_S3)
 		LogFunAdr("CEngineAPI::SetStartupInfo", p_CEngineAPI_SetStartupInfo.GetPtr());
 #endif
@@ -100,9 +107,10 @@ class VSys_Dll2 : public IDetour
 #elif defined (GAMEDLL_S2) || defined (GAMEDLL_S3)
 		p_CEngineAPI_Shutdown = g_GameDll.FindPatternSIMD("48 83 EC 28 48 8B 0D ?? ?? ?? ?? 33 D2 48 8B 01 FF 90 ?? ?? ?? ?? B1 01");
 		p_CEngineAPI_ModInit  = g_GameDll.FindPatternSIMD("48 89 5C 24 ?? 48 89 4C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? ?? ?? 4D 8B F8");
-		p_CEngineAPI_MainLoop = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 48 8B 15 ?? ?? ?? ?? 84 C0 B9 ?? ?? ?? ??").FollowNearCallSelf();
+		p_CEngineAPI_MainLoop = g_GameDll.FindPatternSIMD("4C 8B DC 49 89 4B 08 48 81 EC ?? ?? ?? ?? 8B 05 ?? ?? ?? ??");
 		p_PakFile_Init        = g_GameDll.FindPatternSIMD("44 88 44 24 ?? 53 55 56 57");
 #endif
+		p_CEngineAPI_PumpMessages = g_GameDll.FindPatternSIMD("48 89 5C 24 ?? 55 48 81 EC ?? ?? ?? ?? 45 33 C9");
 		p_CEngineAPI_SetStartupInfo = g_GameDll.FindPatternSIMD("48 89 5C 24 ?? ?? 48 81 EC ?? ?? ?? ?? 80 3D ?? ?? ?? ?? ?? 48 8B DA");
 		p_ResetMTVFTaskItem = g_GameDll.FindPatternSIMD("48 83 EC 28 48 8B 15 ?? ?? ?? ?? 48 85 D2 0F 84 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 8B 01 FF 90 ?? ?? ?? ?? 33 C9 E8 ?? ?? ?? ?? 0F 28 05 ?? ?? ?? ?? 0F 28 0D ?? ?? ?? ?? 0F 11 05 ?? ?? ?? ?? 0F 28 05 ?? ?? ?? ?? 0F 11 0D ?? ?? ?? ?? 0F 28 0D ?? ?? ?? ?? 0F 11 05 ?? ?? ?? ?? 0F 11 0D ?? ?? ?? ?? 48 C7 05 ?? ?? ?? ?? ?? ?? ?? ?? FF 15 ?? ?? ?? ??");
 
@@ -111,6 +119,7 @@ class VSys_Dll2 : public IDetour
 		CEngineAPI_Connect  = p_CEngineAPI_Connect.RCast<bool (*)(CEngineAPI*, CreateInterfaceFn)>();             /*48 83 EC 28 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 85 C0 48 89 15 ?? ?? ?? ??*/
 		CEngineAPI_ModInit  = p_CEngineAPI_ModInit.RCast<bool (*)(CEngineAPI*, const char*, const char*)>();      /*48 89 5C 24 ?? 48 89 4C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 81 EC ?? ?? ?? ?? 4D 8B F8*/
 		CEngineAPI_MainLoop = p_CEngineAPI_MainLoop.RCast<bool(*)(void)>();                                       /*E8 ?? ?? ?? ?? 48 8B 15 ?? ?? ?? ?? 84 C0 B9 ?? ?? ?? ??*/
+		CEngineAPI_PumpMessages = p_CEngineAPI_PumpMessages.RCast<void(*)(void)>();
 		v_CEngineAPI_SetStartupInfo = p_CEngineAPI_SetStartupInfo.RCast<void (*)(CEngineAPI*, StartupInfo_t*)>(); /*48 89 5C 24 ?? 57 48 81 EC ?? ?? ?? ?? 80 3D ?? ?? ?? ?? ?? 48 8B DA*/
 		PakFile_Init = p_PakFile_Init.RCast<void (*)(char*, char*, char)>();                                      /*44 88 44 24 ?? 53 55 56 57*/
 	}

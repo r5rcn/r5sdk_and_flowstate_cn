@@ -5,23 +5,16 @@
 //===========================================================================//
 #include "core/stdafx.h"
 #include "util_shared.h"
-#ifndef CLIENT_DLL
-#include "game/server/player.h"
-#include "game/server/gameinterface.h"
-#endif // !CLIENT_DLL
 
-
-#ifndef CLIENT_DLL
-CPlayer* UTIL_PlayerByIndex(int nIndex)
+//-----------------------------------------------------------------------------
+// Purpose: returns the class name, script name, and edict of the entity
+//			returns "<<null>>" on NULL entity
+//-----------------------------------------------------------------------------
+const char* UTIL_GetEntityScriptInfo(CBaseEntity* pEnt)
 {
-	if (nIndex < 1 || nIndex > (*g_pGlobals)->m_nMaxClients || nIndex == FL_EDICT_INVALID)
-		return nullptr;
-
-	// !TODO: Improve this!!!
-	CPlayer* pPlayer = reinterpret_cast<CPlayer*>((*g_pGlobals)->m_pEdicts[nIndex + 0x7808]);
-	return pPlayer;
+	assert(pEnt != nullptr);
+	return v_UTIL_GetEntityScriptInfo(pEnt);
 }
-#endif // CLIENT_DLL
 
 CTraceFilterSimple::CTraceFilterSimple(const IHandleEntity* pPassEntity, int collisionGroup, ShouldHitFunc_t pExtraShouldHitCheckFn)
 {

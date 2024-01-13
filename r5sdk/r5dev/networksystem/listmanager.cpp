@@ -9,13 +9,11 @@
 #include "core/stdafx.h"
 #include "tier0/threadtools.h"
 #include "tier0/frametask.h"
-#include "tier1/cmd.h"
 #include "tier1/cvar.h"
+#include "engine/cmd.h"
 #include "engine/net.h"
 #include "engine/host_state.h"
-#ifndef CLIENT_DLL
 #include "engine/server/server.h"
-#endif // !CLIENT_DLL
 #include "vpc/keyvalues.h"
 #include "pylon.h"
 #include "listmanager.h"
@@ -57,20 +55,18 @@ void CServerListManager::ClearServerList(void)
 //-----------------------------------------------------------------------------
 // Purpose: Launch server with given parameters
 //-----------------------------------------------------------------------------
-void CServerListManager::LaunchServer(void) const
+void CServerListManager::LaunchServer(const bool bChangeLevel) const
 {
-#ifndef CLIENT_DLL
-
     if (!ThreadInMainThread())
     {
-        g_TaskScheduler->Dispatch([this]()
+        g_TaskScheduler->Dispatch([this, bChangeLevel]()
             {
-                this->LaunchServer();
+                this->LaunchServer(bChangeLevel);
             }, 0);
         return;
     }
 
-    DevMsg(eDLL_T::ENGINE, "Starting server with name: \"%s\" map: \"%s\" playlist: \"%s\"\n",
+    Msg(eDLL_T::ENGINE, "Starting server with name: \"%s\" map: \"%s\" playlist: \"%s\"\n",
         m_Server.m_svHostName.c_str(), m_Server.m_svHostMap.c_str(), m_Server.m_svPlaylist.c_str());
 
     /*
@@ -81,9 +77,7 @@ void CServerListManager::LaunchServer(void) const
     KeyValues::ParsePlaylists(m_Server.m_svPlaylist.c_str());
     mp_gamemode->SetValue(m_Server.m_svPlaylist.c_str());
 
-    ProcessCommand(Format("%s \"%s\"", g_pServer->IsActive() ? "changelevel" : "map", m_Server.m_svHostMap.c_str()).c_str());
-
-#endif // !CLIENT_DLL
+    ProcessCommand(Format("%s \"%s\"", bChangeLevel ? "changelevel" : "map", m_Server.m_svHostMap.c_str()).c_str());
 }
 
 //-----------------------------------------------------------------------------

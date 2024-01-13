@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 class IConVar;
 class CCommand;
+class CUtlString;
 
 //-----------------------------------------------------------------------------
 // Command to ConVars and ConCommands
@@ -26,10 +27,6 @@ class CCommand;
 #define	FCVAR_USERINFO          (1<<9)	// changes the client's info string
 
 #define FCVAR_PRINTABLEONLY     (1<<10)	// This cvar's string cannot contain unprintable characters ( e.g., used for player name etc ).
-
-#define FCVAR_GAMEDLL_FOR_REMOTE_CLIENTS        (1<<10)  // When on concommands this allows remote clients to execute this cmd on the server. 
-														 // We are changing the default behavior of concommands to disallow execution by remote clients without
-														 // this flag due to the number existing concommands that can lag or crash the server when clients abuse them.
 
 #define FCVAR_UNLOGGED          (1<<11)  // If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log
 #define FCVAR_NEVER_AS_STRING   (1<<12)  // never try to print that cvar
@@ -52,38 +49,17 @@ class CCommand;
 #define FCVAR_MATERIAL_SYSTEM_THREAD (1<<23)	// Indicates this cvar is read from the material system thread
 #define FCVAR_ARCHIVE_PLAYERPROFILE  (1<<24)	// cvar written to config.cfg on the Xbox
 
-#define FCVAR_SERVER_CAN_EXECUTE    (1<<28)	// the server is allowed to execute this command on clients via ClientCommand/NET_StringCmd/CBaseClientState::ProcessStringCmd.
+#define FCVAR_ACCESSIBLE_FROM_THREADS (1<<25)	// used as a debugging tool necessary to check material system thread convars
+#define FCVAR_STUDIO_SYSTEM         (1<<26)	// Seems to be used on studio/datachache cvars (only 'r_rootlod' has this flag)
+#define FCVAR_SERVER_FRAME_THREAD   (1<<27)	// Indicates this cvar is read from the server frame thread
+
+#define FCVAR_SERVER_CAN_EXECUTE    (1<<28)	// the server is allowed to execute this command on clients via ClientCommand/NET_StringCmd/CClientState::ProcessStringCmd.
 #define FCVAR_SERVER_CANNOT_QUERY   (1<<29)	// If this is set, then the server is not allowed to query this cvar's value (via IServerPluginHelpers::StartQueryCvarValue).
 #define FCVAR_CLIENTCMD_CAN_EXECUTE (1<<30)	// IVEngineClient::ClientCmd is allowed to execute this command.
 
-#define FCVAR_MATERIAL_THREAD_MASK ( FCVAR_RELOAD_MATERIALS | FCVAR_RELOAD_TEXTURES | FCVAR_MATERIAL_SYSTEM_THREAD )
-/*
-class ConVar : ConCommandBase, IConVar; [MI] (#classinformer)
-dq offset ? ? _R4ConVar@@6B@; const ConVar::`RTTI Complete Object Locator'
+#define FCVAR_PLATFORM_SYSTEM       (1<<31)	// Platform cvars, such as persona details and tokens/unique identifiers
 
-dq offset ??_G__ExceptionPtr@@QEAAPEAXI@Z_0; 0 Index
-dq offset sub_1401F9930
-dq offset loc_14046FE90
-dq offset ConVar__AddFlags
-dq offset ConVar__RemoveFlags
-dq offset sub_14046FEA0
-dq offset loc_14046FF70
-dq offset ConVar__GetHelpString
-dq offset sub_14046FEC0
-dq offset sub_14046FEE0
-dq offset ConVar__IsRegistered
-dq offset ConVar__GetDllIdentifier
-dq offset sub_14046F3F0
-dq offset sub_14046F470
-dq offset ConVar__InternalSetFloatValue; The one below also does something similar
-dq offset sub_140470340
-dq offset sub_140470420; Seems to be InternalSetInt below maybe ?
-dq offset sub_140470510
-dq offset nullsub
-dq offset sub_140470300
-dq offset sub_1404701A0
-dq offset RegisterConVar; #STR: "Convar '%s' is flagged as both FCVAR_ARCHIVE and FCVAR_ARC
-*/
+#define FCVAR_MATERIAL_THREAD_MASK ( FCVAR_RELOAD_MATERIALS | FCVAR_RELOAD_TEXTURES | FCVAR_MATERIAL_SYSTEM_THREAD )
 
 //-----------------------------------------------------------------------------
 // Called when a ConCommand needs to execute
@@ -113,7 +89,7 @@ public:
 class ICommandCompletionCallback
 {
 public:
-	//virtual int  CommandCompletionCallback(const char* pPartial, CUtlVector< CUtlString > &commands) = 0;
+	virtual int CommandCompletionCallback(const char* pPartial, CUtlVector< CUtlString > &commands) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -149,45 +125,6 @@ public:
 	virtual bool IsConVarFlagSet(int nFlag) const = 0; // Original name 'IsFlagSet'. Renamed for same reason as 'GetName'.
 
 	virtual int GetSplitScreenPlayerSlot() const = 0;
-};
-
-struct ConVarFlagsToString_t
-{
-	int m_nFlag;
-	const char* m_pszDesc;
-};
-
-inline ConVarFlagsToString_t g_PrintConVarFlags[] =
-{
-	{ FCVAR_NONE, "none" },
-	{ FCVAR_UNREGISTERED, "unregistered" },
-	{ FCVAR_DEVELOPMENTONLY, "development_only" },
-	{ FCVAR_GAMEDLL, "game" },
-	{ FCVAR_CLIENTDLL, "client" },
-	{ FCVAR_HIDDEN, "hidden" },
-	{ FCVAR_PROTECTED, "protected" },
-	{ FCVAR_SPONLY, "singleplayer" },
-	{ FCVAR_ARCHIVE, "archive" },
-	{ FCVAR_NOTIFY, "notify" },
-	{ FCVAR_USERINFO, "userinfo" },
-	{ FCVAR_PRINTABLEONLY, "printable_only" },
-	{ FCVAR_UNLOGGED, "unlogged" },
-	{ FCVAR_NEVER_AS_STRING, "never_as_string" },
-	{ FCVAR_REPLICATED, "replicated" },
-	{ FCVAR_CHEAT, "cheat" },
-	{ FCVAR_SS, "splitscreen" },
-	{ FCVAR_DEMO, "demo" },
-	{ FCVAR_DONTRECORD, "dont_record" },
-	{ FCVAR_SS_ADDED, "splitscreen_added" },
-	{ FCVAR_RELEASE, "release" },
-	{ FCVAR_RELOAD_MATERIALS, "reload_materials" },
-	{ FCVAR_RELOAD_TEXTURES, "reload_textures" },
-	{ FCVAR_NOT_CONNECTED, "not_connected" },
-	{ FCVAR_MATERIAL_SYSTEM_THREAD, "materialsystem_thread" },
-	{ FCVAR_ARCHIVE_PLAYERPROFILE, "playerprofile" },
-	{ FCVAR_SERVER_CAN_EXECUTE, "server_can_execute" },
-	{ FCVAR_SERVER_CANNOT_QUERY, "server_cannot_query" },
-	{ FCVAR_CLIENTCMD_CAN_EXECUTE, "clientcmd_can_execute" },
 };
 
 #endif // ICONVAR_H

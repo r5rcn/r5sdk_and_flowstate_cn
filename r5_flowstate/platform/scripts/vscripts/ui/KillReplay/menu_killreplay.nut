@@ -2,7 +2,6 @@ global function InitKillReplayHud
 global function OpenKillReplayHud
 global function CloseKillReplayHud
 global function ReplayHud_UpdatePlayerData
-global function UI_FlowstateCustomSetSpectateTargetCount
 
 struct
 {
@@ -32,10 +31,10 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
         Hud_SetVisible( Hud_GetChild( file.menu, "PlayerSheild" + i ), false )
     }
 
-	Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "观战中")
+	Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "Spectating")
 	
 	if( IsConnected() && GetCurrentPlaylistName() == "flowstate_snd" )
-		Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "正在观战队友")
+		Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "Spectating Teammate")
 	
     Hud_SetText(Hud_GetChild( file.menu, "KillReplayPlayerName" ), "")
     RuiSetImage(Hud_GetRui(Hud_GetChild(file.menu, "PlayerImage")), "basicImage", $"")
@@ -77,8 +76,8 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 	//todo make it show only if there is more than 1 player to spectate
 	if( IsConnected() && GetCurrentPlaylistName() != "flowstate_snd" )
 	{
-		Hud_SetText(Hud_GetChild( file.menu, "ControlsText" ), "%attack% 上一个玩家")
-		Hud_SetText(Hud_GetChild( file.menu, "ControlsText2" ), "%zoom% 下一个玩家")
+		Hud_SetText(Hud_GetChild( file.menu, "ControlsText" ), "%attack% Previous Player")
+		Hud_SetText(Hud_GetChild( file.menu, "ControlsText2" ), "%zoom% Next Player")
 	} 
 	
 	if(GetCurrentPlaylistName() == "flowstate_snd")
@@ -89,7 +88,7 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 	
 	if(isProphunt) 
 	{
-		Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "APEX 躲猫猫 - 你将会在下一回合重生")		
+		Hud_SetText(Hud_GetChild( file.menu, "KillReplayText" ), "APEX PROPHUNT - YOU WILL SPAWN THE NEXT ROUND")		
 		Hud_SetVisible( Hud_GetChild( file.menu, "PlayerCard" ), true )
 		Hud_SetVisible( Hud_GetChild( file.menu, "PlayerCardTopLine" ), true )
 		Hud_SetVisible( Hud_GetChild( file.menu, "PlayerCardBottomLine" ), true )
@@ -142,43 +141,15 @@ void function InitKillReplayHud( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, On_NavigateBack )
 }
 
-void function UI_FlowstateCustomSetSpectateTargetCount( int targetCount, bool reverse )
-{
-	file.ObserverReverse = reverse
-	file.spectateTargetCount = targetCount
-}
-
-bool function FlowstateCustomCanChangeSpectateTarget()
-{
-	return file.spectateTargetCount	> 1
-}
-
 void function SpecNext( var panel )
 {
-	printt("trying to change spectate target. Max Targets " + file.spectateTargetCount + " | Target Count " + file.currentSpectateTarget )
-	
-	// if( FlowstateCustomCanChangeSpectateTarget() && file.currentSpectateTarget < file.spectateTargetCount)
-	// {
-		// if(file.ObserverReverse)
-			// ClientCommand( "spec_prev" )
-		// else
-			ClientCommand( "spec_next" )
-		
-		// file.currentSpectateTarget++
-	// }
+
+	ClientCommand( "spec_next" )
 }
 
 void function SpecPrev( var panel )
 {
-	// if( FlowstateCustomCanChangeSpectateTarget() && file.currentSpectateTarget > 1)
-	// {
-		// if(file.ObserverReverse)
-			ClientCommand( "spec_next" )
-		// else
-			// ClientCommand( "spec_prev" )
-		
-		// file.currentSpectateTarget--
-	// }
+	ClientCommand( "spec_prev" )
 }
 
 void function FocusChat( var panel )

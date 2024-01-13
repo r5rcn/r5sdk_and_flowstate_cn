@@ -62,53 +62,31 @@ resource/ui/menus/dialog_datacenter.menu
 			pin_to_sibling_corner	TOP
 		}
 
-
-		DataCenterButtonGlobal
+		ListDataCenters
 		{
-			"ControlName" 			"RuiButton"
-			"rui"					"ui/generic_friend_button.rpak"
-			ruiArgs
-			{
-				buttonText "R5Reloaded"
-			}
+			ControlName				CDatacenterListPanel
+			ypos					28
 			wide					636
-			tall					35
-			"labelText"             ""
-			"visible"				"1"
-			sound_focus           "UI_Menu_Focus"
-			"sound_accept"          "UI_Menu_Accept"
-			"cursorPriority"        "-1"
-
-			ypos					30
-            visible 1
-
-			pin_to_sibling          DialogHeader
-			pin_corner_to_sibling   LEFT
-			pin_to_sibling_corner   LEFT
-		}
-
-		DataCenterButtonChina
-		{
-			"ControlName" 			"RuiButton"
-			"rui"					"ui/generic_friend_button.rpak"
-			ruiArgs
+			tall					458
+			tabPosition				1
+			navUp					Button0
+			navDown					Button0
+			bgcolor_override		"0 0 0 0"
+			font                    Default_27 // Changes header font
+			//headerHeight			1
+			paintborder				0
+			panelBorder				0
+			NoWrap					0
+			arrowsVisible			0
+			cursorPriority          10
+			listEntrySettings
 			{
-				buttonText "R5Reloaded CN 北京"
+			//	InheritProperties		DataCenterButton
 			}
-			wide					636
-			tall					35
-			"labelText"             ""
-			"visible"				"1"
-			sound_focus           "UI_Menu_Focus"
-			"sound_accept"          "UI_Menu_Accept"
-			"cursorPriority"        "-1"
 
-			ypos					65
-            visible 1
-
-			pin_to_sibling          DialogHeader
-			pin_corner_to_sibling   LEFT
-			pin_to_sibling_corner   LEFT
+			pin_to_sibling			DialogHeader
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
 		}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

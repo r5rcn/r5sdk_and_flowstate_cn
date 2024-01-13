@@ -131,7 +131,7 @@ void function Set_FSDM_VoteMenuNextRound()
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true, false, false, false)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "开始下一回合!")
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "开始下一局!")
 }
 
 //Update current maps up for vote

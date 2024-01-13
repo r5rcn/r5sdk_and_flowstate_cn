@@ -612,7 +612,7 @@ void function ChangeInputHintString( int index )
 	switch(index)
 	{
 		case 0:
-			messageText = "更改物品 x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring()
+			messageText = "更改自身模型 x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring()
 			hintButton = "%attack%"
 			Hud_SetText( HudElement( "ProphuntHint0"), hintButton + " " + messageText)
 		break

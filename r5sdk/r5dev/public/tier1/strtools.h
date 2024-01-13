@@ -39,6 +39,7 @@
 #define V_strstr strstr
 #define V_strncpy strncpy
 #define V_strdup _strdup
+#define V_strcat strcat
 
 #define Q_vsnprintf V_vsnprintf
 #define Q_snprintf V_snprintf
@@ -55,20 +56,24 @@
 #define Q_strstr V_strstr
 #define Q_strncpy V_strncpy
 #define Q_strdup V_strdup
+#define Q_strcat V_strcat
 
 template <size_t maxLenInCharacters> int V_vsprintf_safe(OUT_Z_ARRAY char(&pDest)[maxLenInCharacters], PRINTF_FORMAT_STRING const char* pFormat, va_list params) { return V_vsnprintf(pDest, maxLenInCharacters, pFormat, params); }
 
 
 char const* V_stristr(char const* pStr, char const* pSearch);
-const char* V_strnistr(const char* pStr, const char* pSearch, int64_t n);
-const char* V_strnchr(const char* pStr, char c, int64_t n);
+const char* V_strnistr(const char* pStr, const char* pSearch, ssize_t n);
+const char* V_strnchr(const char* pStr, char c, ssize_t n);
 bool V_isspace(int c);
 
 // Strip white space at the beginning and end of a string
-int64_t V_StrTrim(char* pStr);
+ssize_t V_StrTrim(char* pStr);
 
 int V_UTF8ToUnicode(const char* pUTF8, wchar_t* pwchDest, int cubDestSizeInBytes);
 int V_UnicodeToUTF8(const wchar_t* pUnicode, char* pUTF8, int cubDestSizeInBytes);
+
+int V_UTF8CharLength(const unsigned char input);
+bool V_IsValidUTF8(const char* pszString);
 
 typedef enum
 {
@@ -78,6 +83,8 @@ typedef enum
 
 // String matching using wildcards (*) for partial matches.
 bool V_StringMatchesPattern(const char* szString, const char* szPattern, int flags = 0);
+
+bool V_ComparePath(const char* a, const char* b);
 
 void V_FixSlashes(char* pname, char separator = CORRECT_PATH_SEPARATOR);
 
@@ -99,6 +106,9 @@ bool V_NormalizePath(char* pfilePath, char separator);
 // Returns true if the path is an absolute path.
 bool V_IsAbsolutePath(IN_Z const char* pPath);
 
+// Returns true if the path is valid.
+bool V_IsValidPath(const char* pStr);
+
 // If pPath is a relative path, this function makes it into an absolute path
 // using the current working directory as the base, or pStartingDir if it's non-NULL.
 // Returns false if it runs out of room in the string, or if pPath tries to ".." past the root directory.
@@ -118,7 +128,7 @@ inline void V_MakeAbsolutePath(char* pOut, size_t outLen, const char* pPath, con
 }
 
 // Remove the final directory from the path
-bool V_StripLastDir(char* dirName, size_t maxlen);
+size_t V_StripLastDir(char* dirName, size_t maxLen);
 // Returns a pointer to the unqualified file name (no path) of a file name
 const char* V_UnqualifiedFileName(const char* in);
 // Given a path and a filename, composes "path\filename", inserting the (OS correct) separator if necessary

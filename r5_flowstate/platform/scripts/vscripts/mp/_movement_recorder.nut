@@ -33,31 +33,42 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 	string aiFileToUse 
 	
 	array<string> coolDevs = [
-		"幻影",
+		"CafeFPS",
+		"DEAFPS",
+		"AyeZee",
+		"Makimakima",
+		"Endergreen12",
+		"Zer0Bytes",
+		"Julefox",
+		"amos_x64",
+		"rexx_x64",
+		"IcePixelx", 
+		"KralRindo",
+		"sal"
 	]
 	
 	switch(character)
 	{
 		case 0:
-			msg1 = "正在以恶灵录制移动"
+			msg1 = "RECORDING MOVEMENT AS WRAITH"
 			aiFileToUse = "npc_dummie_wraith"
 			AssignCharacter(player, 8)
 		break
 		
 		case 1:
-			msg1 = "正在以探路者录制移动"
+			msg1 = "RECORDING MOVEMENT AS PATHFINDER"
 			aiFileToUse = "npc_dummie_pathfinder"
 			AssignCharacter(player, 7)
 		break
 		
 		case 2:
-			msg1 = "正在以班加罗尔录制移动"
+			msg1 = "RECORDING MOVEMENT AS BANGALORE"
 			aiFileToUse = "npc_dummie_bangalore"
 			AssignCharacter(player, 0)
 		break
 		
 		default:
-			msg1 = "正在录制移动"
+			msg1 = "RECORDING MOVEMENT"
 			aiFileToUse = "npc_dummie_wraith"
 			AssignCharacter(player, 0)
 		break
@@ -76,7 +87,7 @@ void function StartMovementRecorder(entity player, float length = 10, int charac
 	WaitFrame()
 	if(!IsValid(player)) return
 	
-	Message(player, "正在播放移动", "", 1.5)
+	Message(player, "PLAYING MOVEMENT", "", 1.5)
 	
 	#if DEVELOPER
 		printt(anim) //userdata

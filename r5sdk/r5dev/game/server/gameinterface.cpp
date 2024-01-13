@@ -10,10 +10,14 @@
 #include "public/server_class.h"
 #include "public/eiface.h"
 #include "public/const.h"
+#include "common/protocol.h"
 #include "engine/server/sv_main.h"
 #include "gameinterface.h"
 #include "entitylist.h"
 #include "baseanimating.h"
+#include "engine/server/server.h"
+#include "game/shared/usercmd.h"
+#include "game/server/util_server.h"
 
 //-----------------------------------------------------------------------------
 // This is called when a new game is started. (restart, map)
@@ -82,6 +86,17 @@ void __fastcall CServerGameDLL::OnReceivedSayTextMessage(void* thisptr, int send
 #endif
 }
 
+void DrawServerHitbox(int iEntity)
+{
+	IHandleEntity* pEntity = LookupEntityByIndex(iEntity);
+	CBaseAnimating* pAnimating = dynamic_cast<CBaseAnimating*>(pEntity);
+
+	if (pAnimating)
+	{
+		pAnimating->DrawServerHitboxes();
+	}
+}
+
 void DrawServerHitboxes(bool bRunOverlays)
 {
 	int nVal = sv_showhitboxes->GetInt();
@@ -90,28 +105,62 @@ void DrawServerHitboxes(bool bRunOverlays)
 	if (nVal == -1)
 		return;
 
-	std::function<void(int)> fnLookupAndDraw = [&](int iEntity)
-	{
-		IHandleEntity* pEntity = LookupEntityByIndex(iEntity);
-		CBaseAnimating* pAnimating = dynamic_cast<CBaseAnimating*>(pEntity);
-
-		if (pAnimating)
-		{
-			pAnimating->DrawServerHitboxes();
-		}
-	};
-
 	if (nVal == 0)
 	{
 		for (int i = 0; i < NUM_ENT_ENTRIES; i++)
 		{
-			fnLookupAndDraw(i);
+			DrawServerHitbox(i);
 		}
 	}
 	else // Lookup entity manually by index from 'sv_showhitboxes'.
 	{
-		fnLookupAndDraw(nVal);
+		DrawServerHitbox(nVal);
 	}
+}
+
+void CServerGameClients::ProcessUserCmds(CServerGameClients* thisp, edict_t edict,
+	bf_read* buf, int numCmds, int totalCmds, int droppedPackets, bool ignore, bool paused)
+{
+	int i;
+	CUserCmd* from, * to;
+
+	// We track last three command in case we drop some
+	// packets but get them back.
+	CUserCmd cmds[MAX_BACKUP_COMMANDS_PROCESS];
+	CUserCmd cmdNull;  // For delta compression
+
+	Assert(numCmds >= 0);
+	Assert((totalCmds - numCmds) >= 0);
+
+	CPlayer* pPlayer = UTIL_PlayerByIndex(edict);
+
+	// Too many commands?
+	if (totalCmds < 0 || totalCmds >= (MAX_BACKUP_COMMANDS_PROCESS - 1) ||
+		numCmds < 0 || numCmds > totalCmds)
+	{
+		CClient* pClient = g_pServer->GetClient(edict-1);
+
+		Warning(eDLL_T::SERVER, "%s: Player '%s' sent too many cmds (%i)\n", __FUNCTION__, pClient->GetServerName(), totalCmds);
+		buf->SetOverflowFlag();
+
+		return;
+	}
+
+	from = &cmdNull;
+	for (i = totalCmds - 1; i >= 0; i--)
+	{
+		to = &cmds[i];
+		ReadUserCmd(buf, to, from);
+		from = to;
+	}
+
+	// Client not fully connected or server has gone inactive or is paused, just ignore
+	if (ignore || !pPlayer)
+	{
+		return;
+	}
+
+	pPlayer->ProcessUserCmds(cmds, numCmds, totalCmds, droppedPackets, paused);
 }
 
 void RunFrameServer(double flFrameTime, bool bRunOverlays, bool bUniformUpdate)
@@ -124,6 +173,7 @@ void VServerGameDLL::Attach() const
 {
 #if defined(GAMEDLL_S3)
 	DetourAttach((LPVOID*)&CServerGameDLL__OnReceivedSayTextMessage, &CServerGameDLL::OnReceivedSayTextMessage);
+	DetourAttach(&v_CServerGameClients__ProcessUserCmds, CServerGameClients::ProcessUserCmds);
 #endif
 	DetourAttach(&v_RunFrameServer, &RunFrameServer);
 }
@@ -132,6 +182,7 @@ void VServerGameDLL::Detach() const
 {
 #if defined(GAMEDLL_S3)
 	DetourDetach((LPVOID*)&CServerGameDLL__OnReceivedSayTextMessage, &CServerGameDLL::OnReceivedSayTextMessage);
+	DetourDetach(&v_CServerGameClients__ProcessUserCmds, CServerGameClients::ProcessUserCmds);
 #endif
 	DetourDetach(&v_RunFrameServer, &RunFrameServer);
 }

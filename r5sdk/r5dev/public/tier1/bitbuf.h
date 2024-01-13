@@ -101,17 +101,14 @@ namespace bitbuf
 	const int kMaxVarint32Bytes = 5;
 }
 
-//-----------------------------------------------------------------------------
-// Used for serialization
-//-----------------------------------------------------------------------------
 class CBitBuffer
 {
 public:
 	CBitBuffer(void);
-	void SetDebugName(const char* pName);
-	const char* GetDebugName() const;
-	bool IsOverflowed() const;
-	void SetOverflowFlag();
+	FORCEINLINE void SetDebugName(const char* pName) { m_pDebugName = pName; }
+	FORCEINLINE const char* GetDebugName() const { return m_pDebugName; }
+	FORCEINLINE bool IsOverflowed() const { return m_bOverflow; }
+	FORCEINLINE void SetOverflowFlag() { m_bOverflow = true; }
 
 	////////////////////////////////////
 	const char* m_pDebugName;
@@ -130,17 +127,33 @@ public:
 	}
 
 	void StartReading(const void* pData, size_t nBytes, int64 iStartBit = 0, int64 nBits = -1);
+
 	bool Seek(int64 nPosition);
+	FORCEINLINE int64 Tell(void) const;
 
 	void GrabNextDWord(bool bOverFlowImmediately = false);
 	void FetchNext();
 
+	FORCEINLINE int64 GetNumBitsRead(void) const { return Tell(); };
+	FORCEINLINE int64 GetNumBytesRead(void) const { return ((GetNumBitsRead() + 7) >> 3); }
+
+	FORCEINLINE int64 GetNumBitsLeft() const { return m_nDataBits - GetNumBitsRead(); }
+	FORCEINLINE int64 GetNumBytesLeft() const { return GetNumBitsLeft() >> 3; }
+
 	int ReadSBitLong(int numbits);
 	uint32 ReadUBitLong(int numbits);
 
-	int ReadByte();
-	int ReadChar();
-	bool ReadString(char* pStr, int bufLen, bool bLine = false, int* pOutNumChars = nullptr);
+	FORCEINLINE int ReadChar() { return ReadSBitLong(sizeof(char) << 3); }
+	FORCEINLINE int ReadByte() { return ReadSBitLong(sizeof(unsigned char) << 3); }
+	FORCEINLINE int ReadShort() { return ReadUBitLong(sizeof(short) << 3); }
+	FORCEINLINE int ReadWord() { return ReadUBitLong(sizeof(unsigned short) << 3); }
+	FORCEINLINE int ReadLong() { return ReadUBitLong(sizeof(int32) << 3); }
+
+	int64			ReadLongLong();
+	float			ReadFloat();
+	void			ReadBits(void* pOutData, int nBits);
+	bool			ReadBytes(void* pOut, int nBytes);
+	bool			ReadString(char* pStr, int bufLen, bool bLine = false, int* pOutNumChars = nullptr);
 
 	////////////////////////////////////
 	uint32 m_nInBufWord;
@@ -150,25 +163,19 @@ public:
 	const uint32* m_pData;
 };
 
-class bf_read : public CBitRead
+class CBitWrite
 {
 public:
-
-};
-
-struct bf_write
-{
-public:
-	bf_write();
+	CBitWrite();
 
 	// nMaxBits can be used as the number of bits in the buffer. 
 	// It must be <= nBytes*8. If you leave it at -1, then it's set to nBytes * 8.
-	bf_write(void* pData, int nBytes, int nMaxBits = -1);
-	bf_write(const char* pDebugName, void* pData, int nBytes, int nMaxBits = -1);
+	CBitWrite(void* pData, int nBytes, int nMaxBits = -1);
+	CBitWrite(const char* pDebugName, void* pData, int nBytes, int nMaxBits = -1);
 
 	// Restart buffer writing.
-	void           Reset();
-	void           SeekToBit(int bitPos);
+	inline void    Reset() { m_iCurBit = 0; m_bOverflow = false; }
+	inline void    SeekToBit(int bitPos) { m_iCurBit = bitPos; }
 
 	void StartWriting(void* pData, int nBytes, int iStartBit = 0, int nMaxBits = -1);
 
@@ -187,24 +194,24 @@ public:
 
 	// Write a list of bits in.
 	bool           WriteBits(const void* pIn, int nBits);
-
-	bool           WriteBytes(const void* pIn, int nBytes);
+	inline bool    WriteBytes(const void* pIn, int nBytes) { return WriteBits(pIn, nBytes << 3); }
 
 	// How many bytes are filled in?
-	int            GetNumBytesWritten() const;
-	int            GetNumBitsWritten() const;
-	int            GetMaxNumBits() const;
-	int            GetNumBitsLeft() const;
-	int            GetNumBytesLeft() const;
-	unsigned char* GetData() const;
+	FORCEINLINE int     GetNumBytesWritten() const { return BitByte(this->m_iCurBit); }
+	FORCEINLINE int     GetNumBitsWritten() const { return this->m_iCurBit; }
+	FORCEINLINE int     GetMaxNumBits() const { return this->m_nDataBits; }
+	FORCEINLINE int     GetNumBitsLeft() const { return this->m_nDataBits - m_iCurBit; }
+	FORCEINLINE int     GetNumBytesLeft() const { return this->GetNumBitsLeft() >> 3; }
+	FORCEINLINE unsigned char* GetData() const { return this->m_pData; }
 
-	const char* GetDebugName() const;
-	void        SetDebugName(const char* pDebugName);
+	inline const char* GetDebugName() const { return this->m_pDebugName; }
+	inline void        SetDebugName(const char* pDebugName) { m_pDebugName = pDebugName; }
 
 	// Has the buffer overflowed?
 	bool CheckForOverflow(int nBits);
-	bool IsOverflowed() const;
 	void SetOverflowFlag();
+
+	FORCEINLINE bool IsOverflowed() const { return this->m_bOverflow; }
 private:
 	// The current buffer.
 	unsigned char*          m_pData;
@@ -219,4 +226,38 @@ private:
 	bool                    m_bAssertOnOverflow;
 	const char*             m_pDebugName;
 };
+
+//-----------------------------------------------------------------------------
+// Used for unserialization
+//-----------------------------------------------------------------------------
+class bf_read : public CBitRead
+{
+public:
+
+};
+
+//-----------------------------------------------------------------------------
+// Used for serialization
+//-----------------------------------------------------------------------------
+class bf_write : public CBitWrite
+{
+public:
+
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+FORCEINLINE int64 CBitRead::Tell(void) const
+{
+	if (!m_pData) // pesky null ptr bitbufs. these happen.
+		return 0;
+
+	int64 nCurOfs = int64(((intp(m_pDataIn) - intp(m_pData)) / 4) - 1);
+	nCurOfs *= 32;
+	nCurOfs += (32 - m_nBitsAvail);
+	int64 nAdjust = 8 * (m_nDataBytes & 3);
+	return MIN(nCurOfs + nAdjust, m_nDataBits);
+}
+
 #endif // BITBUF_H

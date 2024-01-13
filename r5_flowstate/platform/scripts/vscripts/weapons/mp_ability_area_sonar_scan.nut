@@ -1,3 +1,5 @@
+// Updated by @CafeFPS
+
 global function MpAbilityAreaSonarScan_Init
 
 global function OnWeaponActivate_ability_area_sonar_scan
@@ -9,6 +11,7 @@ global function ServerCallback_SonarAreaScanTarget
 
 #if SERVER
 global function GetAreaSonarScanDuration
+global function IsHostileSonarTarget
 #endif
 
 const asset FLASHEFFECT    = $"P_sonar_bloodhound"

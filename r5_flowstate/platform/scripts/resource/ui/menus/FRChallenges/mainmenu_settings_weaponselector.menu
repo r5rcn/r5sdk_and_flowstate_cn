@@ -55,7 +55,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.3 | Made by @CafeFPS"
+			labelText				"v1.31 | %$rui/flowstate_custom/colombia_flag_papa% Made in Colombia by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -110,7 +110,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			tall					50
 			visible					1
 			fontHeight				40
-			labelText				"选择武器"
+			labelText				"WEAPON SELECTOR"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -229,7 +229,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "返回"
+				buttonText "BACK"
 				basicImageColor     "255 255 255"
                 basicImageAlpha     1
 			}
@@ -259,7 +259,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText 			"主手武器"
+				buttonText 			"PRIMARY"
 				basicImageColor     "255 255 255"
                 basicImageAlpha     1
 			}
@@ -289,7 +289,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText 			"副手武器"
+				buttonText 			"SECONDARY"
 				basicImageColor     "255 255 255"
                 basicImageAlpha     1
 			}
@@ -308,7 +308,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"%zoom% 更换配件"
+			labelText				"%zoom% CHANGE ATTACHMENTS"
 			visible                 1
 			zpos 1
 			tall					40

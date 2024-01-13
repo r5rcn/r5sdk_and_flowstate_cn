@@ -10,6 +10,10 @@
 #define AssertDbg assert
 #define Verify( _exp ) ( _exp )
 #include "tier0/dbgflag.h"
+#include "tier0/platform.h"
+
+// Used for the 'Error' function, this tells the function to only log, not quit.
+//#define NO_ERROR 0
 
 bool HushAsserts();
 //-----------------------------------------------------------------------------
@@ -62,23 +66,11 @@ enum class LogLevel_t
 	LEVEL_NOTIFY   // Emit to in-game mini console
 };
 //-----------------------------------------------------------------------------
-static const char* sDLL_T[11] = 
-{
-	"Native(S):",
-	"Native(C):",
-	"Native(U):",
-	"Native(E):",
-	"Native(F):",
-	"Native(R):",
-	"Native(M):",
-	"Native(A):",
-	"Native(V):",
-	"Netcon(X):",
-	""
-};
-//-----------------------------------------------------------------------------
-constexpr const char s_DefaultAnsiColor[] = "\033[38;2;255;204;153m";
-constexpr const char* s_DllAnsiColor[11] =
+constexpr const char s_CommonAnsiColor[]  = "\033[38;2;255;204;153m";
+constexpr const char s_WarningAnsiColor[] = "\033[38;2;255;255;000m";
+constexpr const char s_ErrorAnsiColor[]   = "\033[38;2;255;000;000m";
+constexpr const char s_DefaultAnsiColor[] = "\033[38;2;204;204;204m";
+constexpr const char* s_DllAnsiColor[14]  =
 {
 	"\033[38;2;059;120;218mNative(S):",
 	"\033[38;2;118;118;118mNative(C):",
@@ -90,6 +82,9 @@ constexpr const char* s_DllAnsiColor[11] =
 	"\033[38;2;238;108;030mNative(A):",
 	"\033[38;2;185;000;235mNative(V):",
 	"\033[38;2;204;204;204mNetcon(X):",
+	s_CommonAnsiColor,
+	s_WarningAnsiColor,
+	s_ErrorAnsiColor,
 	s_DefaultAnsiColor
 };
 //-----------------------------------------------------------------------------
@@ -101,7 +96,6 @@ constexpr const char* s_ScriptAnsiColor[4] =
 	"\033[38;2;151;149;163mScript(X):"
 };
 
-static const std::regex s_AnsiRowRegex("\\\033\\[.*?m");
 extern std::mutex g_LogMutex;
 
 //////////////////////////////////////////////////////////////////////////
@@ -114,12 +108,18 @@ void CoreMsg(LogType_t logType, LogLevel_t logLevel, eDLL_T context,
 	const UINT exitCode, const char* pszLogger, const char* pszFormat, ...);
 
 // These functions do not return.
-PLATFORM_INTERFACE void DevMsg(eDLL_T context, const char* fmt, ...) FMTFUNCTION(2, 3);
-#ifndef DEDICATED
+PLATFORM_INTERFACE void Msg(eDLL_T context, const char* fmt, ...) FMTFUNCTION(2, 3);
 PLATFORM_INTERFACE void NetMsg(LogType_t logType, eDLL_T context, const char* uptime, const char* fmt, ...) FMTFUNCTION(4, 5);
-#endif // !DEDICATED
 PLATFORM_INTERFACE void Warning(eDLL_T context, const char* fmt, ...) FMTFUNCTION(2, 3);
 PLATFORM_INTERFACE void Error(eDLL_T context, const UINT code, const char* fmt, ...) FMTFUNCTION(3, 4);
+
+#if defined DBGFLAG_STRINGS_STRIP
+#define DevMsg( ... ) ((void)0)
+#define DevWarning( ... ) ((void)0)
+#else // DBGFLAG_STRINGS_STRIP
+PLATFORM_INTERFACE void DevMsg(eDLL_T context, const char* fmt, ...) FMTFUNCTION(2, 3);
+PLATFORM_INTERFACE void DevWarning(eDLL_T context, const char* fmt, ...) FMTFUNCTION(2, 3);
+#endif
 
 // You can use this macro like a runtime assert macro.
 // If the condition fails, then Error is called with the message. This macro is called
@@ -158,5 +158,10 @@ template<class T> inline void AssertValidWritePtr(T* /*ptr*/, int count = 1) { N
 template<class T> inline void AssertValidReadWritePtr(T* /*ptr*/, int count = 1) { NOTE_UNUSED(count); }
 #define AssertValidThis() 
 #endif
+
+typedef void (*CoreMsgVCallbackSink_t)(LogType_t logType, LogLevel_t logLevel, eDLL_T context,
+	const char* pszLogger, const char* pszFormat, va_list args, const UINT exitCode, const char* pszUptimeOverride);
+
+extern CoreMsgVCallbackSink_t g_CoreMsgVCallback;
 
 #endif /* DBG_H */

@@ -8,6 +8,7 @@
 #include "windows/id3dx.h"
 #include "windows/input.h"
 #include "engine/sys_mainwind.h"
+#include "engine/sys_engine.h"
 #include "gameui/IConsole.h"
 #include "gameui/IBrowser.h"
 
@@ -27,17 +28,28 @@ void CGame::PlayStartupVideos(void)
 //-----------------------------------------------------------------------------
 int CGame::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (!g_bImGuiInitialized)
+		return v_CGame__WindowProc(hWnd, uMsg, wParam, lParam);
+
+	const IEngine::EngineState_t state = g_pEngine->GetState();
+
+	if (state == IEngine::DLL_CLOSE ||
+		state == IEngine::DLL_RESTART)
+		return v_CGame__WindowProc(hWnd, uMsg, wParam, lParam);
+
 	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 
 	if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
 	{
-		if (wParam == g_pImGuiConfig->m_ConsoleConfig.m_nBind0 || wParam == g_pImGuiConfig->m_ConsoleConfig.m_nBind1)
+		if (wParam == g_pImGuiConfig->m_ConsoleConfig.m_nBind0 ||
+			wParam == g_pImGuiConfig->m_ConsoleConfig.m_nBind1)
 		{
 			g_pConsole->m_bActivate ^= true;
 			ResetInput(); // Disable input to game when console is drawn.
 		}
 
-		if (wParam == g_pImGuiConfig->m_BrowserConfig.m_nBind0 || wParam == g_pImGuiConfig->m_BrowserConfig.m_nBind1)
+		if (wParam == g_pImGuiConfig->m_BrowserConfig.m_nBind0 ||
+			wParam == g_pImGuiConfig->m_BrowserConfig.m_nBind1)
 		{
 			g_pBrowser->m_bActivate ^= true;
 			ResetInput(); // Disable input to game when browser is drawn.
@@ -80,6 +92,29 @@ int CGame::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return v_CGame__WindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: gets the window rect
+//-----------------------------------------------------------------------------
+void CGame::GetWindowRect(int* x, int* y, int* w, int* h)
+{
+	if (x)
+	{
+		*x = m_x;
+	}
+	if (y)
+	{
+		*y = m_y;
+	}
+	if (w)
+	{
+		*w = m_width;
+	}
+	if (h)
+	{
+		*h = m_height;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

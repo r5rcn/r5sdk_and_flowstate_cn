@@ -1,33 +1,41 @@
 #ifndef MEMSTD_H
 #define MEMSTD_H
 
+// this magic only works under win32
+// under linux this malloc() overrides the libc malloc() and so we
+// end up in a recursion (as MemAlloc_Alloc() calls malloc)
+#if _MSC_VER >= 1400
+
+#if _MSC_VER >= 1900
+#define _CRTNOALIAS
+#endif
+
+#define ALLOC_CALL _CRTNOALIAS _CRTRESTRICT
+#define FREE_CALL _CRTNOALIAS 
+#else
+#define ALLOC_CALL
+#define FREE_CALL
+#endif
+
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
 class IMemAlloc
 {
 public:
-	template<typename T>
-	T* Alloc(size_t nSize)
-	{
-		const static int index = 0;
-		return CallVFunc<T*>(index, this, nSize);
-	}
-	template<typename T>
-	T* Realloc(T* pMem, size_t nSize)
-	{
-		const static int index = 3;
-		return CallVFunc<T*>(index, this, pMem, nSize);
-	}
-	template<typename T>
-	void Free(T* pMem)
-	{
-		const static int index = 5;
-		CallVFunc<void>(index, this, pMem);
-	}
-	template<typename T>
-	size_t GetSize(T* pMem)
-	{
-		const static int index = 6;
-		return CallVFunc<size_t>(index, this, pMem);
-	}
+	// Same functions internally.
+	virtual void* InternalAlloc(size_t nSize, const char* pFileName, int nLine) = 0;
+	virtual void* Alloc(size_t nSize) = 0;
+
+	// Same functions internally.
+	virtual void* InternalRealloc(void* pMem, size_t nSize, const char* pFileName, int nLine) = 0;
+	virtual void* Realloc(void* pMem, size_t nSize) = 0;
+
+	// Same as Free, but takes debug parameters.
+	virtual void  InternalFree(void* pMem, const char* pFileName, int nLine) = 0;
+	virtual void  Free(void* pMem) = 0;
+
+	virtual size_t GetSize(void* pMem) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -35,42 +43,16 @@ public:
 //-----------------------------------------------------------------------------
 class CStdMemAlloc : public IMemAlloc{};
 
-inline CMemory p_CreateGlobalMemAlloc;
-inline auto v_CreateGlobalMemAlloc = p_CreateGlobalMemAlloc.RCast<CStdMemAlloc* (*)(void)>();
+inline CStdMemAlloc* (*CreateGlobalMemAlloc)() = nullptr;
+inline CStdMemAlloc* g_pMemAllocSingleton = nullptr;
 
-inline CStdMemAlloc** g_pMemAllocSingleton = nullptr;
-
-
-inline CStdMemAlloc* MemAllocSingleton()
+inline IMemAlloc* MemAllocSingleton()
 {
-	if (!(*g_pMemAllocSingleton))
+	if (!g_pMemAllocSingleton)
 	{
-		(*g_pMemAllocSingleton) = v_CreateGlobalMemAlloc();
+		g_pMemAllocSingleton = CreateGlobalMemAlloc();
 	}
-	return (*g_pMemAllocSingleton);
+	return g_pMemAllocSingleton;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-class VMemStd : public IDetour
-{
-	virtual void GetAdr(void) const
-	{
-		LogFunAdr("CreateGlobalMemAlloc", p_CreateGlobalMemAlloc.GetPtr());
-		LogVarAdr("g_pMemAllocSingleton", reinterpret_cast<uintptr_t>(g_pMemAllocSingleton));
-	}
-	virtual void GetFun(void) const
-	{
-		p_CreateGlobalMemAlloc = g_GameDll.FindPatternSIMD("40 53 48 83 EC 20 BB ?? ?? ?? ?? 33 C0");
-		v_CreateGlobalMemAlloc = p_CreateGlobalMemAlloc.RCast<CStdMemAlloc* (*)(void)>();    /*40 53 48 83 EC 20 BB ?? ?? ?? ?? 33 C0*/
-	}
-	virtual void GetVar(void) const
-	{
-		g_pMemAllocSingleton = g_GameDll.FindPatternSIMD("48 89 5C 24 ?? 57 48 81 EC ?? ?? ?? ?? 41 8B D8").OffsetSelf(0x5A).FindPatternSelf("48 8B", CMemory::Direction::DOWN, 100).ResolveRelativeAddressSelf(0x3, 0x7).RCast<CStdMemAlloc**>();
-	}
-	virtual void GetCon(void) const { }
-	virtual void Attach(void) const { }
-	virtual void Detach(void) const { }
-};
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // MEMSTD_H

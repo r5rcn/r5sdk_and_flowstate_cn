@@ -7,40 +7,39 @@
 //=============================================================================//
 
 #include "core/stdafx.h"
+#include "tier2/fileutils.h"
+#include "filesystem/filesystem.h"
 #include "pluginsystem.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: initialize the plugin system
 // Input  :
 //-----------------------------------------------------------------------------
-void CPluginSystem::PluginSystem_Init()
+void CPluginSystem::Init()
 {
-	const fs::path path("bin\\x64_retail\\plugins\\");
-	const string pathString(path.u8string());
+	if (!FileSystem()->IsDirectory(PLUGIN_INSTALL_DIR, "GAME"))
+		return; // No plugins to load.
 
-	CreateDirectories(pathString);
-	if (fs::is_directory(path))
+	CUtlVector< CUtlString > pluginPaths;
+	AddFilesToList(pluginPaths, PLUGIN_INSTALL_DIR, "dll", "GAME");
+
+	for (int i = 0; i < pluginPaths.Count(); ++i)
 	{
-		for (auto& it : fs::directory_iterator(path))
+		CUtlString& path = pluginPaths[i];
+
+		bool addInstance = true;
+		FOR_EACH_VEC(m_Instances, j)
 		{
-			if (!fs::is_regular_file(it))
-				continue;
+			const PluginInstance_t& instance = m_Instances[j];
 
-			if (auto path = it.path();
-				path.has_filename() &&
-				path.has_extension() &&
-				path.extension().compare(".dll") == 0)
-			{
-				bool addInstance = true;
-				for (auto& inst : pluginInstances)
-				{
-					if (inst.m_svPluginFullPath.compare(pathString) == 0)
-						addInstance = false;
-				}
+			if (instance.m_Path.IsEqual_CaseInsensitive(path.String()) == 0)
+				addInstance = false;
+		}
 
-				if (addInstance)
-					pluginInstances.push_back(PluginInstance_t(path.filename().u8string(), pathString));
-			}
+		if (addInstance)
+		{
+			const char* baseFileName = V_UnqualifiedFileName(path.String());
+			m_Instances.AddToTail(PluginInstance_t(baseFileName, path.String()));
 		}
 	}
 }
@@ -50,29 +49,32 @@ void CPluginSystem::PluginSystem_Init()
 // Input  : pluginInst* -
 // Output : bool
 //-----------------------------------------------------------------------------
-bool CPluginSystem::LoadPluginInstance(PluginInstance_t& pluginInst)
+bool CPluginSystem::LoadInstance(PluginInstance_t& pluginInst)
 {
 	if (pluginInst.m_bIsLoaded)
 		return false;
 
-	HMODULE loadedPlugin = LoadLibraryA(pluginInst.m_svPluginFullPath.c_str());
+	HMODULE loadedPlugin = LoadLibraryA(pluginInst.m_Path.String());
 	if (loadedPlugin == INVALID_HANDLE_VALUE || loadedPlugin == 0)
 		return false;
 
-	CModule pluginModule = CModule(pluginInst.m_svPluginName);
+	CModule pluginModule(pluginInst.m_Name.String());
 
-	// Pass selfModule here on load function, we have to do this because local listen/dedi/client dll's are called different, refer to a comment on the pluginsdk.
-	auto onLoadFn = pluginModule.GetExportedFunction("PluginInstance_OnLoad").RCast<PluginInstance_t::OnLoad>();
+	// Pass selfModule here on load function, we have to do
+	// this because local listen/dedi/client dll's are called
+	// different, refer to a comment on the pluginsdk.
+	PluginInstance_t::OnLoad onLoadFn = pluginModule.GetExportedSymbol(
+		"PluginInstance_OnLoad").RCast<PluginInstance_t::OnLoad>();
+
 	Assert(onLoadFn);
 
-	if (!onLoadFn(pluginInst.m_svPluginName.c_str()))
+	if (!onLoadFn(pluginInst.m_Name.String(), g_SDKDll.GetModuleName().c_str()))
 	{
 		FreeLibrary(loadedPlugin);
 		return false;
 	}
 
 	pluginInst.m_hModule = pluginModule;
-
 	return pluginInst.m_bIsLoaded = true;
 }
 
@@ -81,12 +83,15 @@ bool CPluginSystem::LoadPluginInstance(PluginInstance_t& pluginInst)
 // Input  : pluginInst* -
 // Output : bool
 //-----------------------------------------------------------------------------
-bool CPluginSystem::UnloadPluginInstance(PluginInstance_t& pluginInst)
+bool CPluginSystem::UnloadInstance(PluginInstance_t& pluginInst)
 {
 	if (!pluginInst.m_bIsLoaded)
 		return false;
 
-	auto onUnloadFn = pluginInst.m_hModule.GetExportedFunction("PluginInstance_OnUnload").RCast<PluginInstance_t::OnUnload>();
+	PluginInstance_t::OnUnload onUnloadFn = 
+		pluginInst.m_hModule.GetExportedSymbol(
+		"PluginInstance_OnUnload").RCast<PluginInstance_t::OnUnload>();
+
 	Assert(onUnloadFn);
 
 	if (onUnloadFn)
@@ -105,27 +110,26 @@ bool CPluginSystem::UnloadPluginInstance(PluginInstance_t& pluginInst)
 // Input  : pluginInst* -
 // Output : bool
 //-----------------------------------------------------------------------------
-bool CPluginSystem::ReloadPluginInstance(PluginInstance_t& pluginInst)
+bool CPluginSystem::ReloadInstance(PluginInstance_t& pluginInst)
 {
-	return UnloadPluginInstance(pluginInst) ? LoadPluginInstance(pluginInst) : false;
+	return UnloadInstance(pluginInst) ? LoadInstance(pluginInst) : false;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: get all plugin instances
 // Input  : 
-// Output : vector<CPluginSystem::PluginInstance>&
+// Output : CUtlVector<CPluginSystem::PluginInstance>&
 //-----------------------------------------------------------------------------
-vector<CPluginSystem::PluginInstance_t>& CPluginSystem::GetPluginInstances()
+CUtlVector<CPluginSystem::PluginInstance_t>& CPluginSystem::GetInstances()
 {
-	return pluginInstances;
+	return m_Instances;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: add plugin callback for function
 // Input  : *help
-// Output : void
 //-----------------------------------------------------------------------------
-void CPluginSystem::AddPluginCallback(PluginHelpWithAnything_t* help)
+void CPluginSystem::AddCallback(PluginHelpWithAnything_t* help)
 {
 #define ADD_PLUGIN_CALLBACK(fn, callback, function) callback += reinterpret_cast<fn>(function)
 
@@ -151,9 +155,8 @@ void CPluginSystem::AddPluginCallback(PluginHelpWithAnything_t* help)
 //-----------------------------------------------------------------------------
 // Purpose: remove plugin callback for function
 // Input  : *help
-// Output : void
 //-----------------------------------------------------------------------------
-void CPluginSystem::RemovePluginCallback(PluginHelpWithAnything_t* help)
+void CPluginSystem::RemoveCallback(PluginHelpWithAnything_t* help)
 {
 #define REMOVE_PLUGIN_CALLBACK(fn, callback, function) callback -= reinterpret_cast<fn>(function)
 
@@ -191,12 +194,12 @@ void* CPluginSystem::HelpWithAnything(PluginHelpWithAnything_t* help)
 	}
 	case PluginHelpWithAnything_t::ePluginHelp::PLUGIN_REGISTER_CALLBACK:
 	{
-		AddPluginCallback(help);
+		AddCallback(help);
 		break;
 	}
 	case PluginHelpWithAnything_t::ePluginHelp::PLUGIN_UNREGISTER_CALLBACK:
 	{
-		RemovePluginCallback(help);
+		RemoveCallback(help);
 		break;
 	}
 	default:

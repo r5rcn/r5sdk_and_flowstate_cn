@@ -535,8 +535,11 @@ CURLcode Curl_ntlm_core_mk_nt_hash(struct Curl_easy *data,
                                    unsigned char *ntbuffer /* 21 bytes */)
 {
   size_t len = strlen(password);
-  unsigned char *pw = malloc(len * 2);
+  unsigned char *pw;
   CURLcode result;
+  if(len > SIZE_T_MAX/2) /* avoid integer overflow */
+    return CURLE_OUT_OF_MEMORY;
+  pw = len ? malloc(len * 2) : strdup("");
   if(!pw)
     return CURLE_OUT_OF_MEMORY;
 
@@ -627,9 +630,19 @@ CURLcode Curl_ntlm_core_mk_ntlmv2_hash(const char *user, size_t userlen,
                                        unsigned char *ntlmv2hash)
 {
   /* Unicode representation */
-  size_t identity_len = (userlen + domlen) * 2;
-  unsigned char *identity = malloc(identity_len);
+  size_t identity_len;
+  unsigned char *identity;
   CURLcode result = CURLE_OK;
+
+    /* we do the length checks below separately to avoid integer overflow risk
+     on extreme data lengths */
+  if((userlen > SIZE_T_MAX/2) ||
+     (domlen > SIZE_T_MAX/2) ||
+     ((userlen + domlen) > SIZE_T_MAX/2))
+    return CURLE_OUT_OF_MEMORY;
+
+  identity_len = (userlen + domlen) * 2;
+  identity = malloc(identity_len);
 
   if(!identity)
     return CURLE_OUT_OF_MEMORY;

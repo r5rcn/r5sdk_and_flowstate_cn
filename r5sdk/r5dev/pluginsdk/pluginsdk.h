@@ -1,6 +1,6 @@
 #pragma once
 
-class IFactory;
+class IFactorySystem;
 class IPluginSystem;
 //-----------------------------------------------------------------------------//
 
@@ -11,13 +11,15 @@ public:
 	~CPluginSDK();
 
 	bool InitSDK();
+
+	inline void SetSDKModule(const CModule& sdkModule) { m_SDKModule = sdkModule; };
 private:
 
-	IFactory* m_FactoryInstance;
+	IFactorySystem* m_FactoryInstance;
 	IPluginSystem* m_PluginSystem;
 	CModule m_SelfModule;
 	CModule m_GameModule;
 	CModule m_SDKModule;
 };
-constexpr const char* PLUGINSDK_CLASS_VERSION = "VPluginSystem001";
+
 extern CPluginSDK* g_pPluginSDK;

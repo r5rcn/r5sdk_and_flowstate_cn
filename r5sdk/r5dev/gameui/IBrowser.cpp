@@ -17,11 +17,11 @@ History:
 #include "tier0/fasttimer.h"
 #include "tier0/frametask.h"
 #include "tier0/commandline.h"
-#include "tier1/cvar.h"
 #include "windows/id3dx.h"
 #include "windows/console.h"
 #include "windows/resource.h"
 #include "engine/net.h"
+#include "engine/cmd.h"
 #include "engine/cmodel_bsp.h"
 #include "engine/host_state.h"
 #ifndef CLIENT_DLL
@@ -31,11 +31,11 @@ History:
 #include "networksystem/serverlisting.h"
 #include "networksystem/pylon.h"
 #include "networksystem/listmanager.h"
-#include "squirrel/sqinit.h"
 #include "vpc/keyvalues.h"
-#include "vstdlib/callback.h"
+#include "common/callback.h"
 #include "gameui/IBrowser.h"
 #include "public/edict.h"
+#include "game/shared/vscript_shared.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -78,7 +78,11 @@ bool CBrowser::Init(void)
     SetStyleVar();
     m_szMatchmakingHostName = pylon_matchmaking_hostname->GetString();
 
-    return true;
+    bool ret = LoadTextureBuffer(reinterpret_cast<unsigned char*>(m_rLockedIconBlob.m_pData), int(m_rLockedIconBlob.m_nSize),
+        &m_idLockedIcon, &m_rLockedIconBlob.m_nWidth, &m_rLockedIconBlob.m_nHeight);
+
+    IM_ASSERT(ret && m_idLockedIcon);
+    return ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -163,7 +167,7 @@ void CBrowser::RunTask()
         bInitialized = true;
     }
 
-    if (timer.GetDurationInProgress().GetSeconds() > pylon_host_update_interval->GetDouble())
+    if (timer.GetDurationInProgress().GetSeconds() > pylon_host_update_interval->GetFloat())
     {
         UpdateHostingStatus();
         timer.Start();
@@ -363,8 +367,8 @@ void CBrowser::BrowserPanel(void)
 //-----------------------------------------------------------------------------
 void CBrowser::RefreshServerList(void)
 {
-    DevMsg(eDLL_T::CLIENT, "Refreshing server list with matchmaking host '%s'\n", pylon_matchmaking_hostname->GetString());
-    
+    Msg(eDLL_T::CLIENT, "Refreshing server list with matchmaking host '%s'\n", pylon_matchmaking_hostname->GetString());
+
     std::string svServerListMessage;
     g_pServerListManager->RefreshServerList(svServerListMessage);
 
@@ -399,15 +403,6 @@ void CBrowser::HiddenServersModal(void)
     if (ImGui::BeginPopupModal("Private Server", &bModalOpen, ImGuiWindowFlags_NoResize))
     {
         ImGui::SetWindowSize(ImVec2(408.f, flHeight), ImGuiCond_Always);
-
-        if (!m_idLockedIcon) // !TODO: Fall-back texture.
-        {
-            bool ret = LoadTextureBuffer(reinterpret_cast<unsigned char*>(m_rLockedIconBlob.m_pData), int(m_rLockedIconBlob.m_nSize),
-                &m_idLockedIcon, &m_rLockedIconBlob.m_nWidth, &m_rLockedIconBlob.m_nHeight);
-            IM_ASSERT(ret);
-            NOTE_UNUSED(ret);
-        }
-
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.00f, 0.00f, 0.00f, 0.00f)); // Override the style color for child bg.
 
         ImGui::BeginChild("##HiddenServersConnectModal_IconParent", ImVec2(float(m_rLockedIconBlob.m_nWidth), float(m_rLockedIconBlob.m_nHeight)));
@@ -524,11 +519,15 @@ void CBrowser::HostPanel(void)
     if (ImGui::BeginCombo("Map", g_pServerListManager->m_Server.m_svHostMap.c_str()))
     {
         g_InstalledMapsMutex.lock();
-        for (const string& svMap : g_InstalledMaps)
+
+        FOR_EACH_VEC(g_InstalledMaps, i)
         {
-            if (ImGui::Selectable(svMap.c_str(), svMap == g_pServerListManager->m_Server.m_svHostMap))
+            const CUtlString& mapName = g_InstalledMaps[i];
+
+            if (ImGui::Selectable(mapName.String(),
+                mapName.IsEqual_CaseInsensitive(g_pServerListManager->m_Server.m_svHostMap.c_str())))
             {
-                g_pServerListManager->m_Server.m_svHostMap = svMap;
+                g_pServerListManager->m_Server.m_svHostMap = mapName.String();
             }
         }
 
@@ -564,6 +563,9 @@ void CBrowser::HostPanel(void)
     }
 
     ImGui::Spacing();
+
+    const bool bServerActive = g_pServer->IsActive();
+
     if (!g_pHostState->m_bActiveGame)
     {
         if (ImGui::Button("Start server", ImVec2(ImGui::GetWindowContentRegionWidth(), 32)))
@@ -573,7 +575,7 @@ void CBrowser::HostPanel(void)
             bool bEnforceField = g_pServerListManager->m_ServerVisibility == EServerVisibility_t::OFFLINE ? true : !g_pServerListManager->m_Server.m_svHostName.empty();
             if (bEnforceField && !g_pServerListManager->m_Server.m_svPlaylist.empty() && !g_pServerListManager->m_Server.m_svHostMap.empty())
             {
-                g_pServerListManager->LaunchServer(); // Launch server.
+                g_pServerListManager->LaunchServer(bServerActive); // Launch server.
             }
             else
             {
@@ -607,7 +609,7 @@ void CBrowser::HostPanel(void)
         {
             g_TaskScheduler->Dispatch([]()
                 {
-                    g_pBanSystem->Load();
+                    g_pBanSystem->LoadList();
                 }, 0);
         }
     }
@@ -627,7 +629,7 @@ void CBrowser::HostPanel(void)
         {
             if (!g_pServerListManager->m_Server.m_svHostMap.empty())
             {
-                g_pServerListManager->LaunchServer();
+                g_pServerListManager->LaunchServer(bServerActive);
             }
             else
             {
@@ -636,7 +638,7 @@ void CBrowser::HostPanel(void)
             }
         }
 
-        if (g_pServer->IsActive())
+        if (bServerActive)
         {
             ImGui::Spacing();
             ImGui::Separator();
@@ -658,7 +660,7 @@ void CBrowser::HostPanel(void)
 
             if (ImGui::Button("AI settings reparse", ImVec2(ImGui::GetWindowContentRegionWidth(), 32)))
             {
-                DevMsg(eDLL_T::ENGINE, "Reparsing AI data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
+                Msg(eDLL_T::ENGINE, "Reparsing AI data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
                 ProcessCommand("aisettings_reparse");
 
                 if (g_pClientState->IsActive())
@@ -669,7 +671,7 @@ void CBrowser::HostPanel(void)
 
             if (ImGui::Button("Weapon settings reparse", ImVec2(ImGui::GetWindowContentRegionWidth(), 32)))
             {
-                DevMsg(eDLL_T::ENGINE, "Reparsing weapon data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
+                Msg(eDLL_T::ENGINE, "Reparsing weapon data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
                 ProcessCommand("weapon_reparse");
             }
         }
@@ -741,7 +743,7 @@ void CBrowser::UpdateHostingStatus(void)
                 g_pServerListManager->m_Server.m_svDescription,
                 g_pServerListManager->m_Server.m_bHidden,
                 g_pHostState->m_levelName,
-                mp_gamemode->GetString(),
+                KeyValues_GetCurrentPlaylist(),
                 hostip->GetString(),
                 hostport->GetString(),
                 g_pNetKey->GetBase64NetKey(),

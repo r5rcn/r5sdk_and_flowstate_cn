@@ -1,7 +1,7 @@
 ﻿/******************************************************************************
 -------------------------------------------------------------------------------
 File   : IConsole.cpp
-Date   : 18:07:2021
+Date   : 15:06:2021
 Author : Kawe Mazidjatari
 Purpose: Implements the in-game console front-end
 -------------------------------------------------------------------------------
@@ -17,11 +17,10 @@ History:
 #include "core/resource.h"
 #include "tier0/frametask.h"
 #include "tier0/commandline.h"
-#include "tier1/cvar.h"
 #include "windows/id3dx.h"
 #include "windows/console.h"
 #include "windows/resource.h"
-#include "squirrel/sqtype.h"
+#include "engine/cmd.h"
 #include "gameui/IConsole.h"
 
 //-----------------------------------------------------------------------------
@@ -30,8 +29,8 @@ History:
 CConsole::CConsole(void) 
     : m_pszConsoleLabel("Console")
     , m_pszLoggingLabel("LoggingRegion")
-    , m_nHistoryPos(-1)
-    , m_nSuggestPos(-1)
+    , m_nHistoryPos(PositionMode_t::kPark)
+    , m_nSuggestPos(PositionMode_t::kPark)
     , m_nScrollBack(0)
     , m_nSelectBack(0)
     , m_nInputTextLen(0)
@@ -163,7 +162,7 @@ void CConsole::RunFrame(void)
         {
             if (m_Style == ImGuiStyle_t::MODERN)
             {
-                static const ImGuiStyle& style = ImGui::GetStyle();
+                const ImGuiStyle& style = ImGui::GetStyle();
                 m_ivSuggestWindowPos.y = m_ivSuggestWindowPos.y + style.WindowPadding.y + 1.5f;
             }
 
@@ -236,9 +235,11 @@ void CConsole::DrawSurface(void)
         return;
     }
 
+    const ImGuiStyle& style = ImGui::GetStyle();
+
     // Reserve enough left-over height and width for 1 separator + 1 input text
-    const float flFooterHeightReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-    const float flFooterWidthReserve  = ImGui::GetStyle().ItemSpacing.y + ImGui::GetWindowWidth();
+    const float flFooterHeightReserve = style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+    const float flFooterWidthReserve  = style.ItemSpacing.y + ImGui::GetWindowWidth();
 
     ImVec2 fontSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, "#", nullptr, nullptr);
     ///////////////////////////////////////////////////////////////////////
@@ -300,7 +301,7 @@ void CConsole::DrawSurface(void)
         if (m_szInputBuf[0])
         {
             ProcessCommand(m_szInputBuf);
-            ClearAutoComplete();
+            ResetAutoComplete();
 
             m_bModifyInput = true;
         }
@@ -313,7 +314,7 @@ void CConsole::DrawSurface(void)
     ImGui::PushItemWidth(flFooterWidthReserve - 80);
     if (ImGui::InputText("##input", m_szInputBuf, IM_ARRAYSIZE(m_szInputBuf), m_nInputFlags, &TextEditCallbackStub, reinterpret_cast<void*>(this)))
     {
-        if (m_nSuggestPos > -1)
+        if (m_nSuggestPos > PositionMode_t::kPark)
         {
             BuildInputFromSelected(m_vSuggest[m_nSuggestPos], m_svInputConVar);
             BuildSummary(m_svInputConVar);
@@ -401,7 +402,7 @@ void CConsole::SuggestPanel(void)
 
         ImGui::PushID(static_cast<int>(i));
 
-        if (con_suggestion_showflags->GetBool())
+        if (con_suggest_showflags->GetBool())
         {
             // Show the flag texture before the cvar name.
             const int mainTexIdx = GetFlagTextureIndex(suggest.m_nFlags);
@@ -412,24 +413,24 @@ void CConsole::SuggestPanel(void)
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) &&
                 suggest.m_nFlags != COMMAND_COMPLETION_MARKER)
             {
-                std::function<void(const ConVarFlagsToString_t&)> fnAddHint = [&](const ConVarFlagsToString_t& cvarInfo)
+                std::function<void(const ConVarFlags::FlagDesc_t&)> fnAddHint = [&](const ConVarFlags::FlagDesc_t& cvarInfo)
                 {
-                    const int hintTexIdx = GetFlagTextureIndex(cvarInfo.m_nFlag);
+                    const int hintTexIdx = GetFlagTextureIndex(cvarInfo.bit);
                     const MODULERESOURCE& hintRes = m_vFlagIcons[hintTexIdx];
 
                     ImGui::Image(hintRes.m_idIcon, ImVec2(float(hintRes.m_nWidth), float(hintRes.m_nHeight)));
                     ImGui::SameLine();
-                    ImGui::Text("%s", cvarInfo.m_pszDesc);
+                    ImGui::Text("%s", cvarInfo.shortdesc);
                 };
 
                 ImGui::BeginTooltip();
                 bool bFlagSet = false;
 
                 // Reverse loop to display the most significant flag first.
-                for (int j = IM_ARRAYSIZE(g_PrintConVarFlags); (j--) > 0;)
+                for (int j = IM_ARRAYSIZE(g_ConVarFlags.m_FlagsToDesc); (j--) > 0;)
                 {
-                    const ConVarFlagsToString_t& info = g_PrintConVarFlags[j];
-                    if (suggest.m_nFlags & info.m_nFlag)
+                    const ConVarFlags::FlagDesc_t& info = g_ConVarFlags.m_FlagsToDesc[j];
+                    if (suggest.m_nFlags & info.bit)
                     {
                         bFlagSet = true;
                         fnAddHint(info);
@@ -437,7 +438,7 @@ void CConsole::SuggestPanel(void)
                 }
                 if (!bFlagSet) // Display the FCVAR_NONE flag if no flags are set.
                 {
-                    fnAddHint(g_PrintConVarFlags[FCVAR_NONE]);
+                    fnAddHint(g_ConVarFlags.m_FlagsToDesc[0]);
                 }
 
                 ImGui::EndTooltip();
@@ -459,24 +460,36 @@ void CConsole::SuggestPanel(void)
 
             BuildSummary(svConVar);
         }
+
         ImGui::PopID();
 
-        // Make sure we bring the currently 'active' item into view.
-        if (m_bSuggestMoved && bIsIndexActive)
+        // Update the suggest position
+        if (m_bSuggestMoved)
         {
-            ImGuiWindow* pWindow = ImGui::GetCurrentWindow();
-            ImRect imRect = ImGui::GetCurrentContext()->LastItemData.Rect;
+            if (bIsIndexActive) // Bring the 'active' element into view
+            {
+                ImGuiWindow* const pWindow = ImGui::GetCurrentWindow();
+                ImRect imRect = ImGui::GetCurrentContext()->LastItemData.Rect;
 
-            // Reset to keep flag in display.
-            imRect.Min.x = pWindow->InnerRect.Min.x;
-            imRect.Max.x = pWindow->InnerRect.Min.x; // Set to Min.x on purpose!
+                // Reset to keep flag in display.
+                imRect.Min.x = pWindow->InnerRect.Min.x;
+                imRect.Max.x = pWindow->InnerRect.Max.x;
 
-            // Eliminate jiggle when going up/down in the menu.
-            imRect.Min.y += 1;
-            imRect.Max.y -= 1;
+                // Eliminate jiggle when going up/down in the menu.
+                imRect.Min.y += 1;
+                imRect.Max.y -= 1;
 
-            ImGui::ScrollToRect(pWindow, imRect);
-            m_bSuggestMoved = false;
+                ImGui::ScrollToRect(pWindow, imRect);
+                m_bSuggestMoved = false;
+            }
+            else if (m_nSuggestPos == PositionMode_t::kPark)
+            {
+                // Reset position; kPark = no active element.
+                ImGui::SetScrollX(0.0f);
+                ImGui::SetScrollY(0.0f);
+
+                m_bSuggestMoved = false;
+            }
         }
     }
 
@@ -495,8 +508,7 @@ bool CConsole::AutoComplete(void)
     {
         if (m_bSuggestActive)
         {
-            ClearAutoComplete();
-            m_bCanAutoComplete = false;
+            ResetAutoComplete();
         }
         return false;
     }
@@ -510,9 +522,7 @@ bool CConsole::AutoComplete(void)
     }
     else if (m_bCanAutoComplete) // Command completion callback.
     {
-        ClearAutoComplete();
-        m_bCanAutoComplete = false;
-
+        ResetAutoComplete();
         string svCommand;
 
         for (size_t i = 0; i < sizeof(m_szInputBuf); i++)
@@ -549,9 +559,6 @@ bool CConsole::AutoComplete(void)
 
     if (m_vSuggest.empty())
     {
-        ResetAutoComplete();
-        m_bCanAutoComplete = false;
-
         return false;
     }
 
@@ -564,16 +571,10 @@ bool CConsole::AutoComplete(void)
 //-----------------------------------------------------------------------------
 void CConsole::ResetAutoComplete(void)
 {
+    m_nSuggestPos = PositionMode_t::kPark;
+    m_bCanAutoComplete = false;
     m_bSuggestActive = false;
-    m_nSuggestPos = -1;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: clears the auto complete window
-//-----------------------------------------------------------------------------
-void CConsole::ClearAutoComplete(void)
-{
-    ResetAutoComplete();
+    m_bSuggestMoved = true;
     m_vSuggest.clear();
 }
 
@@ -583,30 +584,32 @@ void CConsole::ClearAutoComplete(void)
 //-----------------------------------------------------------------------------
 void CConsole::FindFromPartial(void)
 {
-    ClearAutoComplete();
-    m_bCanAutoComplete = false;
+    ResetAutoComplete();
 
-    for (const CSuggest& suggest : m_vsvCommandBases)
+    ICvar::Iterator iter(g_pCVar);
+    for (iter.SetFirst(); iter.IsValid(); iter.Next())
     {
-        if (m_vSuggest.size() >= con_suggestion_limit->GetSizeT())
+        if (m_vSuggest.size() >= con_suggest_limit->GetInt())
         {
-            return;
+            break;
         }
-        if (!HasPartial(suggest.m_svName, m_szInputBuf))
+
+        const ConCommandBase* pCommandBase = iter.Get();
+        if (pCommandBase->IsFlagSet(FCVAR_HIDDEN))
+        {
+            continue;
+        }
+
+        const char* pCommandName = pCommandBase->GetName();
+        if (!V_stristr(pCommandName, m_szInputBuf))
         {
             continue;
         }
 
         if (std::find(m_vSuggest.begin(), m_vSuggest.end(),
-            suggest.m_svName) == m_vSuggest.end())
+            pCommandName) == m_vSuggest.end())
         {
-            string svValue; int nFlags = FCVAR_NONE;
-            const ConCommandBase* pCommandBase = g_pCVar->FindCommandBase(suggest.m_svName.c_str());
-
-            if (!pCommandBase || pCommandBase->IsFlagSet(FCVAR_HIDDEN))
-            {
-                continue;
-            }
+            string svValue;
 
             if (!pCommandBase->IsCommand())
             {
@@ -616,37 +619,22 @@ void CConsole::FindFromPartial(void)
                 svValue.append(pConVar->GetString());
                 svValue.append("]");
             }
-            if (con_suggestion_showhelptext->GetBool())
+            if (con_suggest_showhelptext->GetBool())
             {
-                if (pCommandBase->GetHelpText())
+                std::function<void(string& , const char*)> fnAppendDocString = [&](string& svTarget, const char* pszDocString)
                 {
-                    string svHelpText = pCommandBase->GetHelpText();
-                    if (!svHelpText.empty())
+                    if (VALID_CHARSTAR(pszDocString))
                     {
-                        svValue.append(" - \"" + svHelpText + "\"");
+                        svTarget.append(" - \"");
+                        svTarget.append(pszDocString);
+                        svTarget.append("\"");
                     }
-                }
-                if (pCommandBase->GetUsageText())
-                {
-                    string svUsageText = pCommandBase->GetUsageText();
-                    if (!svUsageText.empty())
-                    {
-                        svValue.append(" - \"" + svUsageText + "\"");
-                    }
-                }
+                };
+
+                fnAppendDocString(svValue, pCommandBase->GetHelpText());
+                fnAppendDocString(svValue, pCommandBase->GetUsageText());
             }
-            if (con_suggestion_showflags->GetBool())
-            {
-                if (con_suggestion_flags_realtime->GetBool())
-                {
-                    nFlags = pCommandBase->GetFlags();
-                }
-                else // Display compile-time flags instead.
-                {
-                    nFlags = suggest.m_nFlags;
-                }
-            }
-            m_vSuggest.push_back(CSuggest(suggest.m_svName + svValue, nFlags));
+            m_vSuggest.push_back(CSuggest(pCommandName + svValue, pCommandBase->GetFlags()));
         }
         else { break; }
     }
@@ -664,7 +652,7 @@ void CConsole::ProcessCommand(string svCommand)
     AddLog(ImVec4(1.00f, 0.80f, 0.60f, 1.00f), "%s] %s\n", Plat_GetProcessUpTime(), svCommand.c_str());
 
     Cbuf_AddText(Cbuf_GetCurrentPlayer(), svCommand.c_str(), cmd_source_t::kCommandSrcCode);
-    m_nHistoryPos = -1;
+    m_nHistoryPos = PositionMode_t::kPark;
 
     for (size_t i = m_vHistory.size(); i-- > 0;)
     {
@@ -766,7 +754,7 @@ void CConsole::ClampLogSize(void)
 //-----------------------------------------------------------------------------
 void CConsole::ClampHistorySize(void)
 {
-    while (m_vHistory.size() > con_max_history->GetSizeT())
+    while (m_vHistory.size() > con_max_history->GetInt())
     {
         m_vHistory.erase(m_vHistory.begin());
     }
@@ -935,7 +923,7 @@ int CConsole::TextEditCallback(ImGuiInputTextCallbackData* iData)
             const ssize_t nPrevHistoryPos = m_nHistoryPos;
             if (iData->EventKey == ImGuiKey_UpArrow)
             {
-                if (m_nHistoryPos == -1)
+                if (m_nHistoryPos == PositionMode_t::kPark)
                 {
                     m_nHistoryPos = static_cast<ssize_t>(m_vHistory.size()) - 1;
                 }
@@ -946,11 +934,11 @@ int CConsole::TextEditCallback(ImGuiInputTextCallbackData* iData)
             }
             else if (iData->EventKey == ImGuiKey_DownArrow)
             {
-                if (m_nHistoryPos != -1)
+                if (m_nHistoryPos != PositionMode_t::kPark)
                 {
                     if (++m_nHistoryPos >= static_cast<ssize_t>(m_vHistory.size()))
                     {
-                        m_nHistoryPos = -1;
+                        m_nHistoryPos = PositionMode_t::kPark;
                     }
                 }
             }
@@ -959,7 +947,7 @@ int CConsole::TextEditCallback(ImGuiInputTextCallbackData* iData)
                 string svHistory = (m_nHistoryPos >= 0) ? m_vHistory[m_nHistoryPos] : "";
                 if (!svHistory.empty())
                 {
-                    if (m_vHistory[m_nHistoryPos].find(' ') == string::npos)
+                    if (svHistory.find(' ') == string::npos)
                     {
                         // Append whitespace to previous entered command if absent or no parameters where passed.
                         svHistory.append(" ");
@@ -979,7 +967,6 @@ int CConsole::TextEditCallback(ImGuiInputTextCallbackData* iData)
         if (m_bModifyInput) // User entered a value in the input field.
         {
             iData->DeleteChars(0, m_nInputTextLen);
-            m_bSuggestActive = false;
 
             if (!m_svInputConVar.empty()) // User selected a ConVar from the suggestion window, copy it to the buffer.
             {
@@ -1029,7 +1016,7 @@ int CConsole::TextEditCallback(ImGuiInputTextCallbackData* iData)
         }
         else // Reset state and enable history scrolling when buffer is empty.
         {
-            m_bCanAutoComplete = false;
+            ResetAutoComplete();
         }
 
         break;

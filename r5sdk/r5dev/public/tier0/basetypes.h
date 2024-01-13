@@ -4,10 +4,11 @@
  * _basetypes
  *-----------------------------------------------------------------------------*/
 
+// These are set from CMake now.
 //#define GAMEDLL_S0 /*[r]*/
 //#define GAMEDLL_S1 /*[r]*/
 //#define GAMEDLL_S2 /*[i]*/
-#define GAMEDLL_S3 /*[r]*/
+//#define GAMEDLL_S3 /*[r]*/
 //#define GAMEDLL_S4 /*[i]*/
 //#define GAMEDLL_S5 /*[i]*/
 //#define GAMEDLL_S7 /*[i]*/
@@ -133,10 +134,11 @@
 #define IsX360()	IsPlatformX360()
 #define IsPS3()		IsPlatformPS3()
 
-#define MAX_SPLITSCREEN_CLIENT_BITS 2 // Max 2 player splitscreen in portal (don't merge this back), saves a bunch of memory [8/31/2010 tom]
-#define MAX_SPLITSCREEN_CLIENTS	( 1 << MAX_SPLITSCREEN_CLIENT_BITS ) // 4 // this should == MAX_JOYSTICKS in InputEnums.h
+#define MAX_SPLITSCREEN_CLIENT_BITS 0 // R5 doesn't support splitscreen; engine is hardcoded to only have 1 player.
+#define MAX_SPLITSCREEN_CLIENTS	( 1 << MAX_SPLITSCREEN_CLIENT_BITS ) // 1 // this should == MAX_JOYSTICKS in InputEnums.h
 
-#define MAX_PLAYERS 128 // Max R5 players.
+#define MAX_PLAYERS 128 // Absolute max R5 players.
+#define MAX_TEAMS   126 // Absolute max R5 teams.
 
 #if !defined (GAMEDLL_S0) && !defined (GAMEDLL_S1) && !defined (GAMEDLL_S2)
 #define MAX_MAP_NAME_HOST 64
@@ -148,11 +150,6 @@
 #define SDK_VERSION "VGameSDK008" // Increment this with every /breaking/ SDK change (i.e. security/backend changes breaking compatibility).
 #define SDK_ARRAYSIZE(arr) ((sizeof(arr) / sizeof(*arr))) // Name due to IMGUI implementation and NT implementation that we shouldn't share across everywhere.
 
-#ifndef DEDICATED
-#define SDK_DEFAULT_CFG "platform/cfg/startup_default.cfg"
-#else
-#define SDK_DEFAULT_CFG "platform/cfg/startup_dedi_default.cfg"
-#endif
 #define SDK_SYSTEM_CFG_PATH "cfg/system/"
 
 #define VALID_CHARSTAR(star) (star && star[0]) // Check if char* is valid and not empty.
@@ -225,6 +222,11 @@ inline T AlignValue(T val, uintptr_t alignment)
 {
 	return (T)(((uintp)val + alignment - 1) & ~(alignment - 1));
 }
+
+// Pad a number so it lies on an N byte boundary.
+// So PAD_NUMBER(0,4) is 0 and PAD_NUMBER(1,4) is 4
+#define PAD_NUMBER(number, boundary) \
+	( ((number) + ((boundary)-1)) / (boundary) ) * (boundary)
 
 #else
 
@@ -375,3 +377,16 @@ protected:
 
 
 #define ExecuteOnce( x )			ExecuteNTimes( 1, x )
+
+#define UID_PREFIX generated_id_
+#define UID_CAT1(a,c) a ## c
+#define UID_CAT2(a,c) UID_CAT1(a,c)
+#define EXPAND_CONCAT(a,c) UID_CAT1(a,c)
+#ifdef _MSC_VER
+#define UNIQUE_ID UID_CAT2(UID_PREFIX,__COUNTER__)
+#else
+#define UNIQUE_ID UID_CAT2(UID_PREFIX,__LINE__)
+#endif
+
+#define _MKSTRING(arg) #arg
+#define MKSTRING(arg) _MKSTRING(arg)

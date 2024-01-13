@@ -11,13 +11,14 @@
 #include "core/stdafx.h"
 #include "common/protocol.h"
 #include "tier1/cvar.h"
+#include "tier1/strtools.h"
 #include "engine/server/sv_main.h"
 #include "engine/server/server.h"
 #include "networksystem/pylon.h"
 #include "networksystem/bansystem.h"
 #include "ebisusdk/EbisuSDK.h"
 #include "public/edict.h"
-#include <pluginsystem/pluginsystem.h>
+#include "pluginsystem/pluginsystem.h"
 
 //---------------------------------------------------------------------------------
 // Purpose: Gets the number of human players on the server
@@ -28,7 +29,7 @@ int CServer::GetNumHumanPlayers(void) const
 	int nHumans = 0;
 	for (int i = 0; i < g_ServerGlobalVariables->m_nMaxClients; i++)
 	{
-		CClient* pClient = g_pClient->GetClient(i);
+		CClient* pClient = g_pServer->GetClient(i);
 		if (!pClient)
 			continue;
 
@@ -48,7 +49,7 @@ int CServer::GetNumFakeClients(void) const
 	int nBots = 0;
 	for (int i = 0; i < g_ServerGlobalVariables->m_nMaxClients; i++)
 	{
-		CClient* pClient = g_pClient->GetClient(i);
+		CClient* pClient = g_pServer->GetClient(i);
 		if (!pClient)
 			continue;
 
@@ -68,7 +69,7 @@ int CServer::GetNumClients(void) const
 	int nClients = 0;
 	for (int i = 0; i < g_ServerGlobalVariables->m_nMaxClients; i++)
 	{
-		CClient* pClient = g_pClient->GetClient(i);
+		CClient* pClient = g_pServer->GetClient(i);
 		if (!pClient)
 			continue;
 
@@ -101,11 +102,27 @@ CClient* CServer::ConnectClient(CServer* pServer, user_creds_s* pChallenge)
 	const int nPort = int(ntohs(pChallenge->netAdr.GetPort()));
 
 	if (bEnableLogging)
-		DevMsg(eDLL_T::SERVER, "Processing connectionless challenge for '[%s]:%i' ('%llu')\n",
+		Msg(eDLL_T::SERVER, "Processing connectionless challenge for '[%s]:%i' ('%llu')\n",
 			pszAddresBuffer, nPort, nNucleusID);
 
+	bool bValidName = false;
+
+	if (VALID_CHARSTAR(pszPersonaName) &&
+		V_IsValidUTF8(pszPersonaName))
+	{
+		if (sv_validatePersonaName->GetBool() && 
+			!IsValidPersonaName(pszPersonaName, sv_minPersonaNameLength->GetInt(), sv_maxPersonaNameLength->GetInt()))
+		{
+			bValidName = false;
+		}
+		else
+		{
+			bValidName = true;
+		}
+	}
+
 	// Only proceed connection if the client's name is valid and UTF-8 encoded.
-	if (!VALID_CHARSTAR(pszPersonaName) || !IsValidUTF8(pszPersonaName) || !IsValidPersonaName(pszPersonaName))
+	if (!bValidName)
 	{
 		pServer->RejectConnection(pServer->m_Socket, &pChallenge->netAdr, "#Valve_Reject_Invalid_Name");
 		if (bEnableLogging)
@@ -130,14 +147,14 @@ CClient* CServer::ConnectClient(CServer* pServer, user_creds_s* pChallenge)
 
 	CClient* pClient = v_CServer_ConnectClient(pServer, pChallenge);
 
-	//for (auto& callback : !g_pPluginSystem->GetConnectClientCallbacks())
-	//{
-	//	if (!callback(pServer, pClient, pChallenge))
-	//	{
-	//		pClient->Disconnect(REP_MARK_BAD, "#Valve_Reject_Banned");
-	//		return nullptr;
-	//	}
-	//}
+	for (auto& callback : !g_pPluginSystem->GetConnectClientCallbacks())
+	{
+		if (!callback(pServer, pClient, pChallenge))
+		{
+			pClient->Disconnect(REP_MARK_BAD, "#Valve_Reject_Banned");
+			return nullptr;
+		}
+	}
 
 	if (pClient && sv_globalBanlist->GetBool())
 	{

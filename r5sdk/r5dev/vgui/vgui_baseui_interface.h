@@ -8,10 +8,51 @@ enum class PaintMode_t
 	PAINT_INGAMEPANELS = (1 << 1),
 };
 
+// Might not be complete:
+enum LevelLoadingProgress_e
+{
+	PROGRESS_INVALID = -2,
+	PROGRESS_DEFAULT = -1,
+
+	PROGRESS_NONE,
+	PROGRESS_CHANGELEVEL,
+	PROGRESS_SPAWNSERVER,
+	PROGRESS_LOADWORLDMODEL,
+	PROGRESS_CRCMAP,
+	PROGRESS_CRCCLIENTDLL,
+	PROGRESS_CREATENETWORKSTRINGTABLES,
+	PROGRESS_PRECACHEWORLD,
+	PROGRESS_CLEARWORLD,
+	PROGRESS_LEVELINIT,
+	PROGRESS_PRECACHE,
+	PROGRESS_ACTIVATESERVER,
+	PROGRESS_BEGINCONNECT,
+	PROGRESS_SIGNONCHALLENGE,
+	PROGRESS_SIGNONCONNECT,
+	PROGRESS_SIGNONCONNECTED,
+	PROGRESS_PROCESSSERVERINFO,
+	PROGRESS_PROCESSSTRINGTABLE,
+	PROGRESS_SIGNONNEW,
+	PROGRESS_SENDCLIENTINFO,
+	PROGRESS_SENDSIGNONDATA,
+	PROGRESS_SIGNONSPAWN,
+	PROGRESS_CREATEENTITIES,
+	PROGRESS_FULLYCONNECTED,
+	PROGRESS_PRECACHELIGHTING,
+	PROGRESS_READYTOPLAY,
+	PROGRESS_HIGHESTITEM,	// must be last item in list
+};
+
 class CEngineVGui
 {
 public:
 	static int Paint(CEngineVGui* thisptr, PaintMode_t mode);
+
+	void UpdateProgressBar(LevelLoadingProgress_e progress)
+	{
+		int index = 11;
+		CallVFunc<void>(index, this, progress);
+	}
 	void EnabledProgressBarForNextLoad(void)
 	{
 		int index = 31;
@@ -27,17 +68,22 @@ public:
 		int index = 36;
 		CallVFunc<void>(index, this);
 	}
+	bool ShouldPause(void)
+	{
+		int index = 37;
+		return CallVFunc<bool>(index, this);
+	}
 };
 
 /* ==== CENGINEVGUI ===================================================================================================================================================== */
 inline CMemory p_CEngineVGui_Paint;
-inline auto CEngineVGui_Paint = p_CEngineVGui_Paint.RCast<int (*)(CEngineVGui* thisptr, PaintMode_t mode)>();
+inline int(*CEngineVGui_Paint)(CEngineVGui* thisptr, PaintMode_t mode);
 
 inline CMemory p_CEngineVGui_RenderStart;
-inline auto CEngineVGui_RenderStart = p_CEngineVGui_RenderStart.RCast<void* (*)(CMatSystemSurface* pMatSystemSurface)>();
+inline void*(*CEngineVGui_RenderStart)(CMatSystemSurface* pMatSystemSurface);
 
 inline CMemory p_CEngineVGui_RenderEnd;
-inline auto CEngineVGui_RenderEnd = p_CEngineVGui_RenderEnd.RCast<void* (*)(void)>();
+inline void*(*CEngineVGui_RenderEnd)(void);
 
 inline CEngineVGui* g_pEngineVGui = nullptr;
 

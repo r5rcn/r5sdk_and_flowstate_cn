@@ -10,7 +10,6 @@
 #include "tier0/jobthread.h"
 #include "tier0/commandline.h"
 #include "tier0/fasttimer.h"
-#include "tier1/cmd.h"
 #include "tier1/cvar.h"
 #include "tier1/NetAdr.h"
 #include "tier2/socketcreator.h"
@@ -18,12 +17,14 @@
 #include "datacache/mdlcache.h"
 #ifndef CLIENT_DLL
 #include "engine/server/sv_rcon.h"
+#include "engine/server/server.h"
 #endif // !CLIENT_DLL
 #ifndef DEDICATED
 #include "engine/client/cl_rcon.h"
 #include "engine/client/cl_main.h"
 #include "engine/client/clientstate.h"
 #endif // DEDICATED
+#include "engine/cmd.h"
 #include "engine/net.h"
 #include "engine/gl_screen.h"
 #include "engine/host.h"
@@ -51,7 +52,47 @@
 #ifndef CLIENT_DLL
 #include "game/server/gameinterface.h"
 #endif // !CLIENT_DLL
-#include "squirrel/sqinit.h"
+#include "game/shared/vscript_shared.h"
+
+#ifndef CLIENT_DLL
+//-----------------------------------------------------------------------------
+// Purpose: Send keep alive request to Pylon Master Server.
+// Input  : &netGameServer - 
+// Output : Returns true on success, false otherwise.
+//-----------------------------------------------------------------------------
+bool HostState_KeepAlive(const NetGameServer_t& netGameServer)
+{
+	if (!g_pServer->IsActive() || !sv_pylonVisibility->GetBool()) // Check for active game.
+	{
+		return false;
+	}
+
+	string errorMsg;
+	string hostToken;
+
+	const bool result = g_pMasterServer->PostServerHost(errorMsg, hostToken, netGameServer);
+	if (!result)
+	{
+		if (!errorMsg.empty() && g_pMasterServer->GetCurrentError().compare(errorMsg) != NULL)
+		{
+			g_pMasterServer->SetCurrentError(errorMsg);
+			Error(eDLL_T::SERVER, NO_ERROR, "%s\n", errorMsg.c_str());
+		}
+	}
+	else // Attempt to log the token, if there is one.
+	{
+		if (!hostToken.empty() && g_pMasterServer->GetCurrentToken().compare(hostToken) != NULL)
+		{
+			g_pMasterServer->SetCurrentToken(hostToken);
+			Msg(eDLL_T::SERVER, "Published server with token: %s'%s%s%s'\n",
+				g_svReset, g_svGreyB,
+				hostToken.c_str(), g_svReset);
+		}
+	}
+
+	return result;
+}
+#endif // !CLIENT_DLL
 
 //-----------------------------------------------------------------------------
 // Purpose: state machine's main processing loop
@@ -132,13 +173,13 @@ void CHostState::FrameUpdate(CHostState* pHostState, double flCurrentTime, float
 			}
 			case HostStates_t::HS_GAME_SHUTDOWN:
 			{
-				DevMsg(eDLL_T::ENGINE, "%s: Shutdown host game\n", __FUNCTION__);
+				Msg(eDLL_T::ENGINE, "%s: Shutdown host game\n", __FUNCTION__);
 				CHostState_State_GameShutDown(g_pHostState);
 				break;
 			}
 			case HostStates_t::HS_RESTART:
 			{
-				DevMsg(eDLL_T::ENGINE, "%s: Restarting state machine\n", __FUNCTION__);
+				Msg(eDLL_T::ENGINE, "%s: Restarting state machine\n", __FUNCTION__);
 #ifndef DEDICATED
 				CL_EndMovie();
 #endif // !DEDICATED
@@ -148,7 +189,7 @@ void CHostState::FrameUpdate(CHostState* pHostState, double flCurrentTime, float
 			}
 			case HostStates_t::HS_SHUTDOWN:
 			{
-				DevMsg(eDLL_T::ENGINE, "%s: Shutdown state machine\n", __FUNCTION__);
+				Msg(eDLL_T::ENGINE, "%s: Shutdown state machine\n", __FUNCTION__);
 #ifndef DEDICATED
 				CL_EndMovie();
 #endif // !DEDICATED
@@ -162,7 +203,8 @@ void CHostState::FrameUpdate(CHostState* pHostState, double flCurrentTime, float
 			}
 			}
 
-		} while ((oldState != HostStates_t::HS_RUN || (g_pHostState->m_iNextState == HostStates_t::HS_LOAD_GAME && single_frame_shutdown_for_reload->GetBool()))
+		} while (
+			  (oldState != HostStates_t::HS_RUN || g_pHostState->m_iNextState == HostStates_t::HS_LOAD_GAME && single_frame_shutdown_for_reload->GetBool())
 			&& oldState != HostStates_t::HS_SHUTDOWN
 			&& oldState != HostStates_t::HS_RESTART);
 	}
@@ -208,9 +250,9 @@ void CHostState::Setup(void)
 {
 	g_pHostState->LoadConfig();
 #ifndef CLIENT_DLL
-	g_pBanSystem->Load();
+	g_pBanSystem->LoadList();
 #endif // !CLIENT_DLL
-	ConVar::PurgeHostNames();
+	ConVar_PurgeHostNames();
 
 #ifndef CLIENT_DLL
 	RCONServer()->Init();
@@ -261,27 +303,29 @@ void CHostState::Think(void) const
 	}
 	if (sv_autoReloadRate->GetBool())
 	{
-		if (g_ServerGlobalVariables->m_flCurTime > sv_autoReloadRate->GetDouble())
+		if (g_ServerGlobalVariables->m_flCurTime > sv_autoReloadRate->GetFloat())
 		{
 			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "reload\n", cmd_source_t::kCommandSrcCode);
 		}
 	}
-	if (statsTimer.GetDurationInProgress().GetSeconds() > sv_statusRefreshRate->GetDouble())
+	if (statsTimer.GetDurationInProgress().GetSeconds() > sv_statusRefreshRate->GetFloat())
 	{
-		SetConsoleTitleA(Format("%s - %d/%d Players (%s on %s)",
+		SetConsoleTitleA(Format("%s - %d/%d Players (%s on %s) - %d%% Server CPU (%.3f msec on frame %d)",
 			hostname->GetString(), g_pServer->GetNumClients(),
-			g_ServerGlobalVariables->m_nMaxClients, KeyValues_GetCurrentPlaylist(), m_levelName).c_str());
+			g_ServerGlobalVariables->m_nMaxClients, KeyValues_GetCurrentPlaylist(), m_levelName,
+			static_cast<int>(g_pServer->GetCPUUsage() * 100.0f), (g_pEngine->GetFrameTime() * 1000.0f),
+			g_pServer->GetTick()).c_str());
 
 		statsTimer.Start();
 	}
 	if (sv_globalBanlist->GetBool() &&
-		banListTimer.GetDurationInProgress().GetSeconds() > sv_banlistRefreshRate->GetDouble())
+		banListTimer.GetDurationInProgress().GetSeconds() > sv_banlistRefreshRate->GetFloat())
 	{
 		SV_CheckForBan();
 		banListTimer.Start();
 	}
 #ifdef DEDICATED
-	if (pylonTimer.GetDurationInProgress().GetSeconds() > sv_pylonRefreshRate->GetDouble())
+	if (pylonTimer.GetDurationInProgress().GetSeconds() > sv_pylonRefreshRate->GetFloat())
 	{
 		const NetGameServer_t netGameServer
 		{
@@ -289,7 +333,7 @@ void CHostState::Think(void) const
 			hostdesc->GetString(),
 			sv_pylonVisibility->GetInt() == EServerVisibility_t::HIDDEN,
 			g_pHostState->m_levelName,
-			mp_gamemode->GetString(),
+			KeyValues_GetCurrentPlaylist(),
 			hostip->GetString(),
 			hostport->GetString(),
 			g_pNetKey->GetBase64NetKey(),
@@ -302,7 +346,7 @@ void CHostState::Think(void) const
 				).count()
 		};
 
-		std::thread(&CPylon::KeepAlive, g_pMasterServer, netGameServer).detach();
+		std::thread(&HostState_KeepAlive, netGameServer).detach();
 		pylonTimer.Start();
 	}
 #endif // DEDICATED
@@ -318,30 +362,30 @@ void CHostState::LoadConfig(void) const
 	{
 		if (!CommandLine()->CheckParm("-devsdk"))
 		{
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"autoexec.cfg\"", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec system/autoexec.cfg\n", cmd_source_t::kCommandSrcCode);
 #ifndef CLIENT_DLL
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"autoexec_server.cfg\"", cmd_source_t::kCommandSrcCode);
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"rcon_server.cfg\"", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec system/autoexec_server.cfg\n", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec tools/rcon_server.cfg\n", cmd_source_t::kCommandSrcCode);
 #endif //!CLIENT_DLL
 #ifndef DEDICATED
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"autoexec_client.cfg\"", cmd_source_t::kCommandSrcCode);
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"rcon_client.cfg\"", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec system/autoexec_client.cfg\n", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec tools/rcon_client.cfg\n", cmd_source_t::kCommandSrcCode);
 #endif // !DEDICATED
 		}
 		else // Development configs.
 		{
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"autoexec_dev.cfg\"", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec system/autoexec_dev.cfg\n", cmd_source_t::kCommandSrcCode);
 #ifndef CLIENT_DLL
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"autoexec_server_dev.cfg\"", cmd_source_t::kCommandSrcCode);
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"rcon_server_dev.cfg\"", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec system/autoexec_server_dev.cfg\n", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec tools/rcon_server_dev.cfg\n", cmd_source_t::kCommandSrcCode);
 #endif //!CLIENT_DLL
 #ifndef DEDICATED
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"autoexec_client_dev.cfg\"", cmd_source_t::kCommandSrcCode);
-			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"rcon_client_dev.cfg\"", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec system/autoexec_client_dev.cfg\n", cmd_source_t::kCommandSrcCode);
+			Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec tools/rcon_client_dev.cfg\n", cmd_source_t::kCommandSrcCode);
 #endif // !DEDICATED
 		}
 #ifndef DEDICATED
-		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec \"bind.cfg\"", cmd_source_t::kCommandSrcCode);
+		Cbuf_AddText(Cbuf_GetCurrentPlayer(), "exec bind.cfg\n", cmd_source_t::kCommandSrcCode);
 #endif // !DEDICATED
 	}
 }
@@ -366,12 +410,14 @@ void CHostState::GameShutDown(void)
 //-----------------------------------------------------------------------------
 void CHostState::State_NewGame(void)
 {
-	DevMsg(eDLL_T::ENGINE, "%s: Loading level: '%s'\n", __FUNCTION__, g_pHostState->m_levelName);
+	Msg(eDLL_T::ENGINE, "%s: Loading level: '%s'\n", __FUNCTION__, g_pHostState->m_levelName);
 
 	LARGE_INTEGER time{};
+
+#ifndef CLIENT_DLL
 	bool bSplitScreenConnect = m_bSplitScreenConnect;
 	m_bSplitScreenConnect = 0;
-#ifndef CLIENT_DLL
+
 	if (!g_pServerGameClients) // Init Game if it ain't valid.
 	{
 		SV_InitGameDLL();
@@ -404,7 +450,7 @@ void CHostState::State_NewGame(void)
 //-----------------------------------------------------------------------------
 void CHostState::State_ChangeLevelSP(void)
 {
-	DevMsg(eDLL_T::ENGINE, "%s: Changing singleplayer level to: '%s'\n", __FUNCTION__, m_levelName);
+	Msg(eDLL_T::ENGINE, "%s: Changing singleplayer level to: '%s'\n", __FUNCTION__, m_levelName);
 	m_flShortFrameTime = 1.5; // Set frame time.
 
 	if (CModelLoader__Map_IsValid(g_pModelLoader, m_levelName)) // Check if map is valid and if we can start a new game.
@@ -430,7 +476,7 @@ void CHostState::State_ChangeLevelSP(void)
 //-----------------------------------------------------------------------------
 void CHostState::State_ChangeLevelMP(void)
 {
-	DevMsg(eDLL_T::ENGINE, "%s: Changing multiplayer level to: '%s'\n", __FUNCTION__, m_levelName);
+	Msg(eDLL_T::ENGINE, "%s: Changing multiplayer level to: '%s'\n", __FUNCTION__, m_levelName);
 	m_flShortFrameTime = 0.5; // Set frame time.
 
 #ifndef CLIENT_DLL

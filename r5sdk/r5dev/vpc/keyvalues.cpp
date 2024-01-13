@@ -146,7 +146,7 @@ void KeyValues::Init(void)
 //-----------------------------------------------------------------------------
 void KeyValues::Clear(void)
 {
-	MemAllocSingleton()->Free(m_pSub);
+	delete m_pSub;
 	m_pSub = nullptr;
 	m_iDataType = TYPE_NONE;
 }
@@ -157,8 +157,7 @@ void KeyValues::Clear(void)
 //-----------------------------------------------------------------------------
 void KeyValues::DeleteThis(void)
 {
-	this->~KeyValues();
-	MemAllocSingleton()->Free(this);
+	delete this;
 }
 
 //-----------------------------------------------------------------------------
@@ -172,19 +171,19 @@ void KeyValues::RemoveEverything(void)
 	{
 		datNext = dat->m_pPeer;
 		dat->m_pPeer = nullptr;
-		MemAllocSingleton()->Free(dat);
+		delete dat;
 	}
 
 	for (dat = m_pPeer; dat && dat != this; dat = datNext)
 	{
 		datNext = dat->m_pPeer;
 		dat->m_pPeer = nullptr;
-		MemAllocSingleton()->Free(dat);
+		delete dat;
 	}
 
-	MemAllocSingleton()->Free(m_sValue);
+	delete[] m_sValue;
 	m_sValue = nullptr;
-	MemAllocSingleton()->Free(m_wsValue);
+	delete[] m_wsValue;
 	m_wsValue = nullptr;
 }
 
@@ -198,8 +197,102 @@ void KeyValues::RemoveEverything(void)
 //-----------------------------------------------------------------------------
 KeyValues* KeyValues::FindKey(const char* pszKeyName, bool bCreate)
 {
-	static auto func = reinterpret_cast<KeyValues * (__thiscall*)(KeyValues*, const char*, bool)>(KeyValues_FindKey);
-	return func(this, pszKeyName, bCreate);
+	// Validate NULL == this early out
+	if (!this)
+	{
+		// Undefined behavior. Could blow up on a new platform. Don't do it.
+		DevWarning(eDLL_T::COMMON, "KeyValues::FindKey called on NULL pointer!"); 
+		Assert(!bCreate);
+		return nullptr;
+	}
+
+	// return the current key if a NULL subkey is asked for
+	if (!pszKeyName || !pszKeyName[0])
+		return this;
+
+	// look for '/' characters delimiting sub fields
+	char szBuf[256];
+	const char* subStr = strchr(pszKeyName, '/');
+	const char* searchStr = pszKeyName;
+
+	// pull out the substring if it exists
+	if (subStr)
+	{
+		ptrdiff_t size = subStr - pszKeyName;
+		memcpy(szBuf, pszKeyName, size);
+		szBuf[size] = '\0';
+		searchStr = szBuf;
+	}
+
+	// lookup the symbol for the search string,
+	// we do not need the case-sensitive symbol at this time
+	// because if the key is found, then it will be found by case-insensitive lookup
+	// if the key is not found and needs to be created we will pass the actual searchStr
+	// and have the new KeyValues constructor get/create the case-sensitive symbol
+	HKeySymbol iSearchStr = KeyValuesSystem()->GetSymbolForString(searchStr, bCreate);
+	if (iSearchStr == INVALID_KEY_SYMBOL)
+	{
+		// not found, couldn't possibly be in key value list
+		return nullptr;
+	}
+
+	KeyValues* lastItem = nullptr;
+	KeyValues* dat;
+	// find the searchStr in the current peer list
+	for (dat = m_pSub; dat != NULL; dat = dat->m_pPeer)
+	{
+		lastItem = dat;	// record the last item looked at (for if we need to append to the end of the list)
+
+		// symbol compare
+		if (dat->m_iKeyName == (uint32)iSearchStr)
+		{
+			break;
+		}
+	}
+
+	if (!dat && m_pChain)
+	{
+		dat = m_pChain->FindKey(pszKeyName, false);
+	}
+
+	// make sure a key was found
+	if (!dat)
+	{
+		if (bCreate)
+		{
+			// we need to create a new key
+			dat = new KeyValues(searchStr);
+			Assert(dat != nullptr);
+
+			// insert new key at end of list
+			if (lastItem)
+			{
+				lastItem->m_pPeer = dat;
+			}
+			else
+			{
+				m_pSub = dat;
+			}
+			dat->m_pPeer = nullptr;
+
+			// a key graduates to be a submsg as soon as it's m_pSub is set
+			// this should be the only place m_pSub is set
+			m_iDataType = TYPE_NONE;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+	// if we've still got a subStr we need to keep looking deeper in the tree
+	if (subStr)
+	{
+		// recursively chain down through the paths in the string
+		return dat->FindKey(subStr + 1, bCreate);
+	}
+
+	return dat;
 }
 
 //-----------------------------------------------------------------------------
@@ -387,7 +480,7 @@ void KeyValues::ElideSubKey(KeyValues* pSubKey)
 			{
 				// No children, simply remove the key
 				*ppPointerToFix = pSubKey->m_pPeer;
-				MemAllocSingleton()->Free(pSubKey);
+				delete pSubKey;
 			}
 			else
 			{
@@ -403,7 +496,7 @@ void KeyValues::ElideSubKey(KeyValues* pSubKey)
 				// Detach the node to be elided
 				pSubKey->m_pSub = nullptr;
 				pSubKey->m_pPeer = nullptr;
-				MemAllocSingleton()->Free(pSubKey);
+				delete pSubKey;
 			}
 			return;
 		}
@@ -753,18 +846,18 @@ const wchar_t* KeyValues::GetWString(const char* pszKeyName, const wchar_t* pwsz
 		case TYPE_STRING:
 		{
 			size_t bufSize = strlen(pKey->m_sValue) + 1;
-			wchar_t* pWBuf = MemAllocSingleton()->Alloc<wchar_t>(bufSize);
-			int result = V_UTF8ToUnicode(pKey->m_sValue, pWBuf, static_cast<int>(bufSize * sizeof(wchar_t)));
+			wchar_t* pWBuf = new wchar_t[bufSize];
+			int result = V_UTF8ToUnicode(pKey->m_sValue, pWBuf, int(bufSize * sizeof(wchar_t)));
 			if (result >= 0) // may be a zero length string
 			{
 				SetWString(pszKeyName, pWBuf);
 			}
 			else
 			{
-				MemAllocSingleton()->Free(pWBuf);
+				delete[] pWBuf;
 				return pwszDefaultValue;
 			}
-			MemAllocSingleton()->Free(pWBuf);
+			delete[] pWBuf;
 			break;
 		}
 		default:
@@ -863,12 +956,12 @@ void KeyValues::SetUint64(const char* pszKeyName, uint64_t nValue)
 	if (pKey)
 	{
 		// delete the old value
-		MemAllocSingleton()->Free(pKey->m_sValue);
+		delete[] pKey->m_sValue;
 		// make sure we're not storing the WSTRING  - as we're converting over to STRING
-		MemAllocSingleton()->Free(pKey->m_wsValue);
+		delete[] pKey->m_wsValue;
 		pKey->m_wsValue = nullptr;
 
-		pKey->m_sValue = MemAllocSingleton()->Alloc<char>(sizeof(uint64_t));
+		pKey->m_sValue = new char[sizeof(uint64)];
 		*(reinterpret_cast<uint64_t*>(pKey->m_sValue)) = nValue;
 		pKey->m_iDataType = TYPE_UINT64;
 	}
@@ -925,9 +1018,9 @@ void KeyValues::SetPtr(const char* pszKeyName, void* pValue)
 void KeyValues::SetStringValue(char const* pszValue)
 {
 	// delete the old value
-	MemAllocSingleton()->Free(m_sValue);
+	delete[] m_sValue;
 	// make sure we're not storing the WSTRING  - as we're converting over to STRING
-	MemAllocSingleton()->Free(m_wsValue);
+	delete[] m_wsValue;
 	m_wsValue = nullptr;
 
 	if (!pszValue)
@@ -938,7 +1031,7 @@ void KeyValues::SetStringValue(char const* pszValue)
 
 	// allocate memory for the new value and copy it in
 	size_t len = strlen(pszValue);
-	m_sValue = MemAllocSingleton()->Alloc<char>(len + 1);
+	m_sValue = new char[len + 1];
 	memcpy(m_sValue, pszValue, len + 1);
 
 	m_iDataType = TYPE_STRING;
@@ -977,9 +1070,9 @@ void KeyValues::SetWString(const char* pszKeyName, const wchar_t* pwszValue)
 	if (pKey)
 	{
 		// delete the old value
-		MemAllocSingleton()->Free(pKey->m_wsValue);
+		delete[] pKey->m_wsValue;
 		// make sure we're not storing the STRING  - as we're converting over to WSTRING
-		MemAllocSingleton()->Free(pKey->m_sValue);
+		delete[] pKey->m_sValue;
 		pKey->m_sValue = nullptr;
 
 		if (!pwszValue)
@@ -990,7 +1083,7 @@ void KeyValues::SetWString(const char* pszKeyName, const wchar_t* pwszValue)
 
 		// allocate memory for the new value and copy it in
 		size_t len = wcslen(pwszValue);
-		pKey->m_wsValue = MemAllocSingleton()->Alloc<wchar_t>(len + 1);
+		pKey->m_wsValue = new wchar_t[len + 1];
 		memcpy(pKey->m_wsValue, pwszValue, (len + 1) * sizeof(wchar_t));
 
 		pKey->m_iDataType = TYPE_WSTRING;
@@ -1048,7 +1141,7 @@ void KeyValues::RecursiveCopyKeyValues(KeyValues& src)
 			if (src.m_sValue)
 			{
 				size_t len = strlen(src.m_sValue) + 1;
-				m_sValue = MemAllocSingleton()->Alloc<char>(len);
+				m_sValue = new char[len];
 				strncpy(m_sValue, src.m_sValue, len);
 			}
 			break;
@@ -1057,7 +1150,7 @@ void KeyValues::RecursiveCopyKeyValues(KeyValues& src)
 			m_iValue = src.m_iValue;
 			snprintf(buf, sizeof(buf), "%d", m_iValue);
 			size_t len = strlen(buf) + 1;
-			m_sValue = MemAllocSingleton()->Alloc<char>(len);
+			m_sValue = new char[len];
 			strncpy(m_sValue, buf, len);
 		}
 		break;
@@ -1066,7 +1159,7 @@ void KeyValues::RecursiveCopyKeyValues(KeyValues& src)
 			m_flValue = src.m_flValue;
 			snprintf(buf, sizeof(buf), "%f", m_flValue);
 			size_t len = strlen(buf) + 1;
-			m_sValue = MemAllocSingleton()->Alloc<char>(len);
+			m_sValue = new char[len];
 			strncpy(m_sValue, buf, len);
 		}
 		break;
@@ -1077,7 +1170,7 @@ void KeyValues::RecursiveCopyKeyValues(KeyValues& src)
 		break;
 		case TYPE_UINT64:
 		{
-			m_sValue = MemAllocSingleton()->Alloc<char>(sizeof(uint64_t));
+			m_sValue = new char[sizeof(uint64)];
 			memcpy(m_sValue, src.m_sValue, sizeof(uint64_t));
 		}
 		break;
@@ -1103,24 +1196,14 @@ void KeyValues::RecursiveCopyKeyValues(KeyValues& src)
 	// Handle the immediate child
 	if (src.m_pSub)
 	{
-		m_pSub = MemAllocSingleton()->Alloc<KeyValues>(sizeof(KeyValues));
-		TRACK_KV_ADD(m_pSub, nullptr);
-
-		m_pSub->Init();
-		m_pSub->SetName(nullptr);
-
+		m_pSub = new KeyValues(NULL);
 		m_pSub->RecursiveCopyKeyValues(*src.m_pSub);
 	}
 
 	// Handle the immediate peer
 	if (src.m_pPeer)
 	{
-		m_pPeer = MemAllocSingleton()->Alloc<KeyValues>(sizeof(KeyValues));
-		TRACK_KV_ADD(m_pPeer, nullptr);
-
-		m_pPeer->Init();
-		m_pPeer->SetName(nullptr);
-
+		m_pPeer = new KeyValues(NULL);
 		m_pPeer->RecursiveCopyKeyValues(*src.m_pPeer);
 	}
 }
@@ -1187,12 +1270,7 @@ void KeyValues::CopySubkeys(KeyValues* pParent) const
 //-----------------------------------------------------------------------------
 KeyValues* KeyValues::MakeCopy(void) const
 {
-	KeyValues* pNewKeyValue = MemAllocSingleton()->Alloc<KeyValues>(sizeof(KeyValues));
-
-	TRACK_KV_ADD(pNewKeyValue, GetName());
-
-	pNewKeyValue->Init();
-	pNewKeyValue->SetName(GetName());
+	KeyValues* pNewKeyValue = new KeyValues(GetName());
 
 	// copy data
 	pNewKeyValue->m_iDataType = m_iDataType;
@@ -1204,7 +1282,7 @@ KeyValues* KeyValues::MakeCopy(void) const
 		{
 			size_t len = strlen(m_sValue);
 			Assert(!pNewKeyValue->m_sValue);
-			pNewKeyValue->m_sValue = MemAllocSingleton()->Alloc<char>(len + 1);
+			pNewKeyValue->m_sValue = new char[len + 1];
 			memcpy(pNewKeyValue->m_sValue, m_sValue, len + 1);
 		}
 	}
@@ -1214,8 +1292,8 @@ KeyValues* KeyValues::MakeCopy(void) const
 		if (m_wsValue)
 		{
 			size_t len = wcslen(m_wsValue);
-			pNewKeyValue->m_wsValue = MemAllocSingleton()->Alloc<wchar_t>(len + 1);
-			memcpy(pNewKeyValue->m_wsValue, m_wsValue, len + 1 * sizeof(wchar_t));
+			pNewKeyValue->m_wsValue = new wchar_t[len + 1];
+			memcpy(pNewKeyValue->m_wsValue, m_wsValue, (len+1)*sizeof(wchar_t));
 		}
 	}
 	break;
@@ -1240,7 +1318,7 @@ KeyValues* KeyValues::MakeCopy(void) const
 		break;
 
 	case TYPE_UINT64:
-		pNewKeyValue->m_sValue = MemAllocSingleton()->Alloc<char>(sizeof(uint64_t));
+		pNewKeyValue->m_sValue = new char[sizeof(uint64)];
 		memcpy(pNewKeyValue->m_sValue, m_sValue, sizeof(uint64_t));
 		break;
 	};
@@ -1383,5 +1461,9 @@ void VKeyValues::Detach() const
 
 ///////////////////////////////////////////////////////////////////////////////
 inline KeyValues** g_pPlaylistKeyValues = nullptr; // Get the KeyValue for the playlist file.
+
 vector<string> g_vAllPlaylists          = { "<<null>>" };
 vector<string> g_vGameInfoPaths         = { "/" };
+
+std::mutex g_InstalledMapsMutex;
+std::mutex g_PlaylistsVecMutex;

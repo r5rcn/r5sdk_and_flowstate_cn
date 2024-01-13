@@ -3,11 +3,9 @@
 // Purpose: Crash handler (overrides the game's implementation!)
 //
 //=============================================================================//
-#include "core/stdafx.h"
-#include "core/logdef.h"
+#include "tier0/binstream.h"
 #include "tier0/cpu.h"
 #include "tier0/crashhandler.h"
-#include "public/utility/binstream.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -15,7 +13,7 @@
 void CCrashHandler::Start()
 {
 	Lock();
-	m_bExceptionHandled = true;
+	m_bExceptionHandling = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -23,7 +21,7 @@ void CCrashHandler::Start()
 //-----------------------------------------------------------------------------
 void CCrashHandler::End()
 {
-	m_bExceptionHandled = false;
+	m_bExceptionHandling = false;
 	Unlock();
 }
 
@@ -130,19 +128,19 @@ void CCrashHandler::FormatModules()
 	HANDLE hProcess = GetCurrentProcess();
 	DWORD cbNeeded;
 
-	BOOL result = K32EnumProcessModulesEx(hProcess, &*hModule.get(), CRASHHANDLER_MAX_MODULES, &cbNeeded, LIST_MODULES_ALL);
+	BOOL result = K32EnumProcessModulesEx(hProcess, hModule.get(), CRASHHANDLER_MAX_MODULES, &cbNeeded, LIST_MODULES_ALL);
 	if (result && cbNeeded <= CRASHHANDLER_MAX_MODULES && cbNeeded >> 3)
 	{
-		CHAR szModuleName[512];
+		CHAR szModuleName[MAX_FILEPATH];
 		LPSTR pszModuleName;
 		MODULEINFO modInfo;
 
 		for (DWORD i = 0, j = cbNeeded >> 3; j; i++, j--)
 		{
-			DWORD m = GetModuleFileNameA(&*hModule.get()[i], szModuleName, sizeof(szModuleName));
+			DWORD m = GetModuleFileNameA(hModule[i], szModuleName, sizeof(szModuleName));
 			if ((m - 1) > (sizeof(szModuleName) - 2)) // Too small for buffer.
 			{
-				snprintf(szModuleName, sizeof(szModuleName), "module@%p", &*hModule.get()[i]);
+				snprintf(szModuleName, sizeof(szModuleName), "module@%p", hModule.get()[i]);
 				pszModuleName = szModuleName;
 			}
 			else
@@ -183,9 +181,7 @@ void CCrashHandler::FormatSystemInfo()
 
 		if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) // The primary device is the only relevant device.
 		{
-			char szDeviceName[128];
-			wcstombs(szDeviceName, dd.DeviceString, sizeof(szDeviceName));
-			m_svBuffer.append(Format("\tgpu_model = \"%s\"\n", szDeviceName));
+			m_svBuffer.append(Format("\tgpu_model = \"%s\"\n", dd.DeviceString));
 			m_svBuffer.append(Format("\tgpu_flags = 0x%08X // primary device\n", dd.StateFlags));
 		}
 	}
@@ -207,7 +203,7 @@ void CCrashHandler::FormatSystemInfo()
 //-----------------------------------------------------------------------------
 void CCrashHandler::FormatBuildInfo()
 {
-	m_svBuffer.append(Format("build_id: %u\n", g_SDKDll.m_pNTHeaders->FileHeader.TimeDateStamp));
+	m_svBuffer.append(Format("build_id: %u\n", g_SDKDll.GetNTHeaders()->FileHeader.TimeDateStamp));
 }
 
 //-----------------------------------------------------------------------------
@@ -247,7 +243,10 @@ void CCrashHandler::FormatExceptionAddress(LPCSTR pExceptionAddress)
 	m_svBuffer.append(Format("\t%-15s: %p\n", szCrashedModuleName, pModuleBase));
 	m_nCrashMsgFlags = 1; // Display the "Apex crashed in <module>" message.
 
-	if (m_svCrashMsgInfo.empty()) // Only set it once to the crashing module.
+	// Only set it once to the crashing module,
+	// empty strings get treated as "unknown
+	// DLL or EXE" in the crashmsg executable.
+	if (m_svCrashMsgInfo.empty())
 	{
 		m_svCrashMsgInfo = szCrashedModuleName;
 	}
@@ -319,6 +318,7 @@ void CCrashHandler::FormatALU(const CHAR* pszRegister, DWORD64 nContent)
 	{
 		if (nContent > UINT_MAX)
 		{
+			// Print the full 64bits of the register.
 			m_svBuffer.append(Format("\t%s = 0x%016llX\n", pszRegister, nContent));
 		}
 		else
@@ -326,14 +326,15 @@ void CCrashHandler::FormatALU(const CHAR* pszRegister, DWORD64 nContent)
 			m_svBuffer.append(Format("\t%s = 0x%08X\n", pszRegister, nContent));
 		}
 	}
-	else // Display as decimal.
+	else if (nContent >= 10)
 	{
-		m_svBuffer.append(Format("\t%s = %-15i\n", pszRegister, nContent));
-		if (nContent >= 10)
-		{
-			const string svDesc = Format(" // 0x%08X\n", nContent);
-			m_svBuffer.replace(m_svBuffer.length()-1, svDesc.size(), svDesc);
-		}
+		// Print as decimal with a hexadecimal comment.
+		m_svBuffer.append(Format("\t%s = %-6i // 0x%08X\n", pszRegister, nContent, nContent));
+	}
+	else
+	{
+		// Print as decimal only.
+		m_svBuffer.append(Format("\t%s = %-10i\n", pszRegister, nContent));
 	}
 }
 
@@ -546,6 +547,17 @@ void CCrashHandler::CreateMessageProcess()
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: calls the crash callback
+//-----------------------------------------------------------------------------
+void CCrashHandler::CrashCallback()
+{
+	if (m_pCrashCallback)
+	{
+		((void(*)(void))m_pCrashCallback)();
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : 
 // Output : 
@@ -582,8 +594,7 @@ long __stdcall BottomLevelExceptionFilter(EXCEPTION_POINTERS* pExceptionInfo)
 	// Kill on recursive call.
 	if (g_CrashHandler->GetState())
 	{
-		// Shutdown SpdLog to flush all buffers.
-		SpdLog_Shutdown();
+		g_CrashHandler->CrashCallback();
 		ExitProcess(1u);
 	}
 
@@ -630,12 +641,14 @@ void CCrashHandler::Shutdown()
 //-----------------------------------------------------------------------------
 CCrashHandler::CCrashHandler()
 	: m_ppStackTrace()
+	, m_pCrashCallback(nullptr)
+	, m_hExceptionHandler(nullptr)
 	, m_pExceptionPointers(nullptr)
 	, m_nCapturedFrames(0)
 	, m_nCrashMsgFlags(0)
 	, m_bCallState(false)
 	, m_bCrashMsgCreated(false)
-	, m_bExceptionHandled(false)
+	, m_bExceptionHandling(false)
 {
 	Init();
 }

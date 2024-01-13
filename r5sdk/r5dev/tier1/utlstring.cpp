@@ -4,14 +4,13 @@
 //
 //=============================================================================
 
-#include "core/stdafx.h"
 #include "tier1/utlstring.h"
 #include "tier1/utlvector.h"
 #include "tier1/strtools.h"
 #include <ctype.h>
 
 // NOTE: This has to be the last file included!
-//#include "tier0/memdbgon.h"
+#include "tier0/memdbgon.h"
 
 static const int64 k_nMillion = 1000000;
 
@@ -20,7 +19,7 @@ static const int64 k_nMillion = 1000000;
 //-----------------------------------------------------------------------------
 static ptrdiff_t IndexOf(const char *pstrToSearch, const char *pstrTarget)
 {
-	const char *pstrHit = V_strstr(pstrToSearch, pstrTarget);
+	const char *pstrHit = V_strstr(pstrTarget, pstrToSearch);
 	if (pstrHit == NULL)
 	{
 		return -1;	// Not found.
@@ -66,7 +65,7 @@ int V_vscprintf(const char *format, va_list params)
 //-----------------------------------------------------------------------------
 // Base class, containing simple memory management
 //-----------------------------------------------------------------------------
-CUtlBinaryBlock::CUtlBinaryBlock( int64 growSize, int64 initSize )
+CUtlBinaryBlock::CUtlBinaryBlock( ssize_t growSize, ssize_t initSize )
 {
 	//MEM_ALLOC_CREDIT();
 	m_Memory.Init( growSize, initSize );
@@ -74,12 +73,12 @@ CUtlBinaryBlock::CUtlBinaryBlock( int64 growSize, int64 initSize )
 	m_nActualLength = 0;
 }
 
-CUtlBinaryBlock::CUtlBinaryBlock( void* pMemory, int64 nSizeInBytes, int64 nInitialLength ) : m_Memory( (unsigned char*)pMemory, nSizeInBytes )
+CUtlBinaryBlock::CUtlBinaryBlock( void* pMemory, ssize_t nSizeInBytes, ssize_t nInitialLength ) : m_Memory( (unsigned char*)pMemory, nSizeInBytes )
 {
 	m_nActualLength = nInitialLength;
 }
 
-CUtlBinaryBlock::CUtlBinaryBlock( const void* pMemory, int64 nSizeInBytes ) : m_Memory( (const unsigned char*)pMemory, nSizeInBytes )
+CUtlBinaryBlock::CUtlBinaryBlock( const void* pMemory, ssize_t nSizeInBytes ) : m_Memory( (const unsigned char*)pMemory, nSizeInBytes )
 {
 	m_nActualLength = nSizeInBytes;
 }
@@ -89,7 +88,7 @@ CUtlBinaryBlock::CUtlBinaryBlock( const CUtlBinaryBlock& src )
 	Set( src.Get(), src.Length() );
 }
 
-void CUtlBinaryBlock::Get( void *pValue, int64 nLen ) const
+void CUtlBinaryBlock::Get( void *pValue, ssize_t nLen ) const
 {
 	Assert( nLen > 0 );
 	if ( m_nActualLength < nLen )
@@ -103,7 +102,7 @@ void CUtlBinaryBlock::Get( void *pValue, int64 nLen ) const
 	}
 }
 
-void CUtlBinaryBlock::SetLength(int64 nLength )
+void CUtlBinaryBlock::SetLength( ssize_t nLength )
 {
 	//MEM_ALLOC_CREDIT();
 	Assert( !m_Memory.IsReadOnly() );
@@ -111,7 +110,7 @@ void CUtlBinaryBlock::SetLength(int64 nLength )
 	m_nActualLength = nLength;
 	if ( nLength > m_Memory.NumAllocated() )
 	{
-		int64 nOverFlow = nLength - m_Memory.NumAllocated();
+		ssize_t nOverFlow = nLength - m_Memory.NumAllocated();
 		m_Memory.Grow( nOverFlow );
 
 		// If the reallocation failed, clamp length
@@ -130,7 +129,7 @@ void CUtlBinaryBlock::SetLength(int64 nLength )
 }
 
 
-void CUtlBinaryBlock::Set( const void *pValue, int64 nLen )
+void CUtlBinaryBlock::Set( const void *pValue, ssize_t nLen )
 {
 	Assert( !m_Memory.IsReadOnly() );
 
@@ -191,11 +190,11 @@ CUtlString::CUtlString( const CUtlString& string )
 }
 
 // Attaches the string to external memory. Useful for avoiding a copy
-CUtlString::CUtlString( void* pMemory, int64 nSizeInBytes, int64 nInitialLength ) : m_Storage( pMemory, nSizeInBytes, nInitialLength )
+CUtlString::CUtlString( void* pMemory, ssize_t nSizeInBytes, ssize_t nInitialLength ) : m_Storage( pMemory, nSizeInBytes, nInitialLength )
 {
 }
 
-CUtlString::CUtlString( const void* pMemory, int64 nSizeInBytes ) : m_Storage( pMemory, nSizeInBytes )
+CUtlString::CUtlString( const void* pMemory, ssize_t nSizeInBytes ) : m_Storage( pMemory, nSizeInBytes )
 {
 }
 
@@ -203,7 +202,7 @@ CUtlString::CUtlString( const void* pMemory, int64 nSizeInBytes ) : m_Storage( p
 //-----------------------------------------------------------------------------
 // Purpose: Set directly and don't look for a null terminator in pValue.
 //-----------------------------------------------------------------------------
-void CUtlString::SetDirect( const char *pValue, int64 nChars )
+void CUtlString::SetDirect( const char *pValue, ssize_t nChars )
 {
 	if ( nChars > 0 )
 	{
@@ -221,19 +220,19 @@ void CUtlString::SetDirect( const char *pValue, int64 nChars )
 void CUtlString::Set( const char *pValue )
 {
 	Assert( !m_Storage.IsReadOnly() );
-	int64 nLen = pValue ? Q_strlen(pValue) + 1 : 0;
+	ssize_t nLen = pValue ? Q_strlen(pValue) + 1 : 0;
 	m_Storage.Set( pValue, nLen );
 }
 
 
 // Returns strlen
-int64 CUtlString::Length() const
+ssize_t CUtlString::Length() const
 {
 	return m_Storage.Length() ? m_Storage.Length() - 1 : 0;
 }
 
 // Sets the length (used to serialize into the buffer )
-void CUtlString::SetLength( int64 nLen )
+void CUtlString::SetLength( ssize_t nLen )
 {
 	Assert( !m_Storage.IsReadOnly() );
 
@@ -279,7 +278,7 @@ void CUtlString::Purge()
 
 void CUtlString::ToUpper()
 {
-	for ( int64 nLength = Length() - 1; nLength >= 0; nLength--)
+	for ( ssize_t nLength = Length() - 1; nLength >= 0; nLength--)
 	{
 		m_Storage[nLength] = (unsigned char)toupper( m_Storage[ nLength ] );
 	}
@@ -287,7 +286,7 @@ void CUtlString::ToUpper()
 
 void CUtlString::ToLower()
 {
-	for( int64 nLength = Length() - 1; nLength >= 0; nLength-- )
+	for( ssize_t nLength = Length() - 1; nLength >= 0; nLength-- )
 	{
 		m_Storage[ nLength ] = (unsigned char)tolower( m_Storage[ nLength ] );
 	}
@@ -322,13 +321,13 @@ CUtlString &CUtlString::operator+=( const CUtlString &rhs )
 {
 	Assert( !m_Storage.IsReadOnly() );
 
-	const int64 lhsLength( Length() );
-	const int64 rhsLength( rhs.Length() );
-	const int64 requestedLength( lhsLength + rhsLength );
+	const ssize_t lhsLength( Length() );
+	const ssize_t rhsLength( rhs.Length() );
+	const ssize_t requestedLength( lhsLength + rhsLength );
 
 	SetLength( requestedLength );
-	const int64 allocatedLength( Length() );
-	const int64 copyLength( allocatedLength - lhsLength < rhsLength ? allocatedLength - lhsLength : rhsLength );
+	const ssize_t allocatedLength( Length() );
+	const ssize_t copyLength( allocatedLength - lhsLength < rhsLength ? allocatedLength - lhsLength : rhsLength );
 	memcpy( Get() + lhsLength, rhs.Get(), copyLength );
 	m_Storage[ allocatedLength ] = '\0';
 
@@ -339,13 +338,13 @@ CUtlString &CUtlString::operator+=( const char *rhs )
 {
 	Assert( !m_Storage.IsReadOnly() );
 
-	const int64 lhsLength( Length() );
-	const int64 rhsLength( Q_strlen( rhs ) );
-	const int64 requestedLength( lhsLength + rhsLength );
+	const ssize_t lhsLength( Length() );
+	const ssize_t rhsLength( Q_strlen( rhs ) );
+	const ssize_t requestedLength( lhsLength + rhsLength );
 
 	SetLength( requestedLength );
-	const int64 allocatedLength( Length() );
-	const int64 copyLength( allocatedLength - lhsLength < rhsLength ? allocatedLength - lhsLength : rhsLength );
+	const ssize_t allocatedLength( Length() );
+	const ssize_t copyLength( allocatedLength - lhsLength < rhsLength ? allocatedLength - lhsLength : rhsLength );
 	memcpy( Get() + lhsLength, rhs, copyLength );
 	m_Storage[ allocatedLength ] = '\0';
 
@@ -356,14 +355,14 @@ CUtlString &CUtlString::operator+=( char c )
 {
 	Assert( !m_Storage.IsReadOnly() );
 
-	int64 nLength = Length();
+	ssize_t nLength = Length();
 	SetLength( nLength + 1 );
 	m_Storage[ nLength ] = c;
 	m_Storage[ nLength+1 ] = '\0';
 	return *this;
 }
 
-CUtlString &CUtlString::operator+=( int64 rhs )
+CUtlString &CUtlString::operator+=( ssize_t rhs )
 {
 	Assert( !m_Storage.IsReadOnly() );
 	Assert( sizeof( rhs ) == 4 );
@@ -429,16 +428,23 @@ void CUtlString::StripTrailingSlash()
 	if ( IsEmpty() )
 		return;
 
-	int64 nLastChar = Length() - 1;
+	ssize_t nLastChar = Length() - 1;
 	char c = m_Storage[ nLastChar ];
-	if ( c == '\\' || c == '/' )
+
+	if ( PATHSEPARATOR( c ) )
 	{
 		m_Storage[ nLastChar ] = 0;
 		m_Storage.SetLength( m_Storage.Length() - 1 );
 	}
 }
 
-CUtlString CUtlString::Slice( int64 nStart, int64 nEnd )
+// Find a substring
+ptrdiff_t CUtlString::Find(const char* szTarget) const
+{
+	return IndexOf( szTarget, Get() );
+}
+
+CUtlString CUtlString::Slice( ssize_t nStart, ssize_t nEnd )
 {
 	if ( nStart < 0 )
 		nStart = Length() - (-nStart % Length());
@@ -468,21 +474,22 @@ CUtlString CUtlString::Slice( int64 nStart, int64 nEnd )
 }
 
 // Grab a substring starting from the left or the right side.
-CUtlString CUtlString::Left( int64 nChars )
+CUtlString CUtlString::Left( ssize_t nChars )
 {
 	return Slice( 0, nChars );
 }
 
-CUtlString CUtlString::Right( int64 nChars )
+CUtlString CUtlString::Right( ssize_t nChars )
 {
 	return Slice( -nChars );
 }
+
 
 // Get a string with the specified substring removed
 
 CUtlString CUtlString::Remove( char const *pTextToRemove, bool bCaseSensitive ) const
 {
-	int64 nTextToRemoveLength = pTextToRemove ? V_strlen( pTextToRemove ) : 0;
+	ssize_t nTextToRemoveLength = pTextToRemove ? V_strlen( pTextToRemove ) : 0;
 	CUtlString outputString;
 	const char *pSrc = Get();
 	if ( pSrc )
@@ -497,7 +504,7 @@ CUtlString CUtlString::Remove( char const *pTextToRemove, bool bCaseSensitive ) 
 				break;
 			}
 
-			int64 nNumCharsToCopy = pNextOccurrence - pSrc;
+			ssize_t nNumCharsToCopy = pNextOccurrence - pSrc;
 			if ( nNumCharsToCopy )
 			{
 				// append up to the undesired substring
@@ -521,7 +528,7 @@ CUtlString CUtlString::Replace( char const *pchFrom, const char *pchTo, bool bCa
 		return Remove( pchFrom, bCaseSensitive );
 	}
 
-	int64 nTextToReplaceLength = pchFrom ? V_strlen( pchFrom ) : 0;
+	ssize_t nTextToReplaceLength = pchFrom ? V_strlen( pchFrom ) : 0;
 	CUtlString outputString;
 	const char *pSrc = Get();
 	if ( pSrc )
@@ -536,7 +543,7 @@ CUtlString CUtlString::Replace( char const *pchFrom, const char *pchTo, bool bCa
 				break;
 			}
 
-			int64 nNumCharsToCopy = pNextOccurrence - pSrc;
+			ssize_t nNumCharsToCopy = pNextOccurrence - pSrc;
 			if ( nNumCharsToCopy )
 			{
 				// append up to the undesired substring
@@ -562,8 +569,8 @@ CUtlString CUtlString::Replace( char const *pchFrom, const char *pchTo, bool bCa
 CUtlString CUtlString::Replace( char cFrom, char cTo )
 {
 	CUtlString ret = *this;
-	int64 len = ret.Length();
-	for ( int64 i=0; i < len; i++ )
+	ssize_t len = ret.Length();
+	for ( ssize_t i=0; i < len; i++ )
 	{
 		if ( ret.m_Storage[i] == cFrom )
 			ret.m_Storage[i] = cTo;
@@ -598,11 +605,16 @@ CUtlString CUtlString::UnqualifiedFilename() const
 	return CUtlString( pFilename );
 }
 
-CUtlString CUtlString::DirName()
+CUtlString CUtlString::DirName( bool bStripTrailingSlash ) const
 {
 	CUtlString ret( this->String() );
-	V_StripLastDir( (char*)ret.m_Storage.Get(), ret.m_Storage.Length() );
-	V_StripTrailingSlash( (char*)ret.m_Storage.Get() );
+	size_t len = V_StripLastDir( (char*)ret.m_Storage.Get(), ret.m_Storage.Length() );
+
+	ret.SetLength( len );
+
+	if (bStripTrailingSlash)
+		ret.StripTrailingSlash();
+
 	return ret;
 }
 
@@ -613,13 +625,16 @@ CUtlString CUtlString::StripExtension() const
 	return CUtlString( szTemp );
 }
 
-CUtlString CUtlString::StripFilename() const
+CUtlString CUtlString::StripFilename( bool bStripTrailingSlash ) const
 {
 	const char *pFilename = V_UnqualifiedFileName( Get() ); // NOTE: returns 'Get()' on failure, never NULL
-	int64 nCharsToCopy = pFilename - Get();
+	ssize_t nCharsToCopy = pFilename - Get();
 	CUtlString result;
 	result.SetDirect( Get(), nCharsToCopy );
-	result.StripTrailingSlash();
+
+	if ( bStripTrailingSlash )
+		result.StripTrailingSlash();
+
 	return result;
 }
 
@@ -654,9 +669,9 @@ void CUtlString::Append( const char *pchAddition )
 	(*this) += pchAddition;
 }
 
-void CUtlString::Append(const char *pchAddition, int64 nMaxChars)
+void CUtlString::Append(const char *pchAddition, ssize_t nMaxChars)
 {
-	const int64 nLen = V_strlen(pchAddition);
+	const ssize_t nLen = V_strlen(pchAddition);
 	if (nMaxChars < 0 || nLen <= nMaxChars)
 	{
 		Append(pchAddition);
@@ -715,8 +730,8 @@ void CUtlString::TrimLeft( const char *szTargets )
 
 void CUtlString::TrimRight( const char *szTargets )
 {
-	const int64 nLastCharIndex = Length() - 1;
-	int64 i;
+	const ssize_t nLastCharIndex = Length() - 1;
+	ssize_t i;
 
 	char* pSrc = Get();
 
@@ -800,7 +815,7 @@ char *CUtlStringBuilder::InternalPrepareBuffer(size_t nChars, bool bCopyOld, siz
 		if (bWasHeap && bCopyOld)
 		{
 			// maybe we'll get lucky and get the same buffer back.
-			pszString = MemAllocSingleton()->Realloc(pszOld, nNewSize + 1);
+			pszString = (char*)realloc(pszOld, nNewSize + 1);
 			if (!pszString)
 			{
 				SetError();
@@ -814,9 +829,9 @@ char *CUtlStringBuilder::InternalPrepareBuffer(size_t nChars, bool bCopyOld, siz
 			// if we aren't doing a copy, don't use realloc since it will
 			// copy the data if it needs to make a new allocation.
 			if (bWasHeap)
-				MemAllocSingleton()->Free(pszOld);
+				free(pszOld);
 
-			pszString = MemAllocSingleton()->Alloc<char>(nNewSize + 1);
+			pszString = (char*)malloc(nNewSize + 1);
 			if (!pszString)
 			{
 				SetError();
@@ -852,7 +867,7 @@ char *CUtlStringBuilder::InternalPrepareBuffer(size_t nChars, bool bCopyOld, siz
 			if (bCopyOld)
 				memcpy(pszString, pszOldString, nChars); // null will be added at end of func.
 
-			MemAllocSingleton()->Free(pszOldString);
+			free(pszOldString);
 		}
 	}
 
@@ -934,7 +949,7 @@ size_t CUtlStringBuilder::ReplaceInternal(const char *pstrTarget, const char *ps
 				char *pstrNew;
 				if (nNewLength > Capacity())
 				{
-					pstrNew = MemAllocSingleton()->Alloc<char>(nNewLength + 1);
+					pstrNew = (char*)malloc(nNewLength + 1);
 					if (!pstrNew)
 					{
 						SetError();
@@ -1088,7 +1103,7 @@ size_t CUtlStringBuilder::TrimWhitespace()
 		return 0;
 
 	char *pchString = m_data.Access();
-	int64 cChars = V_StrTrim(pchString);
+	ssize_t cChars = V_StrTrim(pchString);
 
 	if (cChars)
 		m_data.SetLength(cChars);
@@ -1187,7 +1202,7 @@ bool CUtlStringBuilder::Data::MoveToHeap()
 	{
 		// try to recover the string at the point of failure, to help with debugging
 		size_t nLen = Length();
-		char *pszHeapString = MemAllocSingleton()->Alloc<char>(nLen + 1);
+		char* pszHeapString = (char*)malloc(nLen + 1);
 		if (pszHeapString)
 		{
 			// get the string copy before corrupting the stack union

@@ -273,7 +273,7 @@ Resource/UI/flowstate_customhudvgui.res
 		visible					0
 		enabled 				0
 		fontHeight				30
-		labelText				"躲藏队正在躲藏 30"
+		labelText				"PROPS ARE HIDING 30"
 		font					"DefaultBold_41"
 		allcaps					1
 		fgcolor_override		"255 255 255 255"
@@ -367,7 +367,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				20
-			labelText				"回合即将开始 00:00"
+			labelText				"回合结束 00:00"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -1060,10 +1060,10 @@ Resource/UI/flowstate_customhudvgui.res
 	{
 		"ControlName"				"RuiPanel"
 		"rui"						"ui/basic_image.rpak"
-		"wide"						"80"
-		"tall"						"80"
-		"xpos"						"-215"
-		"ypos"						"300"
+		"wide"						"90"
+		"tall"						"90"
+		"xpos"						"-15"
+		"ypos"						"-115"
 		"visible"					"0"
 		"enabled"					"1"
 		"scaleImage"				"1"
@@ -1074,25 +1074,25 @@ Resource/UI/flowstate_customhudvgui.res
         }
 
 		"pin_to_sibling"			"SafeArea"
-		"pin_corner_to_sibling"		"RIGHT"
-		"pin_to_sibling_corner"		"RIGHT"
+		"pin_corner_to_sibling"		"BOTTOM_LEFT"
+		"pin_to_sibling_corner"		"BOTTOM_LEFT"
 	}
 	
 	KillStreakText1
 	{
 		ControlName				Label
-		xpos					350
+		xpos					360
 		ypos					0
 		wide					350
 		tall					100
 		visible					0
 		enabled					1
-		labelText				"Double Kill!"
+		labelText				"Double Kill"
 		textAlignment			west
 		fgcolor_override 		"255 255 255 255"
 		bgcolor_override 		"0 0 0 0"
-		fontHeight				30
-		font					DefaultBold_17
+		fontHeight				32
+		font					TitleBoldFont
 
 		pin_to_sibling			KillStreakBadge1
 		pin_corner_to_sibling	RIGHT
@@ -2689,5 +2689,849 @@ Resource/UI/flowstate_customhudvgui.res
 				pin_to_sibling          BestTimeValue
 				pin_corner_to_sibling   BOTTOM_RIGHT
 				pin_to_sibling_corner   BOTTOM_RIGHT
-		}	
+		}
+		
+	WaitingForPlayers_GamemodeFrame
+	{
+		ControlName				RuiPanel
+		wide					633
+		tall					114
+		ypos 					-30
+		xpos 					0
+		zpos 					1
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   TOP_LEFT
+		pin_to_sibling_corner   TOP_LEFT
+	}
+	
+	WaitingForPlayers_GamemodeName
+	{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"TRIOS"
+			visible                 0
+			zpos 					2
+			tall					100
+			wide 					300
+			fontHeight				90
+			font					TitleBoldFont
+			fgcolor_override		"255 255 255 255"
+			ypos                    0
+			xpos					-125
+			textAlignment			left
+			allcaps					1
+			pin_to_sibling          WaitingForPlayers_GamemodeFrame
+			pin_corner_to_sibling   LEFT
+			pin_to_sibling_corner   LEFT
+	}
+		
+	WaitingForPlayers_MapFrame
+	{
+		ControlName				RuiPanel
+		wide					386
+		tall					36
+		ypos 					-155
+		xpos 					0
+		zpos 					1
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   TOP_LEFT
+		pin_to_sibling_corner   TOP_LEFT
+	}
+
+	WaitingForPlayers_MapName
+	{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"World's Edge"
+			visible                 0
+			zpos 					2
+			tall					30
+			wide 					300
+			fontHeight				25
+			font					TitleBoldFont
+			fgcolor_override		"255 255 255 255"
+			ypos                    0
+			xpos					-125
+			textAlignment			left
+			allcaps					1
+			pin_to_sibling          WaitingForPlayers_MapFrame
+			pin_corner_to_sibling   LEFT
+			pin_to_sibling_corner   LEFT
+	}
+
+	WaitingForPlayers_Credits
+	{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Flowstate Survival v1.0 Beta"
+			visible                 0
+			zpos 					2
+			tall					30
+			wide 					300
+			fontHeight				30
+			font					"Default_34_ShadowGlow"
+			fgcolor_override		"255 255 255 255"
+			ypos                    -150
+			xpos					-20
+			textAlignment			left
+			allcaps					0
+			pin_to_sibling          Screen
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+	}
+	
+	WaitingForPlayers_Credits2
+	{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Coworked with @HisWattson"
+			visible                 0
+			zpos 					2
+			tall					30
+			wide 					300
+			fontHeight				30
+			font					"Default_34_ShadowGlow"
+			fgcolor_override		"255 255 255 255"
+			ypos                    40
+			xpos					0
+			textAlignment			left
+			allcaps					0
+			pin_to_sibling          WaitingForPlayers_Credits
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+	}
+	
+	WaitingForPlayers_Credits3
+	{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Scripts by @CafeFPS"
+			visible                 0
+			zpos 					2
+			tall					30
+			wide 					300
+			fontHeight				30
+			font					"Default_34_ShadowGlow"
+			fgcolor_override		"255 255 255 255"
+			ypos                    40
+			xpos					0
+			textAlignment			left
+			allcaps					0
+			pin_to_sibling          WaitingForPlayers_Credits2
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+	}
+
+	WaitingForPlayers_Credits4
+	{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Powered by R5Reloaded"
+			visible                 0
+			zpos 					2
+			tall					30
+			wide 					300
+			fontHeight				30
+			font					"Default_34_ShadowGlow"
+			fgcolor_override		"255 255 255 255"
+			ypos                    40
+			xpos					0
+			textAlignment			left
+			allcaps					0
+			pin_to_sibling          WaitingForPlayers_Credits3
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+	}
+	
+	WaitingForPlayers_CreditsFrame
+	{
+		"ControlName"			"Label"
+		wide					375
+		tall					165
+		ypos 					125
+		xpos 					100
+		zpos 					1
+		"labelText"				""
+		"bgcolor_override"		"0 0 0 135"
+		"visible"				"0"
+		"paintbackground"		"1"
+
+		pin_to_sibling          WaitingForPlayers_Credits
+		pin_corner_to_sibling   BOTTOM_LEFT
+		pin_to_sibling_corner   BOTTOM_LEFT
+	}
+
+	"FS_EvoShields_Frame"
+	{
+		ControlName				RuiPanel
+		wide					340
+		tall					49
+		ypos 					-130
+		xpos 					-62
+		zpos 					1
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   BOTTOM_LEFT
+		pin_to_sibling_corner   BOTTOM_LEFT
+	}
+
+	"FS_EvoShields_FrameShieldIcon"
+	{
+		ControlName				RuiPanel
+		wide					43
+		tall					39
+		ypos 					0
+		xpos 					-38
+		zpos 					2
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          FS_EvoShields_Frame
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+	
+	"FS_EvoShields_Text"
+	{
+		ControlName				Label
+		labelText				"/"
+		visible                 0
+		zpos 					2
+		tall					30
+		wide 					15
+		fontHeight				35
+		font					"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 255 255"
+		ypos                    0
+		xpos					-180
+		textAlignment			left
+		allcaps					0
+		pin_to_sibling          FS_EvoShields_Frame
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+
+	"FS_EvoShields_Text_Shields"
+	{
+		ControlName				Label
+		labelText				"0"
+		visible                 0
+		zpos 					2
+		tall					30
+		wide 					70
+		fontHeight				35
+		font					"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 255 255"
+		ypos                    0
+		xpos					-20
+		textAlignment			east
+		allcaps					0
+		pin_to_sibling          FS_EvoShields_Text
+		pin_corner_to_sibling   RIGHT
+		pin_to_sibling_corner   RIGHT
+	}
+
+	"FS_EvoShields_Text_ShieldsMax"
+	{
+		ControlName				Label
+		labelText				"0"
+		visible                 0
+		zpos 					2
+		tall					30
+		wide 					70
+		fontHeight				35
+		font					"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 255 255"
+		ypos                    0
+		xpos					-15
+		textAlignment			west
+		allcaps					0
+		pin_to_sibling          FS_EvoShields_Text
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+	
+	"FS_DMCountDown_Frame"
+	{
+		ControlName				RuiPanel
+		wide					286
+		tall					54
+		ypos 					-200
+		xpos 					-32
+		zpos 					0
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+	
+	"FS_DMCountDown_Text"
+	{
+		ControlName				Label
+		labelText				"Time Remaining: 00:00"
+		visible                 0
+		zpos 					2
+		tall					30
+		wide 					300
+		fontHeight				30
+		font					"DefaultBold_62_DropShadow" // "TitleBoldFont" //"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 255 255"
+		ypos                    0
+		xpos					-60
+		textAlignment			west
+		allcaps					0
+		pin_to_sibling          FS_DMCountDown_Frame
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+
+	"FS_DMCountDown_Frame_Center"
+	{
+		ControlName				RuiPanel
+		wide					286
+		tall					54
+		ypos 					-120
+		xpos 					-32
+		zpos 					0
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   TOP
+		pin_to_sibling_corner   TOP
+	}
+	
+	"FS_DMCountDown_Text_Center"
+	{
+		ControlName				Label
+		labelText				"Deathmatch Starting in 0"
+		visible                 0
+		zpos 					2
+		tall					30
+		wide 					420
+		fontHeight				30
+		font					"TitleBoldFont" // "TitleBoldFont" //"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 0 255"
+		ypos                    0
+		xpos					0
+		textAlignment			center
+		allcaps					1
+		pin_to_sibling          FS_DMCountDown_Frame_Center
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
+	
+	"FS_DMScoreboard_Frame"
+	{
+		ControlName				RuiPanel
+		wide					713
+		tall					692
+		ypos 					-10
+		xpos 					-10
+		zpos 					0
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
+	
+	"FS_DMScoreboard_Title"
+	{
+		ControlName				Label
+		labelText				"SCOREBOARD"
+		visible                 0
+		zpos 					3
+		tall					30
+		wide 					300
+		fontHeight				38
+		font					"DefaultBold_62_DropShadow" // "TitleBoldFont" //"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 255 255"
+		ypos                    -90
+		xpos					-105
+		textAlignment			west
+		allcaps					0
+
+		pin_to_sibling          FS_DMScoreboard_Frame
+		pin_corner_to_sibling   TOP_LEFT
+		pin_to_sibling_corner   TOP_LEFT
+	}
+	
+	"FS_DMScoreboard_Hint"
+	{
+		ControlName				Label
+		labelText				"%TAB% Close"
+		visible                 0
+		zpos 					3
+		tall					30
+		wide 					300
+		fontHeight				25
+		font					"DefaultBold_62_DropShadow" // "TitleBoldFont" //"DefaultBold_62_DropShadow"
+		fgcolor_override		"255 255 255 255"
+		ypos                    -15
+		xpos					-40
+		textAlignment			east
+		allcaps					0
+
+		pin_to_sibling          FS_DMScoreboard_Frame
+		pin_corner_to_sibling   BOTTOM_RIGHT
+		pin_to_sibling_corner   BOTTOM_RIGHT
+	}
+	
+	"FS_HaloMod_BattleRifleAdsOverlay"
+	{
+		ControlName				RuiPanel
+		wide					1920
+		tall					1080
+		ypos 					0
+		xpos 					0
+		zpos 					0
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   CENTER
+		pin_to_sibling_corner   CENTER
+	}
+	
+	FS_Oddball_Scoreboard_Frame
+	{
+		ControlName				RuiPanel
+		wide					550
+		tall					30
+		ypos 					-50
+		xpos 					0
+		zpos 					1
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   TOP
+		pin_to_sibling_corner   TOP
+	}
+	
+	FS_Oddball_YourTeam
+	{
+		ControlName				Label
+		xpos                    -10
+		ypos					0
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					350
+		visible					0
+		fontHeight				33
+		labelText				"YOUR TEAM"
+		font					"Default_34_ShadowGlow"
+		allcaps					1
+		fgcolor_override		"0 255 255 255"
+		textAlignment			west
+		pin_to_sibling			FS_Oddball_Scoreboard_Frame
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+
+	FS_Oddball_YourTeamGoalScore
+	{
+		ControlName				Label
+		xpos                    -215
+		ypos					0
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					50
+		visible					0
+		fontHeight				33
+		labelText				"/150"
+		font					"Default_34_ShadowGlow"
+		allcaps					1
+		fgcolor_override		"0 255 255 255"
+		textAlignment			west
+		pin_to_sibling			FS_Oddball_Scoreboard_Frame
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+
+	FS_Oddball_YourTeamScore
+	{
+		ControlName				Label
+		xpos                    50
+		ypos					0
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					50
+		visible					0
+		fontHeight				33
+		labelText				"0"
+		font					"Default_34_ShadowGlow"
+		allcaps					1
+		fgcolor_override		"0 255 255 255"
+		textAlignment			east
+		pin_to_sibling			FS_Oddball_YourTeamGoalScore
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+
+	FS_Oddball_AllyHas
+	{
+		ControlName				RuiPanel
+		wide					30
+		tall					30
+		ypos 					0
+		xpos 					35
+		zpos 					1
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          FS_Oddball_Scoreboard_Frame
+		pin_corner_to_sibling   LEFT
+		pin_to_sibling_corner   LEFT
+	}
+	
+	FS_Oddball_EnemyTeam
+	{
+		ControlName				Label
+		xpos                    -10
+		ypos					0
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					350
+		visible					0
+		fontHeight				33
+		labelText				"ENEMY TEAM"
+		font					"Default_34_ShadowGlow"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			east
+		pin_to_sibling			FS_Oddball_Scoreboard_Frame
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
+
+	FS_Oddball_EnemyTeamScore
+	{
+		ControlName				Label
+		xpos                    -160
+		ypos					0
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					100
+		visible					0
+		fontHeight				33
+		labelText				"0"
+		font					"Default_34_ShadowGlow"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			west
+		pin_to_sibling			FS_Oddball_Scoreboard_Frame
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+
+	}
+
+	FS_Oddball_EnemyHas
+	{
+		ControlName				RuiPanel
+		wide					30
+		tall					30
+		ypos 					0
+		xpos 					35
+		zpos 					1
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          FS_Oddball_Scoreboard_Frame
+		pin_corner_to_sibling   RIGHT
+		pin_to_sibling_corner   RIGHT
+	}
+	
+	FS_1v1_UI_BG
+	{
+		ControlName				RuiPanel
+		wide					676
+		tall					92.72
+		ypos 					-30
+		xpos 					0
+		zpos 					5
+		visible					0
+		rui                     "ui/basic_image.rpak"
+
+		pin_to_sibling          Screen
+		pin_corner_to_sibling   TOP
+		pin_to_sibling_corner   TOP
+	}
+
+	// FS_1v1_UI_KillLeader
+	// {
+		// ControlName				RuiPanel
+		// wide					50
+		// tall					50
+		// ypos 					-30
+		// xpos 					0
+		// zpos 					10
+		// visible					0
+		// rui                     "ui/basic_image.rpak"
+
+		// pin_to_sibling          Screen
+		// pin_corner_to_sibling   TOP
+		// pin_to_sibling_corner   TOP
+	// }
+	
+	FS_1v1_UI_EnemyName
+	{
+		ControlName				Label
+		xpos                    0
+		ypos					-5
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					300
+		visible					0
+		fontHeight				22
+		labelText				"r5r_ColombiaFPS"
+		font					"TitleBoldFont"
+		allcaps					0
+		fgcolor_override		"255 120 32 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+	FS_1v1_UI_EnemyKills
+	{
+		ControlName				Label
+		xpos                    -23
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					55
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+	FS_1v1_UI_EnemyDeaths
+	{
+		ControlName				Label
+		xpos                    -75
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					55
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+	FS_1v1_UI_EnemyDamage
+	{
+		ControlName				Label
+		xpos                  	-135
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					100
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+	FS_1v1_UI_EnemyLatency
+	{
+		ControlName				Label
+		xpos                    -245
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					55
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+
+	FS_1v1_UI_EnemyPosition
+	{
+		ControlName				Label
+		xpos                    -30
+		ypos					-33
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					30
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"255 120 32 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	LEFT
+		pin_to_sibling_corner	LEFT
+	}
+
+	FS_1v1_UI_Name
+	{
+		ControlName				Label
+		xpos                    0
+		ypos					-5
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					300
+		visible					0
+		fontHeight				22
+		labelText				"r5r_ColombiaFPS"
+		font					"TitleBoldFont"
+		allcaps					0
+		fgcolor_override		"134 205 226 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
+	FS_1v1_UI_Kills
+	{
+		ControlName				Label
+		xpos                    -255
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30	
+		wide					55
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"134 205 226 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
+	FS_1v1_UI_Deaths
+	{
+		ControlName				Label
+		xpos                    -200
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					55
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"134 205 226 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
+	FS_1v1_UI_Damage
+	{
+		ControlName				Label
+		xpos                    -90
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					100
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"134 205 226 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
+	FS_1v1_UI_Latency
+	{
+		ControlName				Label
+		xpos                    -28
+		ypos					37
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					55
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"134 205 226 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
+
+	FS_1v1_UI_Position
+	{
+		ControlName				Label
+		xpos                    -30
+		ypos					-33
+		zpos 10
+		//auto_wide_tocontents	1
+		tall					30
+		wide					30
+		visible					0
+		fontHeight				14
+		labelText				"0"
+		font					"TitleBoldFont"
+		allcaps					1
+		fgcolor_override		"134 205 226 255"
+		textAlignment			center
+		pin_to_sibling			FS_1v1_UI_BG
+		pin_corner_to_sibling	RIGHT
+		pin_to_sibling_corner	RIGHT
+	}
 }

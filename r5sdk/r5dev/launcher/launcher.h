@@ -1,23 +1,17 @@
 #ifndef LAUNCHER_H
 #define LAUNCHER_H
 
-inline CMemory p_WinMain;
-inline auto v_WinMain = p_WinMain.RCast<int (*)(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)>();
-
 inline CMemory p_LauncherMain;
-inline auto v_LauncherMain = p_LauncherMain.RCast<int(*)(HINSTANCE hInstance)>();
+inline int(*v_LauncherMain)(HINSTANCE hInstance);
 
 inline CMemory p_TopLevelExceptionFilter;
-inline auto v_TopLevelExceptionFilter = p_TopLevelExceptionFilter.RCast<LONG(*)(EXCEPTION_POINTERS* pExceptionPointer)>();
+inline LONG(*v_TopLevelExceptionFilter)(EXCEPTION_POINTERS* pExceptionPointer);
 
 #if !defined (GAMEDLL_S0) && !defined (GAMEDLL_S1)
 inline CMemory p_RemoveSpuriousGameParameters;
-inline auto v_RemoveSpuriousGameParameters = p_RemoveSpuriousGameParameters.RCast<void* (*)(void)>();
+inline void*(*v_RemoveSpuriousGameParameters)(void);
 #endif // !GAMEDLL_S0 || !GAMEDLL_S1
 
-void AppendSDKParametersPreInit();
-string LoadConfigFile(const string& svConfig);
-void ParseAndApplyConfigFile(const string& svConfig);
 const char* ExitCodeToString(int nCode);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -25,7 +19,6 @@ class VLauncher : public IDetour
 {
 	virtual void GetAdr(void) const
 	{
-		LogFunAdr("WinMain", p_WinMain.GetPtr());
 		LogFunAdr("LauncherMain", p_LauncherMain.GetPtr());
 		LogFunAdr("TopLevelExceptionFilter", p_TopLevelExceptionFilter.GetPtr());
 #if !defined (GAMEDLL_S0) && !defined (GAMEDLL_S1)
@@ -34,10 +27,7 @@ class VLauncher : public IDetour
 	}
 	virtual void GetFun(void) const
 	{
-		p_WinMain = g_GameDll.FindPatternSIMD("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 8B D9 49 8B F8");
-		v_WinMain = p_WinMain.RCast<int (*)(HINSTANCE, HINSTANCE, LPSTR, int)>();
-
-		p_LauncherMain = g_GameDll.GetExportedFunction("LauncherMain");
+		p_LauncherMain = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 8B C8 E8 ?? ?? ?? ?? CC").FollowNearCallSelf();
 		v_LauncherMain = p_LauncherMain.RCast<int(*)(HINSTANCE)>();
 
 		p_TopLevelExceptionFilter = g_GameDll.FindPatternSIMD("40 53 48 83 EC 20 48 8B 05 ?? ?? ?? ?? 48 8B D9 48 85 C0 74 06");

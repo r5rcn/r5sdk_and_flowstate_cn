@@ -4,6 +4,14 @@
  * _protocol.h
  *-----------------------------------------------------------------------------*/
 
+ // Max number of history commands to send ( 2 by default ) in case of dropped packets
+#define NUM_BACKUP_COMMAND_BITS		4 // Originally 3 bits.
+#define MAX_BACKUP_COMMANDS			((1 << NUM_BACKUP_COMMAND_BITS)-1) // 15 in R5; see 'CL_Move'.
+
+// Maximum amount of backup commands to process on the server.
+#define MAX_BACKUP_COMMANDS_PROCESS (MAX_BACKUP_COMMANDS+1) * NUM_BACKUP_COMMAND_BITS
+#define MAX_QUEUED_COMMANDS_PROCESS 0x1B0
+
 enum class SIGNONSTATE : int
 {
 	SIGNONSTATE_NONE         = 0, // no state yet; about to connect.
@@ -29,3 +37,6 @@ enum class PERSISTENCE : int
 	PERSISTENCE_READY     = 5  // persistence is ready for this client.
 #endif
 };
+
+#define net_NOP        0 // nop command used for padding.
+#define net_Disconnect 1 // disconnect, last message in connection.

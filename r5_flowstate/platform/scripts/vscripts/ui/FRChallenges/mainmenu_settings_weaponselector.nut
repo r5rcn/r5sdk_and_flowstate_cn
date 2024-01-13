@@ -27,6 +27,7 @@ void function OpenFRChallengesSettingsWpnSelector()
 	Hud_SetSelected( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), true )
 	Hud_SetSelected( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), false )
 	RunClientScript("SetWeaponSlot", 1)	
+	SetWeaponSwitcherVisible( true )
 }
 
 void function CloseFRChallengesSettingsWpnSelector()
@@ -59,7 +60,7 @@ void function InitFRChallengesSettingsWpnSelector( var newMenuArg )
 	AddTab( file.menu, file.buymenu5, "冲锋枪" )
 	AddTab( file.menu, file.buymenu2, "突击步枪 轻机枪" )
 	AddTab( file.menu, file.buymenu3, "神射手 狙击枪" )
-	AddTab( file.menu, file.buymenu4, "监视武器" )
+	AddTab( file.menu, file.buymenu4, "检视武器" )
 	
 	SetTabNavigationEnabled( file.menu, true )
 	EmitUISound( "UI_InGame_Inventory_Open" )
@@ -172,6 +173,9 @@ string function GetWeaponNameForUI(string weapon)
         case "mp_weapon_shotgun":
             weaponname = "EVA-8"
             break
+        case "mp_weapon_pdw":
+            weaponname = "Prowler"
+            break
         case "mp_weapon_mastiff":
             weaponname = "Mastiff"
             break
@@ -216,9 +220,6 @@ string function GetWeaponNameForUI(string weapon)
 			break
 		case "mp_weapon_volt_smg":
 			weaponname = "Volt"
-			break
-		case "mp_weapon_dragon_lmg":
-			weaponname = "Rampage"
 			break
 		case "mp_weapon_car":
 			weaponname = "Car"

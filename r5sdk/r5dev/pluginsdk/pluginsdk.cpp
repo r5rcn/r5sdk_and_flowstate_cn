@@ -19,9 +19,8 @@
 //---------------------------------------------------------------------------------
 CPluginSDK::CPluginSDK(const char* pszSelfModule) : m_FactoryInstance(nullptr), m_PluginSystem(nullptr)
 {
-	m_SelfModule = CModule(pszSelfModule);
-	m_GameModule = CModule("r5apex.exe");
-	m_SDKModule  = CModule("gamesdk.dll"); // THIS NEEDS TO BE CHANGED FOR DEDI/CLIENT SDK SUPPORT. AT BEST DO THIS VIA PluginInstance_OnLoad.
+	m_SelfModule.InitFromName(pszSelfModule);
+	m_GameModule.InitFromBase(CModule::GetProcessEnvironmentBlock()->ImageBaseAddress);
 }
 
 //---------------------------------------------------------------------------------
@@ -29,7 +28,6 @@ CPluginSDK::CPluginSDK(const char* pszSelfModule) : m_FactoryInstance(nullptr), 
 //---------------------------------------------------------------------------------
 CPluginSDK::~CPluginSDK()
 {
-
 }
 
 //---------------------------------------------------------------------------------
@@ -37,33 +35,30 @@ CPluginSDK::~CPluginSDK()
 //---------------------------------------------------------------------------------
 bool CPluginSDK::InitSDK()
 {
-	auto getFactorySystemFn = m_SDKModule.GetExportedFunction("GetFactorySystem").RCast<void*(*)()>();
-
-	Assert(getFactorySystemFn, "Could not find GetFactorySystem export from gamesdk.dll");
-	if (!getFactorySystemFn)
+	InstantiateInterfaceFn factorySystem = m_SDKModule.GetExportedSymbol("GetFactorySystem").RCast<InstantiateInterfaceFn>();
+	if (!factorySystem)
+	{
+		Assert(factorySystem, "factorySystem == NULL; symbol renamed???");
 		return false;
+	}
 
-	m_FactoryInstance = reinterpret_cast<IFactory*>(getFactorySystemFn());
-	Assert(getFactorySystemFn, "m_FactoryInstace was nullptr.");
-	if (!m_FactoryInstance)
-		return false;
+	m_FactoryInstance = (IFactorySystem*)factorySystem();
 
 	// Let's make sure the factory version matches, else we unload.
-	bool isFactoryVersionOk = strcmp(m_FactoryInstance->GetFactoryFullName("VFactorySystem"), FACTORY_INTERFACE_VERSION) == 0;
-	Assert(isFactoryVersionOk, "Version mismatch between IFactory and CFactory.");
+	bool isFactoryVersionOk = strcmp(m_FactoryInstance->GetVersion(), FACTORY_INTERFACE_VERSION) == 0;
 	if (!isFactoryVersionOk)
+	{
+		Assert(isFactoryVersionOk, "Version mismatch!");
 		return false;
+	}
 
-	// Let's make sure the SDK version matches with the PluginSystem, else we unload
-	bool isPluginVersionOk = strcmp(m_FactoryInstance->GetFactoryFullName("VPluginSystem"), PLUGINSDK_CLASS_VERSION) == 0;
-	Assert(isPluginVersionOk, "Version mismatch between CPluginSDK and CPluginSystem.");
-	if (!isPluginVersionOk)
-		return false;
-
-	m_PluginSystem = m_FactoryInstance->GetFactoryPtr(PLUGINSDK_CLASS_VERSION, false).RCast<IPluginSystem*>();
-	Assert(m_PluginSystem, "m_PluginSystem was nullptr.");
+	// Unload if 
+	m_PluginSystem = (IPluginSystem*)m_FactoryInstance->GetFactory(INTERFACEVERSION_PLUGINSYSTEM);
 	if (!m_PluginSystem)
+	{
+		Assert(m_PluginSystem, "CPluginSDK::m_PluginSystem == NULL");
 		return false;
+	}
 
 	return true;
 }

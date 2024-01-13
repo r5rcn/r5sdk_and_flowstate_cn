@@ -6,11 +6,14 @@
 #include "tier1/cvar.h"
 #include "windows/id3dx.h"
 #include "windows/input.h"
+#include "geforce/reflex.h"
 #include "gameui/IConsole.h"
 #include "gameui/IBrowser.h"
+#include "engine/framelimit.h"
 #include "engine/sys_mainwind.h"
 #include "inputsystem/inputsystem.h"
 #include "public/bitmap/stb_image.h"
+#include "public/rendersystem/schema/texture.g.h"
 
 /**********************************************************************************
 -----------------------------------------------------------------------------------
@@ -30,8 +33,8 @@ typedef BOOL(WINAPI* IPostMessageA)(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
 typedef BOOL(WINAPI* IPostMessageW)(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 ///////////////////////////////////////////////////////////////////////////////////
-static BOOL                     s_bInitialized = false;
-static BOOL                     s_bImGuiInitialized = false;
+extern BOOL                     g_bImGuiInitialized = FALSE;
+extern UINT                     g_nWindowRect[2] = { NULL, NULL };
 
 ///////////////////////////////////////////////////////////////////////////////////
 static IPostMessageA            s_oPostMessageA = NULL;
@@ -78,20 +81,25 @@ BOOL WINAPI HPostMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 // IMGUI
 //#################################################################################
 
-void SetupImGui()
+void ImGui_Init()
 {
 	///////////////////////////////////////////////////////////////////////////////
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGui_ImplWin32_Init(*g_pGameWindow);
-	ImGui_ImplDX11_Init(*g_ppGameDevice, *g_ppImmediateContext);
 
-	///////////////////////////////////////////////////////////////////////////////
 	ImGuiIO& io = ImGui::GetIO();
-	io.ImeWindowHandle = *g_pGameWindow;
+	io.ImeWindowHandle = g_pGame->GetWindow();
 	io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
 
-	s_bImGuiInitialized = true;
+	ImGui_ImplWin32_Init(g_pGame->GetWindow());
+	ImGui_ImplDX11_Init(D3D11Device(), D3D11DeviceContext());
+}
+
+void ImGui_Shutdown()
+{
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void DrawImGui()
@@ -109,9 +117,9 @@ void DrawImGui()
 		ImGui::SetShortcutRouting(GImGui->ConfigNavWindowingKeyPrev, ImGuiKeyOwner_None);
 
 	g_pBrowser->RunTask();
-	g_pConsole->RunTask();
-
 	g_pBrowser->RunFrame();
+
+	g_pConsole->RunTask();
 	g_pConsole->RunFrame();
 
 	ImGui::EndFrame();
@@ -126,16 +134,19 @@ void DrawImGui()
 
 HRESULT __stdcall Present(IDXGISwapChain* pSwapChain, UINT nSyncInterval, UINT nFlags)
 {
-	if (!s_bInitialized)
+	if (!g_bImGuiInitialized)
 	{
-		SetupImGui();
+		ImGui_Init();
 		g_ThreadRenderThreadID = GetCurrentThreadId();
-		s_bInitialized = true;
+		g_bImGuiInitialized = true;
 	}
 
+	g_FrameLimiter.Run();
 	DrawImGui();
 	///////////////////////////////////////////////////////////////////////////////
-	return s_fnSwapChainPresent(pSwapChain, nSyncInterval, nFlags);
+
+	HRESULT result = s_fnSwapChainPresent(pSwapChain, nSyncInterval, nFlags);
+	return result;
 }
 
 HRESULT __stdcall ResizeBuffers(IDXGISwapChain* pSwapChain, UINT nBufferCount, UINT nWidth, UINT nHeight, DXGI_FORMAT dxFormat, UINT nSwapChainFlags)
@@ -150,6 +161,104 @@ HRESULT __stdcall ResizeBuffers(IDXGISwapChain* pSwapChain, UINT nBufferCount, U
 //#################################################################################
 // INTERNALS
 //#################################################################################
+
+#pragma warning( push )
+// Disable stack warning, tells us to move more data to the heap instead. Not really possible with 'initialData' here. Since its parallel processed.
+// Also disable 6378, complains that there is no control path where it would use 'nullptr', if that happens 'Error' will be called though.
+#pragma warning( disable : 6262 6387)
+CMemory p_CreateTextureResource;
+void(*v_CreateTextureResource)(TextureHeader_t*, INT_PTR);
+constexpr uint32_t ALIGNMENT_SIZE = 15; // Creates 2D texture and shader resource from textureHeader and imageData.
+void CreateTextureResource(TextureHeader_t* textureHeader, INT_PTR imageData)
+{
+	if (textureHeader->m_nDepth && !textureHeader->m_nHeight) // Return never gets hit. Maybe its some debug check?
+		return;
+
+	__int64 initialData[4096]{};
+	textureHeader->m_nTextureMipLevels = textureHeader->m_nPermanentMipCount;
+
+	const int totalStreamedMips = textureHeader->m_nOptStreamedMipCount + textureHeader->m_nStreamedMipCount;
+	int mipLevel = textureHeader->m_nPermanentMipCount + totalStreamedMips;
+	if (mipLevel != totalStreamedMips)
+	{
+		do
+		{
+			--mipLevel;
+			if (textureHeader->m_nArraySize)
+			{
+				int mipWidth = 0;
+				if (textureHeader->m_nWidth >> mipLevel > 1)
+					mipWidth = (textureHeader->m_nWidth >> mipLevel) - 1;
+
+				int mipHeight = 0;
+				if (textureHeader->m_nHeight >> mipLevel > 1)
+					mipHeight = (textureHeader->m_nHeight >> mipLevel) - 1;
+
+				uint8_t x = s_pBytesPerPixel[textureHeader->m_nImageFormat].first;
+				uint8_t y = s_pBytesPerPixel[textureHeader->m_nImageFormat].second;
+
+				uint32_t bppWidth = (y + mipWidth) >> (y >> 1);
+				uint32_t bppHeight = (y + mipHeight) >> (y >> 1);
+				uint32_t sliceWidth = x * (y >> (y >> 1));
+
+				uint32_t rowPitch = sliceWidth * bppWidth;
+				uint32_t slicePitch = x * bppWidth * bppHeight;
+
+				uint32_t subResourceEntry = mipLevel;
+				for (int i = 0; i < textureHeader->m_nArraySize; i++)
+				{
+					uint32_t offsetCurrentResourceData = subResourceEntry << 4u;
+
+					*(int64_t*)((uint8_t*)initialData + offsetCurrentResourceData) = imageData;
+					*(uint32_t*)((uint8_t*)&initialData[1] + offsetCurrentResourceData) = rowPitch;
+					*(uint32_t*)((uint8_t*)&initialData[1] + offsetCurrentResourceData + 4) = slicePitch;
+
+					imageData += (slicePitch + ALIGNMENT_SIZE) & ~ALIGNMENT_SIZE;
+					subResourceEntry += textureHeader->m_nPermanentMipCount;
+				}
+			}
+		} while (mipLevel != totalStreamedMips);
+	}
+
+	const DXGI_FORMAT dxgiFormat = g_TxtrAssetToDxgiFormat[textureHeader->m_nImageFormat]; // Get dxgi format
+
+	D3D11_TEXTURE2D_DESC textureDesc{};
+	textureDesc.Width = textureHeader->m_nWidth >> mipLevel;
+	textureDesc.Height = textureHeader->m_nHeight >> mipLevel;
+	textureDesc.MipLevels = textureHeader->m_nPermanentMipCount;
+	textureDesc.ArraySize = textureHeader->m_nArraySize;
+	textureDesc.Format = dxgiFormat;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = textureHeader->m_nCPUAccessFlag != 2 ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.MiscFlags = 0;
+
+	const uint32_t offsetStartResourceData = mipLevel << 4u;
+	const D3D11_SUBRESOURCE_DATA* subResData = (D3D11_SUBRESOURCE_DATA*)((uint8_t*)initialData + offsetStartResourceData);
+	const HRESULT createTextureRes = D3D11Device()->CreateTexture2D(&textureDesc, subResData, &textureHeader->m_ppTexture);
+	if (createTextureRes < S_OK)
+		Error(eDLL_T::RTECH, EXIT_FAILURE, "Couldn't create texture \"%s\": error code = %08x\n", textureHeader->m_pDebugName, createTextureRes);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResource{};
+	shaderResource.Format = dxgiFormat;
+	shaderResource.Texture2D.MipLevels = textureHeader->m_nTextureMipLevels;
+	if (textureHeader->m_nArraySize > 1) // Do we have a texture array?
+	{
+		shaderResource.Texture2DArray.FirstArraySlice = 0;
+		shaderResource.Texture2DArray.ArraySize = textureHeader->m_nArraySize;
+		shaderResource.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2DARRAY;
+	}
+	else
+	{
+		shaderResource.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
+	}
+
+	const HRESULT createShaderResourceRes = D3D11Device()->CreateShaderResourceView(textureHeader->m_ppTexture, &shaderResource, &textureHeader->m_ppShaderResourceView);
+	if (createShaderResourceRes < S_OK)
+		Error(eDLL_T::RTECH, EXIT_FAILURE, "Couldn't create shader resource view for texture \"%s\": error code = %08x\n", textureHeader->m_pDebugName, createShaderResourceRes);
+}
+#pragma warning( pop )
 
 bool LoadTextureBuffer(unsigned char* buffer, int len, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
 {
@@ -186,7 +295,7 @@ bool LoadTextureBuffer(unsigned char* buffer, int len, ID3D11ShaderResourceView*
 	subResource.pSysMem = pImageData;
 	subResource.SysMemPitch = desc.Width * 4;
 	subResource.SysMemSlicePitch = 0;
-	(*g_ppGameDevice)->CreateTexture2D(&desc, &subResource, &pTexture);
+	D3D11Device()->CreateTexture2D(&desc, &subResource, &pTexture);
 
 	// Create texture view
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
@@ -197,7 +306,7 @@ bool LoadTextureBuffer(unsigned char* buffer, int len, ID3D11ShaderResourceView*
 
 	if (pTexture)
 	{
-		(*g_ppGameDevice)->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
+		D3D11Device()->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
 		pTexture->Release();
 	}
 
@@ -282,22 +391,32 @@ void DirectX_Shutdown()
 
 	///////////////////////////////////////////////////////////////////////////////
 	// Shutdown ImGui
-	if (s_bImGuiInitialized)
+	if (g_bImGuiInitialized)
 	{
-		ImGui_ImplWin32_Shutdown();
-		ImGui_ImplDX11_Shutdown();
-		s_bImGuiInitialized = false;
+		ImGui_Shutdown();
+		g_bImGuiInitialized = false;
 	}
-	s_bInitialized = false;
 }
 
 void VDXGI::GetAdr(void) const
 {
 	///////////////////////////////////////////////////////////////////////////////
 	LogFunAdr("IDXGISwapChain::Present", reinterpret_cast<uintptr_t>(s_fnSwapChainPresent));
+	LogFunAdr("CreateTextureResource", p_CreateTextureResource.GetPtr());
 	LogVarAdr("g_pSwapChain", reinterpret_cast<uintptr_t>(g_ppSwapChain));
 	LogVarAdr("g_pGameDevice", reinterpret_cast<uintptr_t>(g_ppGameDevice));
 	LogVarAdr("g_pImmediateContext", reinterpret_cast<uintptr_t>(g_ppImmediateContext));
+}
+
+void VDXGI::GetFun(void) const
+{
+#if defined (GAMEDLL_S0) || defined (GAMEDLL_S1)
+	p_CreateTextureResource = g_GameDll.FindPatternSIMD("48 8B C4 48 89 48 08 53 55 41 55");
+	v_CreateTextureResource = p_CreateTextureResource.RCast<void(*)(TextureHeader_t*, int64_t)>(); /*48 8B C4 48 89 48 08 53 55 41 55*/
+#elif defined (GAMEDLL_S2) || defined (GAMEDLL_S3)
+	p_CreateTextureResource = g_GameDll.FindPatternSIMD("E8 ?? ?? ?? ?? 4C 8B C7 48 8B D5 48 8B CB 48 83 C4 60").FollowNearCallSelf();
+	v_CreateTextureResource = p_CreateTextureResource.RCast<void(*)(TextureHeader_t*, int64_t)>(); /*E8 ? ? ? ? 4C 8B C7 48 8B D5 48 8B CB 48 83 C4 60*/
+#endif
 }
 
 void VDXGI::GetVar(void) const
@@ -314,6 +433,20 @@ void VDXGI::GetVar(void) const
 	// Grab swap chain..
 	pBase = g_GameDll.FindPatternSIMD("48 83 EC 28 48 8B 0D ?? ?? ?? ?? 45 33 C0 33 D2");
 	g_ppSwapChain = pBase.FindPattern("48 8B 0D").ResolveRelativeAddressSelf(0x3, 0x7).RCast<IDXGISwapChain**>();
+}
+
+void VDXGI::Attach(void) const
+{
+#ifdef GAMEDLL_S3
+	DetourAttach(&v_CreateTextureResource, &CreateTextureResource);
+#endif // GAMEDLL_S3
+}
+
+void VDXGI::Detach(void) const
+{
+#ifdef GAMEDLL_S3
+	DetourDetach(&v_CreateTextureResource, &CreateTextureResource);
+#endif // GAMEDLL_S3
 }
 
 #endif // !DEDICATED

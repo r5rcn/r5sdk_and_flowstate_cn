@@ -5,7 +5,6 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#include "core/stdafx.h"
 #include "tier1/bitbuf.h"
 #include "mathlib/swap.h"
 #include "mathlib/bitvec.h"
@@ -71,26 +70,6 @@ CBitBuffer::CBitBuffer(void)
 	m_pDebugName = NULL;
 	m_nDataBits = -1;
 	m_nDataBytes = 0;
-}
-
-void CBitBuffer::SetDebugName(const char* pName)
-{
-	m_pDebugName = pName;
-}
-
-const char* CBitBuffer::GetDebugName() const
-{
-	return m_pDebugName;
-}
-
-bool CBitBuffer::IsOverflowed() const
-{
-	return m_bOverflow;
-}
-
-void CBitBuffer::SetOverflowFlag()
-{
-	m_bOverflow = true;
 }
 
 // ---------------------------------------------------------------------------------------- //
@@ -272,19 +251,86 @@ int CBitRead::ReadSBitLong(int numbits)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: reads byte from the buffer
+// Purpose: reads a signed 64-bit integer from the buffer
 //-----------------------------------------------------------------------------
-int CBitRead::ReadByte()
+int64 CBitRead::ReadLongLong()
 {
-	return ReadSBitLong(sizeof(unsigned char) << 3);
+	int64 retval;
+	uint* pLongs = (uint*)&retval;
+
+	// Read the two DWORDs according to network endian
+	const short endianIndex = 0x0100;
+	byte* idx = (byte*)&endianIndex;
+	pLongs[*idx++] = ReadUBitLong(sizeof(long) << 3);
+	pLongs[*idx] = ReadUBitLong(sizeof(long) << 3);
+
+	return retval;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: reads character from the buffer
+// Purpose: reads a float from the buffer
 //-----------------------------------------------------------------------------
-int CBitRead::ReadChar()
+float CBitRead::ReadFloat()
 {
-	return ReadSBitLong(sizeof(char) << 3);
+	float ret;
+	Assert(sizeof(ret) == 4);
+	ReadBits(&ret, 32);
+
+	// Swap the float, since ReadBits reads raw data
+	LittleFloat(&ret, &ret);
+	return ret;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: reads bits from the buffer
+//-----------------------------------------------------------------------------
+void CBitRead::ReadBits(void* pOutData, int nBits)
+{
+	unsigned char* pOut = (unsigned char*)pOutData;
+	int nBitsLeft = nBits;
+
+	// align output to dword boundary
+	while (((uintp)pOut & 3) != 0 && nBitsLeft >= 8)
+	{
+		*pOut = (unsigned char)ReadUBitLong(8);
+		++pOut;
+		nBitsLeft -= 8;
+	}
+
+	// X360TBD: Can't read dwords in ReadBits because they'll get swapped
+	if (IsPC())
+	{
+		// read dwords
+		while (nBitsLeft >= 32)
+		{
+			*((uint32*)pOut) = ReadUBitLong(32);
+			pOut += sizeof(uint32);
+			nBitsLeft -= 32;
+		}
+	}
+
+	// read remaining bytes
+	while (nBitsLeft >= 8)
+	{
+		*pOut = (unsigned char)ReadUBitLong(8);
+		++pOut;
+		nBitsLeft -= 8;
+	}
+
+	// read remaining bits
+	if (nBitsLeft)
+	{
+		*pOut = (unsigned char)ReadUBitLong(nBitsLeft);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: reads bytes from the buffer
+//-----------------------------------------------------------------------------
+bool CBitRead::ReadBytes(void* pOut, int nBytes)
+{
+	ReadBits(pOut, nBytes << 3);
+	return !IsOverflowed();
 }
 
 //-----------------------------------------------------------------------------
@@ -327,7 +373,7 @@ bool CBitRead::ReadString(char* pStr, int maxLen, bool bLine, int* pOutNumChars)
 // ---------------------------------------------------------------------------------------- //
 // bf_write
 // ---------------------------------------------------------------------------------------- //
-bf_write::bf_write()
+CBitWrite::CBitWrite()
 {
 	//DEBUG_LINK_CHECK;
 	m_pData = NULL;
@@ -338,14 +384,14 @@ bf_write::bf_write()
 	m_bAssertOnOverflow = true;
 	m_pDebugName = NULL;
 }
-bf_write::bf_write(const char* pDebugName, void* pData, int nBytes, int nBits)
+CBitWrite::CBitWrite(const char* pDebugName, void* pData, int nBytes, int nBits)
 {
 	//DEBUG_LINK_CHECK;
 	m_bAssertOnOverflow = true;
 	m_pDebugName = pDebugName;
 	StartWriting(pData, nBytes, 0, nBits);
 }
-bf_write::bf_write(void* pData, int nBytes, int nBits)
+CBitWrite::CBitWrite(void* pData, int nBytes, int nBits)
 {
 	m_bAssertOnOverflow = true;
 	m_pDebugName = NULL;
@@ -353,26 +399,9 @@ bf_write::bf_write(void* pData, int nBytes, int nBits)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: resets buffer writing
-//-----------------------------------------------------------------------------
-void bf_write::Reset()
-{
-	m_iCurBit = 0;
-	m_bOverflow = false;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: seeks to a specific bit
-//-----------------------------------------------------------------------------
-void bf_write::SeekToBit(int bitPos)
-{
-	m_iCurBit = bitPos;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void bf_write::StartWriting(void* pData, int nBytes, int iStartBit, int nBits)
+void CBitWrite::StartWriting(void* pData, int nBytes, int iStartBit, int nBits)
 {
 	// Make sure it's dword aligned and padded.
 	//DEBUG_LINK_CHECK;
@@ -402,7 +431,7 @@ void bf_write::StartWriting(void* pData, int nBytes, int iStartBit, int nBits)
 //-----------------------------------------------------------------------------
 // Purpose: writes a bit to the buffer without checking for overflow
 //-----------------------------------------------------------------------------
-inline void bf_write::WriteOneBitNoCheck(int nValue)
+inline void CBitWrite::WriteOneBitNoCheck(int nValue)
 {
 	if (nValue)
 		m_pData[m_iCurBit >> 3] |= (1 << (m_iCurBit & 7));
@@ -415,7 +444,7 @@ inline void bf_write::WriteOneBitNoCheck(int nValue)
 //-----------------------------------------------------------------------------
 // Purpose: writes a bit to the buffer
 //-----------------------------------------------------------------------------
-inline void bf_write::WriteOneBit(int nValue)
+inline void CBitWrite::WriteOneBit(int nValue)
 {
 	if (!CheckForOverflow(1))
 		WriteOneBitNoCheck(nValue);
@@ -424,7 +453,7 @@ inline void bf_write::WriteOneBit(int nValue)
 //-----------------------------------------------------------------------------
 // Purpose: writes a bit to the buffer at a specific bit index
 //-----------------------------------------------------------------------------
-inline void	bf_write::WriteOneBitAt(int iBit, int nValue)
+inline void	CBitWrite::WriteOneBitAt(int iBit, int nValue)
 {
 	if (iBit + 1 > m_nDataBits)
 	{
@@ -442,7 +471,7 @@ inline void	bf_write::WriteOneBitAt(int iBit, int nValue)
 //-----------------------------------------------------------------------------
 // Purpose: writes an unsigned integer to the buffer
 //-----------------------------------------------------------------------------
-/*BITBUF_INLINE*/ void bf_write::WriteUBitLong(unsigned int curData, int numbits, bool bCheckRange)
+/*BITBUF_INLINE*/ void CBitWrite::WriteUBitLong(unsigned int curData, int numbits, bool bCheckRange)
 {
 #ifdef _DEBUG
 	// Make sure it doesn't overflow.
@@ -508,7 +537,7 @@ inline void	bf_write::WriteOneBitAt(int iBit, int nValue)
 // Purpose: writes a signed integer to the buffer
 // (Sign bit comes first)
 //-----------------------------------------------------------------------------
-void bf_write::WriteSBitLong(int data, int numbits)
+void CBitWrite::WriteSBitLong(int data, int numbits)
 {
 	// Do we have a valid # of bits to encode with?
 	Assert(numbits >= 1);
@@ -545,7 +574,7 @@ void bf_write::WriteSBitLong(int data, int numbits)
 //-----------------------------------------------------------------------------
 // Purpose: writes a signed or unsigned integer to the buffer
 //-----------------------------------------------------------------------------
-void bf_write::WriteBitLong(unsigned int data, int numbits, bool bSigned)
+void CBitWrite::WriteBitLong(unsigned int data, int numbits, bool bSigned)
 {
 	if (bSigned)
 		WriteSBitLong((int)data, numbits);
@@ -556,12 +585,8 @@ void bf_write::WriteBitLong(unsigned int data, int numbits, bool bSigned)
 //-----------------------------------------------------------------------------
 // Purpose: writes a list of bits to the buffer
 //-----------------------------------------------------------------------------
-bool bf_write::WriteBits(const void* pInData, int nBits)
+bool CBitWrite::WriteBits(const void* pInData, int nBits)
 {
-#if defined( BB_PROFILING )
-	VPROF("bf_write::WriteBits");
-#endif
-
 	unsigned char* pIn = (unsigned char*)pInData;
 	int nBitsLeft = nBits;
 
@@ -652,102 +677,22 @@ bool bf_write::WriteBits(const void* pInData, int nBits)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: writes a list of bytes to the buffer
-//-----------------------------------------------------------------------------
-bool bf_write::WriteBytes(const void* pBuf, int nBytes)
-{
-	return WriteBits(pBuf, nBytes << 3);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: writes a bit into the buffer
-//-----------------------------------------------------------------------------
-bool bf_write::IsOverflowed() const
-{
-	return this->m_bOverflow;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the number of bytes written to the buffer
-//-----------------------------------------------------------------------------
-int bf_write::GetNumBytesWritten() const
-{
-	return BitByte(this->m_iCurBit);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the number of bits written to the buffer
-//-----------------------------------------------------------------------------
-int bf_write::GetNumBitsWritten() const
-{
-	return this->m_iCurBit;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the number of bits in the buffer
-//-----------------------------------------------------------------------------
-int bf_write::GetMaxNumBits() const
-{
-	return this->m_nDataBits;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the number of bits left in the buffer
-//-----------------------------------------------------------------------------
-int bf_write::GetNumBitsLeft() const
-{
-	return this->m_nDataBits - m_iCurBit;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the number of bytes left in the buffer
-//-----------------------------------------------------------------------------
-int bf_write::GetNumBytesLeft() const
-{
-	return this->GetNumBitsLeft() >> 3;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the data pointer
-//-----------------------------------------------------------------------------
-unsigned char* bf_write::GetData() const
-{
-	return this->m_pData;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the debug name
-//-----------------------------------------------------------------------------
-const char* bf_write::GetDebugName() const
-{
-	return this->m_pDebugName;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the debug name
-//-----------------------------------------------------------------------------
-void bf_write::SetDebugName(const char* pDebugName)
-{
-	m_pDebugName = pDebugName;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: checks if we have enough space for the requested number of bits
 //-----------------------------------------------------------------------------
-bool bf_write::CheckForOverflow(int nBits)
+bool CBitWrite::CheckForOverflow(int nBits)
 {
 	if (this->m_iCurBit + nBits > this->m_nDataBits)
 	{
 		this->SetOverflowFlag();
 	}
 
-	return this->m_bOverflow;
+	return IsOverflowed();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: sets the overflow flag
 //-----------------------------------------------------------------------------
-void bf_write::SetOverflowFlag()
+void CBitWrite::SetOverflowFlag()
 {
 	if (this->m_bAssertOnOverflow)
 	{

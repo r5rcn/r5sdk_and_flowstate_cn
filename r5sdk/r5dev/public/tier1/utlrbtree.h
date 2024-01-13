@@ -15,8 +15,8 @@
 
 
 // This is a useful macro to iterate from start to end in order in a map
-#define FOR_EACH_UTLRBTREE( treeName, iteratorName ) \
-	for ( int iteratorName = treeName.FirstInorder(); iteratorName != treeName.InvalidIndex(); iteratorName = treeName.NextInorder( iteratorName ) )
+#define FOR_EACH_RBTREE( treeName, iteratorName ) \
+	for ( unsigned short iteratorName = treeName.FirstInorder(); iteratorName != treeName.InvalidIndex(); iteratorName = treeName.NextInorder( iteratorName ) )
 
 
 //-----------------------------------------------------------------------------
@@ -104,6 +104,17 @@ void SetDefLessFunc(RBTREE_T& RBTree)
 	RBTree.SetLessFunc(DefLessFunc(typename RBTREE_T::KeyType_t));
 }
 
+// For use with FindClosest
+// Move these to a common area if anyone else ever uses them
+enum CompareOperands_t
+{
+	k_EEqual = 0x1,
+	k_EGreaterThan = 0x2,
+	k_ELessThan = 0x4,
+	k_EGreaterThanOrEqualTo = k_EGreaterThan | k_EEqual,
+	k_ELessThanOrEqualTo = k_ELessThan | k_EEqual,
+};
+
 //-----------------------------------------------------------------------------
 // A red-black binary search tree
 //-----------------------------------------------------------------------------
@@ -140,11 +151,11 @@ public:
 	// Left at growSize = 0, the memory will first allocate 1 element and double in size
 	// at each increment.
 	// LessFunc_t is required, but may be set after the constructor using SetLessFunc() below
-	CUtlRBTree(int64 growSize = 0, int64 initSize = 0, const LessFunc_t& lessfunc = 0);
+	CUtlRBTree(ssize_t growSize = 0, ssize_t initSize = 0, const LessFunc_t& lessfunc = 0);
 	CUtlRBTree(const LessFunc_t& lessfunc);
 	~CUtlRBTree();
 
-	void EnsureCapacity(int64 num);
+	void EnsureCapacity(ssize_t num);
 
 	// NOTE: CopyFrom is fast but dangerous! It just memcpy's all nodes - it does NOT run copy constructors, so
 	//       it is not a true deep copy (i.e 'T' must be POD for this to work - e.g CUtlString will not work).
@@ -204,10 +215,11 @@ public:
 	// NOTE: the returned 'index' will be valid as long as the element remains in the tree
 	//       (other elements being added/removed will not affect it)
 	I  Insert(T const& insert);
-	void Insert(const T* pArray, int64 nItems);
+	void Insert(const T* pArray, ssize_t nItems);
 	I  InsertIfNotFound(T const& insert);
 
 	// Find method
+	bool HasElement(T const& search) const;
 	I  Find(T const& search) const;
 
 	// Remove methods
@@ -372,7 +384,7 @@ protected:
 //-----------------------------------------------------------------------------
 
 template < class T, class I, typename L, class M >
-inline CUtlRBTree<T, I, L, M>::CUtlRBTree(int64 growSize, int64 initSize, const LessFunc_t& lessfunc) :
+inline CUtlRBTree<T, I, L, M>::CUtlRBTree(ssize_t growSize, ssize_t initSize, const LessFunc_t& lessfunc) :
 	m_LessFunc(lessfunc),
 	m_Elements(growSize, initSize),
 	m_Root(InvalidIndex()),
@@ -385,7 +397,7 @@ inline CUtlRBTree<T, I, L, M>::CUtlRBTree(int64 growSize, int64 initSize, const 
 
 template < class T, class I, typename L, class M >
 inline CUtlRBTree<T, I, L, M>::CUtlRBTree(const LessFunc_t& lessfunc) :
-	m_Elements(0, 0),
+	m_Elements((ssize_t)0, (ssize_t)0),
 	m_LessFunc(lessfunc),
 	m_Root(InvalidIndex()),
 	m_NumElements(0),
@@ -402,7 +414,7 @@ inline CUtlRBTree<T, I, L, M>::~CUtlRBTree()
 }
 
 template < class T, class I, typename L, class M >
-inline void CUtlRBTree<T, I, L, M>::EnsureCapacity(int64 num)
+inline void CUtlRBTree<T, I, L, M>::EnsureCapacity(ssize_t num)
 {
 	m_Elements.EnsureCapacity(num);
 }
@@ -1497,7 +1509,7 @@ I CUtlRBTree<T, I, L, M>::Insert(T const& insert)
 
 
 template < class T, class I, typename L, class M >
-void CUtlRBTree<T, I, L, M>::Insert(const T* pArray, int64 nItems)
+void CUtlRBTree<T, I, L, M>::Insert(const T* pArray, ssize_t nItems)
 {
 	while (nItems--)
 	{
@@ -1535,6 +1547,14 @@ I CUtlRBTree<T, I, L, M>::InsertIfNotFound(T const& insert)
 	I newNode = InsertAt(parent, leftchild);
 	CopyConstruct(&Element(newNode), insert);
 	return newNode;
+}
+
+
+template < class T, class I, typename L, class M >
+bool CUtlRBTree<T, I, L, M>::HasElement(T const& search) const
+{
+	I i = Find(search);
+	return i != InvalidIndex();
 }
 
 

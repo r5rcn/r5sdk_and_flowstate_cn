@@ -9,7 +9,7 @@
 #include "core/init.h"
 #include "core/logdef.h"
 #include "tier0/frametask.h"
-#include "tier1/cmd.h"
+#include "engine/cmd.h"
 #ifndef DEDICATED
 #include "windows/id3dx.h"
 #endif // !DEDICATED
@@ -25,11 +25,20 @@ static std::string s_ConsoleInput;
 //-----------------------------------------------------------------------------
 void SetConsoleBackgroundColor(COLORREF color)
 {
-	CONSOLE_SCREEN_BUFFER_INFOEX sbInfoEx{};
+	CONSOLE_SCREEN_BUFFER_INFOEX sbInfoEx{0};
 	sbInfoEx.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
 
 	HANDLE consoleOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfoEx(consoleOut, &sbInfoEx);
+
+	// The +='' 1 is required, else the window will shrink
+	// by '1' column and row each time this function is
+	// getting called on the same console window. The
+	// lower right bounds are detected inclusively on the
+	// 'GetConsoleScreenBufferEx' call and exclusively
+	// on the 'SetConsoleScreenBufferEx' call.
+	sbInfoEx.srWindow.Right += 1;
+	sbInfoEx.srWindow.Bottom += 1;
 
 	sbInfoEx.ColorTable[0] = color;
 	SetConsoleScreenBufferInfoEx(consoleOut, &sbInfoEx);
@@ -43,7 +52,7 @@ void SetConsoleBackgroundColor(COLORREF color)
 //-----------------------------------------------------------------------------
 void FlashConsoleBackground(int nFlashCount, int nFlashInterval, COLORREF color)
 {
-	CONSOLE_SCREEN_BUFFER_INFOEX sbInfoEx{};
+	CONSOLE_SCREEN_BUFFER_INFOEX sbInfoEx{0};
 	sbInfoEx.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
 
 	HANDLE consoleOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -67,8 +76,9 @@ void FlashConsoleBackground(int nFlashCount, int nFlashInterval, COLORREF color)
 
 //-----------------------------------------------------------------------------
 // Purpose: terminal window setup
+// Input  : bAnsiColor - 
 //-----------------------------------------------------------------------------
-void Console_Init()
+void Console_Init(const bool bAnsiColor)
 {
 #ifndef NETCONSOLE
 	///////////////////////////////////////////////////////////////////////////
@@ -102,7 +112,7 @@ void Console_Init()
 	HANDLE hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD dwMode = NULL;
 
-	if (g_svCmdLine.find("-ansicolor") != string::npos)
+	if (bAnsiColor)
 	{
 		GetConsoleMode(hOutput, &dwMode);
 		dwMode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;

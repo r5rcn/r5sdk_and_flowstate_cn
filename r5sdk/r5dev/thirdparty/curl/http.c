@@ -653,6 +653,19 @@ output_auth_headers(struct connectdata *conn,
   return CURLE_OK;
 }
 
+/*
+ * Curl_allow_auth_to_host() tells if authentication, cookies or other
+ * "sensitive data" can (still) be sent to this host.
+ */
+bool Curl_allow_auth_to_host(struct Curl_easy *data, struct connectdata* conn)
+{
+  return (!data->state.this_is_a_follow ||
+          data->set.allow_auth_to_other_hosts ||
+          (data->state.first_host &&
+           strcasecompare(data->state.first_host, conn->host.name) &&
+           (data->state.first_remote_port == conn->remote_port)));
+}
+
 /**
  * Curl_http_output_auth() setups the authentication headers for the
  * host/proxy and the correct authentication
@@ -723,11 +736,8 @@ Curl_http_output_auth(struct connectdata *conn,
 
   /* To prevent the user+password to get sent to other than the original
      host due to a location-follow, we do some weirdo checks here */
-  if(!data->state.this_is_a_follow ||
-     conn->bits.netrc ||
-     !data->state.first_host ||
-     data->set.http_disable_hostname_check_before_authentication ||
-     strcasecompare(data->state.first_host, conn->host.name)) {
+  if(Curl_allow_auth_to_host(data, conn) ||
+     conn->bits.netrc) {
     result = output_auth_headers(conn, authhost, request, path, FALSE);
   }
   else
@@ -1644,6 +1654,11 @@ CURLcode Curl_add_custom_headers(struct connectdata *conn,
           else if((conn->httpversion == 20) &&
                   checkprefix("Transfer-Encoding:", headers->data))
             /* HTTP/2 doesn't support chunked requests */
+            ;
+          else if(checkprefix("Authorization:", headers->data) &&
+                  /* be careful of sending this potentially sensitive header to
+                     other hosts */
+                  !Curl_allow_auth_to_host(data, conn))
             ;
           else {
             CURLcode result = Curl_add_bufferf(req_buffer, "%s\r\n",
@@ -2923,6 +2938,8 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
 {
   CURLcode result;
   struct SingleRequest *k = &data->req;
+  ssize_t onread = *nread;
+  char* ostr = k->str;
 
   /* header line within buffer loop */
   do {
@@ -2987,7 +3004,9 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
         else {
           /* this was all we read so it's all a bad header */
           k->badheader = HEADER_ALLBAD;
-          *nread = (ssize_t)rest_length;
+          *nread = onread;
+          k->str = ostr;
+          return CURLE_OK;
         }
         break;
       }

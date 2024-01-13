@@ -21,7 +21,7 @@ protected:
 	virtual size_t FS_vfprintf(FILE* fp, const char* fmt, va_list list) = 0;
 	virtual int FS_ferror(FILE* fp) = 0;
 	virtual int FS_fflush(FILE* fp) = 0;
-	virtual char* FS_fgets(char* dest, int destSize, FILE* fp) = 0;
+	virtual char* FS_fgets(char* dest, unsigned int destSize) = 0;
 	virtual int FS_stat(const char* path, struct _stat* buf, bool* pbLoadedFromSteamCache = NULL) = 0;
 	virtual int FS_chmod(const char* path, int pmode) = 0;
 	virtual HANDLE FS_FindFirstFile(const char* findname, WIN32_FIND_DATA* dat) = 0;
@@ -33,7 +33,14 @@ protected:
 extern CFileSystem_Stdio** g_pFullFileSystem; // Ptr to g_pFileSystem_Stdio.
 extern CFileSystem_Stdio*  g_pFileSystem_Stdio;
 
-CFileSystem_Stdio* FileSystem();
+//-----------------------------------------------------------------------------
+// Singleton FileSystem
+//-----------------------------------------------------------------------------
+inline CFileSystem_Stdio* FileSystem()
+{
+	return (*g_pFullFileSystem);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 class VFileSystem_Stdio : public IDetour
 {

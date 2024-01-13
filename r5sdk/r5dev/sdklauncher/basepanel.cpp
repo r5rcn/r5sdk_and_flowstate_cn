@@ -3,9 +3,10 @@
 // Purpose: Launcher user interface implementation.
 //
 //=============================================================================//
-#include "core/stdafx.h"
-#include "sdklauncher.h"
 #include "basepanel.h"
+#include "sdklauncher.h"
+#include "mathlib/bits.h"
+#include "utility/vdf_parser.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: creates the surface layout
@@ -19,10 +20,10 @@ void CSurface::Init()
 	this->SuspendLayout();
 	this->SetAutoScaleDimensions({ 6, 13 });
 	this->SetAutoScaleMode(Forms::AutoScaleMode::Font);
-	this->SetText("启动器");
+	this->SetText("Dashboard");
 	this->SetClientSize({ WindowX, WindowY });
 	this->SetFormBorderStyle(Forms::FormBorderStyle::FixedSingle);
-	this->SetStartPosition(Forms::FormStartPosition::CenterParent);
+	this->SetStartPosition(Forms::FormStartPosition::CenterScreen);
 	this->SetMinimizeBox(true);
 	this->SetMaximizeBox(false);
 	this->SetBackColor(Drawing::Color(47, 54, 61));
@@ -53,7 +54,7 @@ void CSurface::Init()
 	this->m_MapLabel->SetSize({ 50, 25 });
 	this->m_MapLabel->SetLocation({ 365, 28 });
 	this->m_MapLabel->SetTabIndex(0);
-	this->m_MapLabel->SetText("地图");
+	this->m_MapLabel->SetText("Map");
 	this->m_MapLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_MapLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
 	this->m_GameGroup->AddControl(this->m_MapLabel);
@@ -89,7 +90,7 @@ void CSurface::Init()
 	this->m_CheatsToggle->SetSize({ 110, 18 });
 	this->m_CheatsToggle->SetLocation({ 15, 7 });
 	this->m_CheatsToggle->SetTabIndex(0);
-	this->m_CheatsToggle->SetText("启用作弊");
+	this->m_CheatsToggle->SetText("Enable cheats");
 	this->m_CheatsToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_GameGroupExt->AddControl(this->m_CheatsToggle);
 
@@ -97,7 +98,7 @@ void CSurface::Init()
 	this->m_DeveloperToggle->SetSize({ 110, 18 });
 	this->m_DeveloperToggle->SetLocation({ 130, 7 });
 	this->m_DeveloperToggle->SetTabIndex(0);
-	this->m_DeveloperToggle->SetText("启用developer");
+	this->m_DeveloperToggle->SetText("Enable developer");
 	this->m_DeveloperToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_GameGroupExt->AddControl(this->m_DeveloperToggle);
 
@@ -105,7 +106,7 @@ void CSurface::Init()
 	this->m_ConsoleToggle->SetSize({ 110, 18 });
 	this->m_ConsoleToggle->SetLocation({ 290, 7 });
 	this->m_ConsoleToggle->SetTabIndex(0);
-	this->m_ConsoleToggle->SetText("显示控制台");
+	this->m_ConsoleToggle->SetText("Show console");
 	this->m_ConsoleToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_GameGroupExt->AddControl(this->m_ConsoleToggle);
 
@@ -114,7 +115,7 @@ void CSurface::Init()
 	this->m_ColorConsoleToggle->SetLocation({ 15, 30 });
 	this->m_ColorConsoleToggle->SetTabIndex(0);
 	this->m_ColorConsoleToggle->SetChecked(true);
-	this->m_ColorConsoleToggle->SetText("彩色控制台");
+	this->m_ColorConsoleToggle->SetText("Color console");
 	this->m_ColorConsoleToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_GameGroupExt->AddControl(this->m_ColorConsoleToggle);
 
@@ -131,7 +132,7 @@ void CSurface::Init()
 	this->m_PlaylistFileLabel->SetSize({ 60, 18 });
 	this->m_PlaylistFileLabel->SetLocation({ 311, 32 });
 	this->m_PlaylistFileLabel->SetTabIndex(0);
-	this->m_PlaylistFileLabel->SetText("Playlists文件");
+	this->m_PlaylistFileLabel->SetText("Playlists file");
 	this->m_PlaylistFileLabel->SetAnchor(Forms::AnchorStyles::Bottom | Forms::AnchorStyles::Left);
 	this->m_GameGroupExt->AddControl(this->m_PlaylistFileLabel);
 
@@ -167,7 +168,7 @@ void CSurface::Init()
 	this->m_ModeLabel->SetSize({ 50, 25 });
 	this->m_ModeLabel->SetLocation({ 100, 28 });
 	this->m_ModeLabel->SetTabIndex(0);
-	this->m_ModeLabel->SetText("模式");
+	this->m_ModeLabel->SetText("Mode");
 	this->m_ModeLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_ModeLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
 	this->m_MainGroup->AddControl(this->m_ModeLabel);
@@ -184,7 +185,7 @@ void CSurface::Init()
 	this->m_HostNameLabel->SetSize({ 70, 21 });
 	this->m_HostNameLabel->SetLocation({ 233, 28 });
 	this->m_HostNameLabel->SetTabIndex(0);
-	this->m_HostNameLabel->SetText("服务器名称");
+	this->m_HostNameLabel->SetText("Host name");
 	this->m_HostNameLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_MainGroup->AddControl(this->m_HostNameLabel);
 
@@ -201,7 +202,7 @@ void CSurface::Init()
 	this->m_VisibilityLabel->SetSize({ 70, 21 });
 	this->m_VisibilityLabel->SetLocation({ 100, 53 });
 	this->m_VisibilityLabel->SetTabIndex(0);
-	this->m_VisibilityLabel->SetText("可见性");
+	this->m_VisibilityLabel->SetText("Visibility");
 	this->m_VisibilityLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_MainGroup->AddControl(this->m_VisibilityLabel);
 
@@ -217,7 +218,7 @@ void CSurface::Init()
 	this->m_LaunchArgsLabel->SetSize({ 70, 21 });
 	this->m_LaunchArgsLabel->SetLocation({ 233, 53 });
 	this->m_LaunchArgsLabel->SetTabIndex(0);
-	this->m_LaunchArgsLabel->SetText("命令行");
+	this->m_LaunchArgsLabel->SetText("Command line");
 	this->m_LaunchArgsLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_MainGroup->AddControl(this->m_LaunchArgsLabel);
 
@@ -225,7 +226,7 @@ void CSurface::Init()
 	this->m_CleanSDK->SetSize({ 111, 18 });
 	this->m_CleanSDK->SetLocation({ 15, 7 });
 	this->m_CleanSDK->SetTabIndex(0);
-	this->m_CleanSDK->SetText("清理SDK");
+	this->m_CleanSDK->SetText("Clean SDK");
 	this->m_CleanSDK->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_CleanSDK->Click += &CleanSDK;
 	this->m_MainGroupExt->AddControl(this->m_CleanSDK);
@@ -235,7 +236,7 @@ void CSurface::Init()
 	this->m_UpdateSDK->SetLocation({ 15, 30 });
 	this->m_UpdateSDK->SetTabIndex(0);
 	this->m_UpdateSDK->SetEnabled(true); // !TODO: Implement updater
-	this->m_UpdateSDK->SetText("更新SDK");
+	this->m_UpdateSDK->SetText("Update SDK");
 	this->m_UpdateSDK->Click += &UpdateSDK;
 	this->m_UpdateSDK->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_MainGroupExt->AddControl(this->m_UpdateSDK);
@@ -244,7 +245,7 @@ void CSurface::Init()
 	this->m_LaunchSDK->SetSize({ 170, 41 });
 	this->m_LaunchSDK->SetLocation({ 131, 7 });
 	this->m_LaunchSDK->SetTabIndex(0);
-	this->m_LaunchSDK->SetText("启动游戏");
+	this->m_LaunchSDK->SetText("Launch game");
 	this->m_LaunchSDK->SetBackColor(Drawing::Color(3, 102, 214));
 	this->m_LaunchSDK->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_LaunchSDK->Click += &LaunchGame;
@@ -287,10 +288,10 @@ void CSurface::Init()
 	this->m_EngineBaseGroup->AddControl(this->m_ReservedCoresTextBox);
 
 	this->m_ReservedCoresLabel = new UIX::UIXLabel();
-	this->m_ReservedCoresLabel->SetSize({ 125, 18 });
+	this->m_ReservedCoresLabel->SetSize({ 105, 18 });
 	this->m_ReservedCoresLabel->SetLocation({ 36, 27 });
 	this->m_ReservedCoresLabel->SetTabIndex(0);
-	this->m_ReservedCoresLabel->SetText("保留的核心");
+	this->m_ReservedCoresLabel->SetText("Reserved cores");
 	this->m_ReservedCoresLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_ReservedCoresLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
 	this->m_EngineBaseGroup->AddControl(this->m_ReservedCoresLabel);
@@ -300,84 +301,94 @@ void CSurface::Init()
 	this->m_WorkerThreadsTextBox->SetLocation({ 155, 25 });
 	this->m_WorkerThreadsTextBox->SetTabIndex(0);
 	this->m_WorkerThreadsTextBox->SetReadOnly(false);
-	this->m_WorkerThreadsTextBox->SetText("28");
+	this->m_WorkerThreadsTextBox->SetText("-1");
 	this->m_WorkerThreadsTextBox->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineBaseGroup->AddControl(this->m_WorkerThreadsTextBox);
 
 	this->m_WorkerThreadsLabel = new UIX::UIXLabel();
-	this->m_WorkerThreadsLabel->SetSize({ 125, 18 });
+	this->m_WorkerThreadsLabel->SetSize({ 105, 18 });
 	this->m_WorkerThreadsLabel->SetLocation({ 176, 27 });
 	this->m_WorkerThreadsLabel->SetTabIndex(0);
-	this->m_WorkerThreadsLabel->SetText("工作线程");
+	this->m_WorkerThreadsLabel->SetText("Worker threads");
 	this->m_WorkerThreadsLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_WorkerThreadsLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
 	this->m_EngineBaseGroup->AddControl(this->m_WorkerThreadsLabel);
 
-	this->m_SingleCoreDediToggle = new UIX::UIXCheckBox();
-	this->m_SingleCoreDediToggle->SetSize({ 125, 18 });
-	this->m_SingleCoreDediToggle->SetLocation({ 15, 48 });
-	this->m_SingleCoreDediToggle->SetTabIndex(0);
-	this->m_SingleCoreDediToggle->SetText("单核服务器");
-	this->m_SingleCoreDediToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
-	this->m_EngineBaseGroup->AddControl(this->m_SingleCoreDediToggle);
+	this->m_ProcessorAffinityTextBox = new UIX::UIXTextBox();
+	this->m_ProcessorAffinityTextBox->SetSize({ 18, 18 });
+	this->m_ProcessorAffinityTextBox->SetLocation({ 15, 48 });
+	this->m_ProcessorAffinityTextBox->SetTabIndex(0);
+	this->m_ProcessorAffinityTextBox->SetReadOnly(false);
+	this->m_ProcessorAffinityTextBox->SetText("0");
+	this->m_ProcessorAffinityTextBox->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
+	this->m_EngineBaseGroup->AddControl(this->m_ProcessorAffinityTextBox);
+
+	this->m_ProcessorAffinityLabel = new UIX::UIXLabel();
+	this->m_ProcessorAffinityLabel->SetSize({ 105, 18 });
+	this->m_ProcessorAffinityLabel->SetLocation({ 36, 50 });
+	this->m_ProcessorAffinityLabel->SetTabIndex(0);
+	this->m_ProcessorAffinityLabel->SetText("Processor affinity");
+	this->m_ProcessorAffinityLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
+	this->m_ProcessorAffinityLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
+	this->m_EngineBaseGroup->AddControl(this->m_ProcessorAffinityLabel);
 
 	this->m_NoAsyncJobsToggle = new UIX::UIXCheckBox();
-	this->m_NoAsyncJobsToggle->SetSize({ 125, 18 });
+	this->m_NoAsyncJobsToggle->SetSize({ 105, 18 });
 	this->m_NoAsyncJobsToggle->SetLocation({ 155, 48 });
 	this->m_NoAsyncJobsToggle->SetTabIndex(2);
-	this->m_NoAsyncJobsToggle->SetText("同步作业");
+	this->m_NoAsyncJobsToggle->SetText("No async");
 	this->m_NoAsyncJobsToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineBaseGroup->AddControl(this->m_NoAsyncJobsToggle);
 
 	this->m_NetEncryptionToggle = new UIX::UIXCheckBox();
-	this->m_NetEncryptionToggle->SetSize({ 125, 18 });
+	this->m_NetEncryptionToggle->SetSize({ 105, 18 });
 	this->m_NetEncryptionToggle->SetLocation({ 15, 7 });
 	this->m_NetEncryptionToggle->SetTabIndex(0);
 	this->m_NetEncryptionToggle->SetChecked(true);
-	this->m_NetEncryptionToggle->SetText("网络加密");
+	this->m_NetEncryptionToggle->SetText("Encrypt packets");
 	this->m_NetEncryptionToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineNetworkGroup->AddControl(this->m_NetEncryptionToggle);
 
 	this->m_NetRandomKeyToggle = new UIX::UIXCheckBox();
-	this->m_NetRandomKeyToggle->SetSize({ 125, 18 });
+	this->m_NetRandomKeyToggle->SetSize({ 105, 18 });
 	this->m_NetRandomKeyToggle->SetLocation({ 155, 7 });
 	this->m_NetRandomKeyToggle->SetTabIndex(0);
 	this->m_NetRandomKeyToggle->SetChecked(true);
-	this->m_NetRandomKeyToggle->SetText("随机网络密钥");
+	this->m_NetRandomKeyToggle->SetText("Random netkey");
 	this->m_NetRandomKeyToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineNetworkGroup->AddControl(this->m_NetRandomKeyToggle);
 
 	this->m_QueuedPacketThread = new UIX::UIXCheckBox();
-	this->m_QueuedPacketThread->SetSize({ 125, 18 });
+	this->m_QueuedPacketThread->SetSize({ 105, 18 });
 	this->m_QueuedPacketThread->SetLocation({ 15, 30 });
 	this->m_QueuedPacketThread->SetTabIndex(2);
 	this->m_QueuedPacketThread->SetChecked(true);
-	this->m_QueuedPacketThread->SetText("队列数据包");
+	this->m_QueuedPacketThread->SetText("Queued packets");
 	this->m_QueuedPacketThread->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineNetworkGroup->AddControl(this->m_QueuedPacketThread);
 
 	this->m_NoTimeOutToggle = new UIX::UIXCheckBox();
-	this->m_NoTimeOutToggle->SetSize({ 125, 18 });
+	this->m_NoTimeOutToggle->SetSize({ 105, 18 });
 	this->m_NoTimeOutToggle->SetLocation({ 155, 30 });
 	this->m_NoTimeOutToggle->SetTabIndex(0);
-	this->m_NoTimeOutToggle->SetText("没有超时");
+	this->m_NoTimeOutToggle->SetText("No timeout");
 	this->m_NoTimeOutToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineNetworkGroup->AddControl(this->m_NoTimeOutToggle);
 
 	this->m_WindowedToggle = new UIX::UIXCheckBox();
-	this->m_WindowedToggle->SetSize({ 125, 18 });
+	this->m_WindowedToggle->SetSize({ 105, 18 });
 	this->m_WindowedToggle->SetLocation({ 15, 7 });
 	this->m_WindowedToggle->SetTabIndex(0);
 	this->m_WindowedToggle->SetChecked(true);
-	this->m_WindowedToggle->SetText("窗口化");
+	this->m_WindowedToggle->SetText("Windowed");
 	this->m_WindowedToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineVideoGroup->AddControl(this->m_WindowedToggle);
 
 	this->m_NoBorderToggle = new UIX::UIXCheckBox();
-	this->m_NoBorderToggle->SetSize({ 125, 18 });
+	this->m_NoBorderToggle->SetSize({ 105, 18 });
 	this->m_NoBorderToggle->SetLocation({ 155, 7 });
 	this->m_NoBorderToggle->SetTabIndex(0);
-	this->m_NoBorderToggle->SetText("无边框");
+	this->m_NoBorderToggle->SetText("Borderless");
 	this->m_NoBorderToggle->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_EngineVideoGroup->AddControl(this->m_NoBorderToggle);
 
@@ -391,10 +402,10 @@ void CSurface::Init()
 	this->m_EngineVideoGroup->AddControl(this->m_FpsTextBox);
 
 	this->m_FpsLabel = new UIX::UIXLabel();
-	this->m_FpsLabel->SetSize({ 125, 18 });
+	this->m_FpsLabel->SetSize({ 105, 18 });
 	this->m_FpsLabel->SetLocation({ 43, 32 });
 	this->m_FpsLabel->SetTabIndex(0);
-	this->m_FpsLabel->SetText("最大FPS");
+	this->m_FpsLabel->SetText("Max FPS");
 	this->m_FpsLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_FpsLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
 	this->m_EngineVideoGroup->AddControl(this->m_FpsLabel);
@@ -421,7 +432,7 @@ void CSurface::Init()
 	this->m_ResolutionLabel->SetSize({ 125, 18 });
 	this->m_ResolutionLabel->SetLocation({ 208, 32 });
 	this->m_ResolutionLabel->SetTabIndex(0);
-	this->m_ResolutionLabel->SetText("分辨率 (宽 | 高)");
+	this->m_ResolutionLabel->SetText("Resolution (width | height)");
 	this->m_ResolutionLabel->SetAnchor(Forms::AnchorStyles::Top | Forms::AnchorStyles::Left);
 	this->m_ResolutionLabel->SetTextAlign(Drawing::ContentAlignment::TopLeft);
 	this->m_EngineVideoGroup->AddControl(this->m_ResolutionLabel);
@@ -473,7 +484,7 @@ void CSurface::Init()
 	this->m_ConsoleSendCommand->SetSize({ 79, 18 });
 	this->m_ConsoleSendCommand->SetLocation({ 350, 149 });
 	this->m_ConsoleSendCommand->SetTabIndex(0);
-	this->m_ConsoleSendCommand->SetText("发送");
+	this->m_ConsoleSendCommand->SetText("Send");
 	this->m_ConsoleSendCommand->SetBackColor(Drawing::Color(3, 102, 214));
 	this->m_ConsoleSendCommand->SetAnchor(Forms::AnchorStyles::None);
 	this->m_ConsoleSendCommand->Click += &ForwardCommandToGame;
@@ -530,62 +541,72 @@ void CSurface::LoadSettings()
 
 	try
 	{
+		string& attributeView = vRoot.attribs["version"];
+
+		int settingsVersion = atoi(attributeView.c_str());
+		if (settingsVersion != SDK_LAUNCHER_VERSION)
+			return;
+
+		vdf::object* pSubKey = vRoot.childs["vars"].get();
+		if (!pSubKey)
+			return;
+
 		// Game.
-		string& attributeView = vRoot.attribs["playlistsFile"];
+		attributeView = pSubKey->attribs["playlistsFile"];
 		this->m_PlaylistFileTextBox->SetText(attributeView.data());
 
-		attributeView = vRoot.attribs["enableCheats"];
+		attributeView = pSubKey->attribs["enableCheats"];
 		this->m_CheatsToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["enableDeveloper"];
+		attributeView = pSubKey->attribs["enableDeveloper"];
 		this->m_DeveloperToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["enableConsole"];
+		attributeView = pSubKey->attribs["enableConsole"];
 		this->m_ConsoleToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["colorConsole"];
+		attributeView = pSubKey->attribs["colorConsole"];
 		this->m_ColorConsoleToggle->SetChecked(attributeView != "0");
 
 		// Engine.
-		attributeView = vRoot.attribs["reservedCoreCount"];
+		attributeView = pSubKey->attribs["reservedCoreCount"];
 		this->m_ReservedCoresTextBox->SetText(attributeView.data());
 
-		attributeView = vRoot.attribs["workerThreadCount"];
+		attributeView = pSubKey->attribs["workerThreadCount"];
 		this->m_WorkerThreadsTextBox->SetText(attributeView.data());
 
-		attributeView = vRoot.attribs["singleCoreServer"];
-		this->m_SingleCoreDediToggle->SetChecked(attributeView != "0");
+		attributeView = pSubKey->attribs["processorAffinity"];
+		this->m_ProcessorAffinityTextBox->SetText(attributeView.data());
 
-		attributeView = vRoot.attribs["synchronizeJobs"]; // No-async
+		attributeView = pSubKey->attribs["noAsync"]; // No-async
 		this->m_NoAsyncJobsToggle->SetChecked(attributeView != "0");
 
 		// Network.
-		attributeView = vRoot.attribs["encryptionEnable"];
+		attributeView = pSubKey->attribs["encryptPackets"];
 		this->m_NetEncryptionToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["randomNetKey"];
+		attributeView = pSubKey->attribs["randomNetKey"];
 		this->m_NetRandomKeyToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["queuedPackets"];
+		attributeView = pSubKey->attribs["queuedPackets"];
 		this->m_QueuedPacketThread->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["noTimeOut"];
+		attributeView = pSubKey->attribs["noTimeOut"];
 		this->m_NoTimeOutToggle->SetChecked(attributeView != "0");
 
 		// Video.
-		attributeView = vRoot.attribs["windowed"];
+		attributeView = pSubKey->attribs["windowed"];
 		this->m_WindowedToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["borderless"];
+		attributeView = pSubKey->attribs["borderless"];
 		this->m_NoBorderToggle->SetChecked(attributeView != "0");
 
-		attributeView = vRoot.attribs["maxFPS"];
+		attributeView = pSubKey->attribs["maxFPS"];
 		this->m_FpsTextBox->SetText(attributeView.data());
 
-		attributeView = vRoot.attribs["width"];
+		attributeView = pSubKey->attribs["width"];
 		this->m_WidthTextBox->SetText(attributeView.data());
 
-		attributeView = vRoot.attribs["height"];
+		attributeView = pSubKey->attribs["height"];
 		this->m_HeightTextBox->SetText(attributeView.data());
 	}
 	catch (const std::exception& e)
@@ -619,32 +640,38 @@ void CSurface::SaveSettings()
 
 	vdf::object vRoot;
 	vRoot.set_name("LauncherSettings");
+	vRoot.add_attribute("version", std::to_string(SDK_LAUNCHER_VERSION));
+
+	vdf::object* vVars = new vdf::object();
+	vVars->set_name("vars");
 
 	// Game.
-	vRoot.add_attribute("playlistsFile", GetControlValue(this->m_PlaylistFileTextBox));
-	vRoot.add_attribute("enableCheats", GetControlValue(this->m_CheatsToggle));
-	vRoot.add_attribute("enableDeveloper", GetControlValue(this->m_DeveloperToggle));
-	vRoot.add_attribute("enableConsole", GetControlValue(this->m_ConsoleToggle));
-	vRoot.add_attribute("colorConsole", GetControlValue(this->m_ColorConsoleToggle));
+	vVars->add_attribute("playlistsFile", GetControlValue(this->m_PlaylistFileTextBox));
+	vVars->add_attribute("enableCheats", GetControlValue(this->m_CheatsToggle));
+	vVars->add_attribute("enableDeveloper", GetControlValue(this->m_DeveloperToggle));
+	vVars->add_attribute("enableConsole", GetControlValue(this->m_ConsoleToggle));
+	vVars->add_attribute("colorConsole", GetControlValue(this->m_ColorConsoleToggle));
 
 	// Engine.
-	vRoot.add_attribute("reservedCoreCount", GetControlValue(this->m_ReservedCoresTextBox));
-	vRoot.add_attribute("workerThreadCount", GetControlValue(this->m_WorkerThreadsTextBox));
-	vRoot.add_attribute("singleCoreServer", GetControlValue(this->m_SingleCoreDediToggle));
-	vRoot.add_attribute("synchronizeJobs", GetControlValue(this->m_NoAsyncJobsToggle));
+	vVars->add_attribute("reservedCoreCount", GetControlValue(this->m_ReservedCoresTextBox));
+	vVars->add_attribute("workerThreadCount", GetControlValue(this->m_WorkerThreadsTextBox));
+	vVars->add_attribute("processorAffinity", GetControlValue(this->m_ProcessorAffinityTextBox));
+	vVars->add_attribute("noAsync", GetControlValue(this->m_NoAsyncJobsToggle));
 
 	// Network.
-	vRoot.add_attribute("encryptionEnable", GetControlValue(this->m_NetEncryptionToggle));
-	vRoot.add_attribute("randomNetKey", GetControlValue(this->m_NetRandomKeyToggle));
-	vRoot.add_attribute("queuedPackets", GetControlValue(this->m_QueuedPacketThread));
-	vRoot.add_attribute("noTimeOut", GetControlValue(this->m_NoTimeOutToggle));
+	vVars->add_attribute("encryptPackets", GetControlValue(this->m_NetEncryptionToggle));
+	vVars->add_attribute("randomNetKey", GetControlValue(this->m_NetRandomKeyToggle));
+	vVars->add_attribute("queuedPackets", GetControlValue(this->m_QueuedPacketThread));
+	vVars->add_attribute("noTimeOut", GetControlValue(this->m_NoTimeOutToggle));
 
 	// Video.
-	vRoot.add_attribute("windowed", GetControlValue(this->m_WindowedToggle));
-	vRoot.add_attribute("borderless", GetControlValue(this->m_NoBorderToggle));
-	vRoot.add_attribute("maxFPS", GetControlValue(this->m_FpsTextBox));
-	vRoot.add_attribute("width", GetControlValue(this->m_WidthTextBox));
-	vRoot.add_attribute("height", GetControlValue(this->m_HeightTextBox));
+	vVars->add_attribute("windowed", GetControlValue(this->m_WindowedToggle));
+	vVars->add_attribute("borderless", GetControlValue(this->m_NoBorderToggle));
+	vVars->add_attribute("maxFPS", GetControlValue(this->m_FpsTextBox));
+	vVars->add_attribute("width", GetControlValue(this->m_WidthTextBox));
+	vVars->add_attribute("height", GetControlValue(this->m_HeightTextBox));
+
+	vRoot.add_child(std::unique_ptr<vdf::object>(vVars));
 
 	vdf::write(fileStream, vRoot);
 }
@@ -709,8 +736,9 @@ void CSurface::LaunchGame(Forms::Control* pSender)
 	pSurface->AppendParameterInternal(svParameter, "-launcher");
 
 	eLaunchMode launchMode = g_pLauncher->GetMainSurface()->BuildParameter(svParameter);
+	uint64_t nProcessorAffinity = pSurface->GetProcessorAffinity(svParameter);
 
-	if (g_pLauncher->CreateLaunchContext(launchMode, svParameter.c_str(), "startup_launcher.cfg"))
+	if (g_pLauncher->CreateLaunchContext(launchMode, nProcessorAffinity, svParameter.c_str(), "startup_launcher.cfg"))
 		g_pLauncher->LaunchProcess();
 }
 
@@ -941,13 +969,20 @@ void CSurface::AppendParameterInternal(string& svParameterList, const char* szPa
 // Purpose: appends the reversed core count value to the command line buffer
 // Input  : &svParameters - 
 //-----------------------------------------------------------------------------
-void CSurface::AppendReservedCoreCount(string& svParameters)
+void CSurface::AppendProcessorParameters(string& svParameters)
 {
-	int nReservedCores = atoi(this->m_ReservedCoresTextBox->Text().ToCString());
+	const int nReservedCores = atoi(this->m_ReservedCoresTextBox->Text().ToCString());
 	if (nReservedCores > -1) // A reserved core count of 0 seems to crash the game on some systems.
 	{
 		AppendParameterInternal(svParameters, "-numreservedcores", 
 			this->m_ReservedCoresTextBox->Text().ToCString());
+	}
+
+	const int nWorkerThreads = atoi(this->m_WorkerThreadsTextBox->Text().ToCString());
+	if (nWorkerThreads > -1)
+	{
+		AppendParameterInternal(svParameters, "-numworkerthreads",
+			this->m_WorkerThreadsTextBox->Text().ToCString());
 	}
 }
 
@@ -1049,6 +1084,10 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 {
 	eLaunchMode results = eLaunchMode::LM_NONE;
 
+	this->AppendProcessorParameters(svParameters);
+	this->AppendConsoleParameters(svParameters);
+	this->AppendNetParameters(svParameters);
+
 	switch (static_cast<eMode>(this->m_ModeCombo->SelectedIndex()))
 	{
 	case eMode::HOST:
@@ -1077,14 +1116,7 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 			AppendParameterInternal(svParameters, "-showdevmenu");
 		}
 
-		this->AppendConsoleParameters(svParameters);
-
 		// ENGINE ###############################################################
-		this->AppendReservedCoreCount(svParameters);
-
-		if (this->m_SingleCoreDediToggle->Checked())
-			AppendParameterInternal(svParameters, "+sv_single_core_dedi", "1");
-
 		if (this->m_NoAsyncJobsToggle->Checked())
 		{
 			AppendParameterInternal(svParameters, "-noasync");
@@ -1105,7 +1137,6 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 		}
 
 		this->AppendHostParameters(svParameters);
-		this->AppendNetParameters(svParameters);
 		this->AppendVideoParameters(svParameters);
 
 		if (!String::IsNullOrEmpty(this->m_LaunchArgsTextBox->Text()))
@@ -1136,14 +1167,7 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 		if (this->m_CheatsToggle->Checked())
 			AppendParameterInternal(svParameters, "+sv_cheats", "1");
 
-		this->AppendConsoleParameters(svParameters);
-
 		// ENGINE ###############################################################
-		this->AppendReservedCoreCount(svParameters);
-
-		if (this->m_SingleCoreDediToggle->Checked())
-			AppendParameterInternal(svParameters, "+sv_single_core_dedi", "1");
-
 		if (this->m_NoAsyncJobsToggle->Checked())
 		{
 			AppendParameterInternal(svParameters, "-noasync");
@@ -1155,7 +1179,6 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 		}
 
 		this->AppendHostParameters(svParameters);
-		this->AppendNetParameters(svParameters);
 
 		if (!String::IsNullOrEmpty(this->m_LaunchArgsTextBox->Text()))
 			AppendParameterInternal(svParameters, this->m_LaunchArgsTextBox->Text().ToCString());
@@ -1164,8 +1187,8 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 	}
 	case eMode::CLIENT:
 	{
-		AppendParameterInternal(svParameters, "-noworkerdll"); // This prevents init of worker dll 
-		//(this dll is always imported, but we want client.dll to do the work instead).
+		// Tells the loader module to only load the client dll.
+		AppendParameterInternal(svParameters, "-noserverdll");
 
 		// GAME ###############################################################
 		if (this->m_DeveloperToggle->Checked())
@@ -1183,14 +1206,7 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 			AppendParameterInternal(svParameters, "-showdevmenu");
 		}
 
-		this->AppendConsoleParameters(svParameters);
-
 		// ENGINE ###############################################################
-		this->AppendReservedCoreCount(svParameters);
-
-		if (this->m_SingleCoreDediToggle->Checked())
-			AppendParameterInternal(svParameters, "+sv_single_core_dedi", "1");
-
 		if (this->m_NoAsyncJobsToggle->Checked())
 		{
 			AppendParameterInternal(svParameters, "-noasync");
@@ -1206,7 +1222,6 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 			AppendParameterInternal(svParameters, "+physics_async_cl", "0");
 		}
 
-		this->AppendNetParameters(svParameters);
 		this->AppendVideoParameters(svParameters);
 
 		// MAIN ###############################################################
@@ -1216,8 +1231,30 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 		return results;
 	}
 	default:
+		Assert(0);
 		return results;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: gets processor affinity, and automatically appends the single-core
+//          dedi cvar if core count = 1
+// Input  : &svParameters - 
+//-----------------------------------------------------------------------------
+uint64_t CSurface::GetProcessorAffinity(string& svParameters)
+{
+	char* pEnd;
+	const uint64_t nProcessorAffinity = strtoull(this->m_ProcessorAffinityTextBox->Text().ToCString(), &pEnd, 16);
+
+	if (nProcessorAffinity)
+	{
+		const uint32_t nProcessorCount = PopCount(nProcessorAffinity);
+
+		if (nProcessorCount == 1)
+			AppendParameterInternal(svParameters, "+sv_single_core_dedi", "1");
+	}
+
+	return nProcessorAffinity;
 }
 
 //-----------------------------------------------------------------------------

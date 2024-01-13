@@ -1,5 +1,4 @@
 #pragma once
-#include "basepanel.h"
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 class CLauncher
@@ -9,6 +8,7 @@ public:
     {
 		m_pSurface = nullptr;
 		m_pLogger = spdlog::stdout_color_mt(pszLoggerName);
+        m_ProcessorAffinity = NULL;
 		m_svCurrentDir = fs::current_path().u8string();
     }
     ~CLauncher()
@@ -45,8 +45,8 @@ public:
     int HandleCommandLine(int argc, char* argv[]);
     int HandleInput();
 
-    bool CreateLaunchContext(eLaunchMode lMode, const char* szCommandLine = nullptr, const char* szConfig = nullptr);
-    void SetupLaunchContext(const char* szConfig, const char* szWorkerDll, const char* szGameDll, const char* szCommandLine);
+    bool CreateLaunchContext(eLaunchMode lMode, uint64_t nProcessorAffinity = NULL, const char* szCommandLine = nullptr, const char* szConfig = nullptr);
+    void SetupLaunchContext(const char* szConfig, const char* szGameDll, const char* szCommandLine);
     bool LaunchProcess() const;
 
     CSurface* GetMainSurface() const { return m_pSurface; }
@@ -55,8 +55,9 @@ private:
     CSurface* m_pSurface;
 	std::shared_ptr<spdlog::logger> m_pLogger;
 
-    string m_svWorkerDll;
-    string m_svGameExe;
+    uint64_t m_ProcessorAffinity;
+
+    string m_svGameDll;
     string m_svCmdLine;
     string m_svCurrentDir;
 };

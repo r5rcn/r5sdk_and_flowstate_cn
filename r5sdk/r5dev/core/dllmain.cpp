@@ -2,7 +2,10 @@
 #include "core/r5dev.h"
 #include "core/init.h"
 #include "core/logdef.h"
+#include "core/logger.h"
+#include "tier0/basetypes.h"
 #include "tier0/crashhandler.h"
+#include "tier0/commandline.h"
 /*****************************************************************************/
 #ifndef DEDICATED
 #include "windows/id3dx.h"
@@ -13,47 +16,98 @@
 #include "mathlib/mathlib.h"
 #include "launcher/launcher.h"
 
+#ifndef DEDICATED
+#define SDK_DEFAULT_CFG "cfg/system/startup_default.cfg"
+#else
+#define SDK_DEFAULT_CFG "cfg/system/startup_dedi_default.cfg"
+#endif
+
+bool g_bSdkInitialized = false;
+
+//#############################################################################
+// UTILITY
+//#############################################################################
+
+void Crash_Callback()
+{
+    // Shutdown SpdLog to flush all buffers.
+    SpdLog_Shutdown();
+
+    // TODO[ AMOS ]: This is where we want to call backtrace from.
+}
+
+void Show_Emblem()
+{
+    // Logged as 'SYSTEM_ERROR' for its red color.
+    for (size_t i = 0; i < SDK_ARRAYSIZE(R5R_EMBLEM); i++)
+    {
+        Msg(eDLL_T::SYSTEM_ERROR, "%s\n", R5R_EMBLEM[i]);
+    }
+
+    // Log the SDK's 'build_id' under the emblem.
+    Msg(eDLL_T::SYSTEM_ERROR,
+        "+------------------------------------------------[%s%010d%s]-+\n",
+        g_svYellowF, g_SDKDll.GetNTHeaders()->FileHeader.TimeDateStamp, g_svRedF);
+    Msg(eDLL_T::SYSTEM_ERROR, "\n");
+}
+
 //#############################################################################
 // INITIALIZATION
 //#############################################################################
 
-void SDK_Init()
+void Tier0_Init()
 {
-    if (strstr(GetCommandLineA(), "-launcher"))
-    {
-        g_svCmdLine = GetCommandLineA();
-    }
-    else
-    {
-        g_svCmdLine = LoadConfigFile(SDK_DEFAULT_CFG);
-    }
-#ifndef DEDICATED
-    if (g_svCmdLine.find("-wconsole") != std::string::npos)
-    {
-        Console_Init();
-    }
-#else
-    Console_Init();
+#if !defined (DEDICATED)
+    g_RadVideoToolsDll.InitFromName("bink2w64.dll");
+    g_RadAudioDecoderDll.InitFromName("binkawin64.dll");
+    g_RadAudioSystemDll.InitFromName("mileswin64.dll");
 #endif // !DEDICATED
 
-    lzham_enable_fail_exceptions(true);
-    curl_global_init(CURL_GLOBAL_ALL);
-    SpdLog_Init();
-    Winsock_Init(); // Initialize Winsock.
+    g_pCmdLine = g_GameDll.GetExportedSymbol("g_pCmdLine").RCast<CCommandLine*>();
+    g_CoreMsgVCallback = &EngineLoggerSink; // Setup logger callback sink.
 
-    for (size_t i = 0; i < SDK_ARRAYSIZE(R5R_EMBLEM); i++)
+    g_pCmdLine->CreateCmdLine(GetCommandLineA());
+    g_CrashHandler->SetCrashCallback(&Crash_Callback);
+
+    // This prevents the game from recreating it,
+    // see 'CCommandLine::StaticCreateCmdLine' for
+    // more information.
+    g_bCommandLineCreated = true;
+}
+
+void SDK_Init()
+{
+    Tier0_Init();
+
+    if (!CommandLine()->CheckParm("-launcher"))
     {
-        std::string svEscaped = StringEscape(R5R_EMBLEM[i]);
-        spdlog::info("{:s}{:s}{:s}\n", g_svRedF, svEscaped, g_svReset);
+        CommandLine()->AppendParametersFromFile(SDK_DEFAULT_CFG);
     }
-    spdlog::info("\n");
 
+    const bool bAnsiColor = CommandLine()->CheckParm("-ansicolor") ? true : false;
+
+#ifndef DEDICATED
+    if (CommandLine()->CheckParm("-wconsole"))
+#endif // !DEDICATED
+    {
+        Console_Init(bAnsiColor);
+    }
+
+    SpdLog_Init(bAnsiColor);
+    Show_Emblem();
+
+    Winsock_Init(); // Initialize Winsock.
     Systems_Init();
-    WinSys_Init();
 
+    WinSys_Init();
 #ifndef DEDICATED
     Input_Init();
 #endif // !DEDICATED
+
+    curl_global_init(CURL_GLOBAL_ALL);
+    lzham_enable_fail_exceptions(true);
+
+    g_bSdkInitialized = true;
 }
 
 //#############################################################################
@@ -62,29 +116,29 @@ void SDK_Init()
 
 void SDK_Shutdown()
 {
-    static bool bShutDown = false;
-    assert(!bShutDown);
-    if (bShutDown)
+    assert(g_bSdkInitialized);
+
+    if (!g_bSdkInitialized)
     {
         spdlog::error("Recursive shutdown!\n");
         return;
     }
-    bShutDown = true;
-    spdlog::info("Shutdown GameSDK\n");
+
+    g_bSdkInitialized = false;
+    Msg(eDLL_T::NONE, "GameSDK shutdown initiated\n");
 
     curl_global_cleanup();
 
-    Winsock_Shutdown();
-    Systems_Shutdown();
-    WinSys_Shutdown();
-
 #ifndef DEDICATED
     Input_Shutdown();
-    DirectX_Shutdown();
 #endif // !DEDICATED
 
-    Console_Shutdown();
+    WinSys_Shutdown();
+    Systems_Shutdown();
+    Winsock_Shutdown();
+
     SpdLog_Shutdown();
+    Console_Shutdown();
 }
 
 //#############################################################################
@@ -96,39 +150,24 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     CheckCPU(); // Check CPU as early as possible; error out if CPU isn't supported.
     MathLib_Init(); // Initialize Mathlib.
 
-    NOTE_UNUSED(hModule);
     NOTE_UNUSED(lpReserved);
 
-#if !defined (DEDICATED) && !defined (CLIENT_DLL)
-    // This dll is imported by the game executable, we cannot circumvent it.
-    // To solve the recursive init problem, we check if -noworkerdll is passed.
-    // If this is passed, the worker dll will not be initialized, which allows 
-    // us to load the client dll (or any other dll) instead, or load the game
-    // without the SDK.
-    s_bNoWorkerDll = !!strstr(GetCommandLineA(), "-noworkerdll");
-#endif // !DEDICATED && CLIENT_DLL
     switch (dwReason)
     {
         case DLL_PROCESS_ATTACH:
         {
-            if (!s_bNoWorkerDll)
-            {
-                SDK_Init();
-            }
-            else // Destroy crash handler.
-            {
-                g_CrashHandler->~CCrashHandler();
-                g_CrashHandler = nullptr;
-            }
+            PEB64* pEnv = CModule::GetProcessEnvironmentBlock();
+
+            g_GameDll.InitFromBase(pEnv->ImageBaseAddress);
+            g_SDKDll.InitFromBase((QWORD)hModule);
+
+            SDK_Init();
             break;
         }
 
         case DLL_PROCESS_DETACH:
         {
-            if (!s_bNoWorkerDll)
-            {
-                SDK_Shutdown();
-            }
+            SDK_Shutdown();
             break;
         }
     }

@@ -1,15 +1,40 @@
-//=====================================================================================//
+//=============================================================================//
 //
 // Purpose: Implementation of the pylon server backend.
 //
 // $NoKeywords: $
-//=====================================================================================//
+//=============================================================================//
 
 #include <core/stdafx.h>
 #include <tier1/cvar.h>
 #include <tier2/curlutils.h>
 #include <networksystem/pylon.h>
 #include <engine/server/server.h>
+
+//-----------------------------------------------------------------------------
+// Purpose: checks if the server listing fields are valid.
+// Input  : &value - 
+// Output : true on success, false on failure.
+//-----------------------------------------------------------------------------
+static bool IsServerListingValid(const rapidjson::Value& value)
+{
+    if (value.HasMember("name")        && value["name"].IsString()        &&
+        value.HasMember("description") && value["description"].IsString() &&
+        value.HasMember("hidden")      && value["hidden"].IsString()      && // TODO: Bool???
+        value.HasMember("map")         && value["map"].IsString()         &&
+        value.HasMember("playlist")    && value["playlist"].IsString()    &&
+        value.HasMember("ip")          && value["ip"].IsString()          &&
+        value.HasMember("port")        && value["port"].IsString()        && // TODO: Int32???
+        value.HasMember("key")         && value["key"].IsString()         &&
+        value.HasMember("checksum")    && value["checksum"].IsString()    && // TODO: Uint32???
+        value.HasMember("playerCount") && value["playerCount"].IsString() && // TODO: Int32???
+        value.HasMember("maxPlayers")  && value["maxPlayers"].IsString())//  && // TODO: Int32???
+    {
+        return true;
+    }
+
+    return false;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: gets a vector of hosted servers.
@@ -20,10 +45,14 @@ vector<NetGameServer_t> CPylon::GetServerList(string& outMessage) const
 {
     vector<NetGameServer_t> vecServers;
 
-    nlohmann::json requestJson = nlohmann::json::object();
-    requestJson["version"] = SDK_VERSION;
+    rapidjson::Document requestJson;
+    requestJson.SetObject();
+    requestJson.AddMember("version", SDK_VERSION, requestJson.GetAllocator());
 
-    nlohmann::json responseJson;
+    rapidjson::StringBuffer stringBuffer;
+    JSON_DocumentToBufferDeserialize(requestJson, stringBuffer);
+
+    rapidjson::Document responseJson;
     CURLINFO status;
 
     if (!SendRequest("/servers", requestJson, responseJson,
@@ -32,42 +61,43 @@ vector<NetGameServer_t> CPylon::GetServerList(string& outMessage) const
         return vecServers;
     }
 
-    if (!responseJson.contains("servers"))
+    if (!responseJson.HasMember("servers"))
     {
         outMessage = Format("Invalid response with status: %d", int(status));
         return vecServers;
     }
 
-    try
+    const rapidjson::Value& servers = responseJson["servers"];
+
+    for (rapidjson::Value::ConstValueIterator itr = servers.Begin();
+        itr != servers.End(); ++itr)
     {
-        for (auto& obj : responseJson["servers"])
+        const rapidjson::Value& obj = *itr;
+
+        if (!IsServerListingValid(obj))
         {
-            vecServers.push_back(
-                NetGameServer_t
-                {
-                    obj.value("name",""),
-                    obj.value("description",""),
-                    obj.value("hidden","false") == "true",
-                    obj.value("map",""),
-                    obj.value("playlist",""),
-                    obj.value("ip",""),
-                    obj.value("port", ""),
-                    obj.value("key",""),
-                    obj.value("checksum",""),
-                    obj.value("version", SDK_VERSION),
-                    obj.value("playerCount", ""),
-                    obj.value("maxPlayers", ""),
-                    obj.value("timeStamp", 0),
-                    obj.value("publicRef", ""),
-                    obj.value("cachedId", ""),
-                }
-            );
+            // Missing details; skip this server listing.
+            continue;
         }
-    }
-    catch (const std::exception& ex)
-    {
-        Warning(eDLL_T::ENGINE, "%s - %s\n", __FUNCTION__, ex.what());
-        vecServers.clear(); // Clear as the vector may be partially filled.
+
+        vecServers.push_back(
+            NetGameServer_t
+            {
+                obj["name"].GetString(),
+                obj["description"].GetString(),
+                V_strcmp(obj["hidden"].GetString(), "true") == NULL, // TODO: Bool???
+                obj["map"].GetString(),
+                obj["playlist"].GetString(),
+                obj["ip"].GetString(),
+                obj["port"].GetString(), // TODO: Int32???
+                obj["key"].GetString(),
+                obj["checksum"].GetString(), // TODO: Uint32???
+                SDK_VERSION,
+                obj["playerCount"].GetString(), // TODO: Int32???
+                obj["maxPlayers"].GetString(), // TODO: Int32???
+                -1,
+            }
+        );
     }
 
     return vecServers;
@@ -83,10 +113,13 @@ vector<NetGameServer_t> CPylon::GetServerList(string& outMessage) const
 bool CPylon::GetServerByToken(NetGameServer_t& outGameServer,
     string& outMessage, const string& token) const
 {
-    nlohmann::json requestJson = nlohmann::json::object();
-    requestJson["token"] = token;
+    rapidjson::Document requestJson;
+    requestJson.SetObject();
 
-    nlohmann::json responseJson;
+    rapidjson::Document::AllocatorType& allocator = requestJson.GetAllocator();
+    requestJson.AddMember("token", rapidjson::Value(token.c_str(), requestJson.GetAllocator()), allocator);
+
+    rapidjson::Document responseJson;
     CURLINFO status;
 
     if (!SendRequest("/server/byToken", requestJson, responseJson,
@@ -95,42 +128,38 @@ bool CPylon::GetServerByToken(NetGameServer_t& outGameServer,
         return false;
     }
 
-    if (!responseJson.contains("server"))
+    if (!responseJson.HasMember("server"))
     {
         outMessage = Format("Invalid response with status: %d", int(status));
         return false;
     }
 
-    try
-    {
-        nlohmann::json& serverJson = responseJson["server"];
-        outGameServer = NetGameServer_t
-        {
-                serverJson.value("name",""),
-                serverJson.value("description",""),
-                serverJson.value("hidden","false") == "true",
-                serverJson.value("map",""),
-                serverJson.value("playlist",""),
-                serverJson.value("ip",""),
-                serverJson.value("port", ""),
-                serverJson.value("key",""),
-                serverJson.value("checksum",""),
-                serverJson.value("version", SDK_VERSION),
-                serverJson.value("playerCount", ""),
-                serverJson.value("maxPlayers", ""),
-                serverJson.value("timeStamp", 0),
-                serverJson.value("publicRef", ""),
-                serverJson.value("cachedId", ""),
-        };
+    const rapidjson::Value& serverJson = responseJson["server"];
 
-        return true;
-    }
-    catch (const std::exception& ex)
+    if (!IsServerListingValid(serverJson))
     {
-        Warning(eDLL_T::ENGINE, "%s - %s\n", __FUNCTION__, ex.what());
+        outMessage = Format("Invalid server listing data!");
+        return false;
     }
 
-    return false;
+    outGameServer = NetGameServer_t
+    {
+        serverJson["name"].GetString(),
+        serverJson["description"].GetString(),
+        V_strcmp(serverJson["hidden"].GetString(), "true") == NULL, // TODO: Bool???
+        serverJson["map"].GetString(),
+        serverJson["playlist"].GetString(),
+        serverJson["ip"].GetString(),
+        serverJson["port"].GetString(), // TODO: Int32???
+        serverJson["key"].GetString(),
+        serverJson["checksum"].GetString(), // TODO: Uint32???
+        SDK_VERSION,
+        serverJson["playerCount"].GetString(), // TODO: Int32???
+        serverJson["maxPlayers"].GetString(), // TODO: Int32???
+        -1,
+    };
+
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -140,89 +169,48 @@ bool CPylon::GetServerByToken(NetGameServer_t& outGameServer,
 //			&netGameServer - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CPylon::PostServerHost(string& outMessage, string& outToken,
-    const NetGameServer_t& netGameServer) const
+bool CPylon::PostServerHost(string& outMessage, string& outToken, const NetGameServer_t& netGameServer) const
 {
-    nlohmann::json requestJson = nlohmann::json::object();
-    requestJson["name"] = netGameServer.m_svHostName;
-    requestJson["description"] = netGameServer.m_svDescription;
-    requestJson["hidden"] = netGameServer.m_bHidden;
-    requestJson["map"] = netGameServer.m_svHostMap;
-    requestJson["playlist"] = netGameServer.m_svPlaylist;
-    requestJson["ip"] = netGameServer.m_svIpAddress;
-    requestJson["port"] = netGameServer.m_svGamePort;
-    requestJson["key"] = netGameServer.m_svEncryptionKey;
-    requestJson["checksum"] = netGameServer.m_svRemoteChecksum;
-    requestJson["version"] = netGameServer.m_svSDKVersion;
-    requestJson["playerCount"] = netGameServer.m_svPlayerCount;
-    requestJson["maxPlayers"] = netGameServer.m_svMaxPlayers;
-    requestJson["timeStamp"] = netGameServer.m_nTimeStamp;
-    requestJson["publicRef"] = netGameServer.m_svPublicRef;
-    requestJson["cachedId"] = netGameServer.m_svCachedId;
+    rapidjson::Document requestJson;
+    requestJson.SetObject();
 
-    nlohmann::json responseJson;
+    rapidjson::Document::AllocatorType& allocator = requestJson.GetAllocator();
+
+    requestJson.AddMember("name",        rapidjson::Value(netGameServer.m_svHostName.c_str(),       allocator), allocator);
+    requestJson.AddMember("description", rapidjson::Value(netGameServer.m_svDescription.c_str(),    allocator), allocator);
+    requestJson.AddMember("hidden",      netGameServer.m_bHidden,                                   allocator);
+    requestJson.AddMember("map",         rapidjson::Value(netGameServer.m_svHostMap.c_str(),        allocator), allocator);
+    requestJson.AddMember("playlist",    rapidjson::Value(netGameServer.m_svPlaylist.c_str(),       allocator), allocator);
+    requestJson.AddMember("ip",          rapidjson::Value(netGameServer.m_svIpAddress.c_str(),      allocator), allocator);
+    requestJson.AddMember("port",        rapidjson::Value(netGameServer.m_svGamePort.c_str(),       allocator), allocator); // TODO: Int32???
+    requestJson.AddMember("key",         rapidjson::Value(netGameServer.m_svEncryptionKey.c_str(),  allocator), allocator);
+    requestJson.AddMember("checksum",    rapidjson::Value(netGameServer.m_svRemoteChecksum.c_str(), allocator), allocator); // TODO: Uint32???
+    requestJson.AddMember("version",     rapidjson::Value(netGameServer.m_svSDKVersion.c_str(),     allocator), allocator);
+    requestJson.AddMember("playerCount", rapidjson::Value(netGameServer.m_svPlayerCount.c_str(),    allocator), allocator); // TODO: Int32???
+    requestJson.AddMember("maxPlayers",  rapidjson::Value(netGameServer.m_svMaxPlayers.c_str(),     allocator), allocator); // TODO: Int32???
+    requestJson.AddMember("timeStamp",   netGameServer.m_nTimeStamp,                                allocator);
+
+    rapidjson::Document responseJson;
     CURLINFO status;
 
-    if (!SendRequest("/servers/add", requestJson, responseJson,
-        outMessage, status, "server host error"))
+    if (!SendRequest("/servers/add", requestJson, responseJson, outMessage, status, "server host error"))
     {
         return false;
     }
 
     if (netGameServer.m_bHidden)
     {
-        nlohmann::json& tokenJson = responseJson["token"];
-
-        if (!tokenJson.is_string())
+        if (!responseJson.HasMember("token") || !responseJson["token"].IsString())
         {
             outMessage = Format("Invalid response with status: %d", int(status));
             outToken.clear();
-
             return false;
         }
 
-        outToken = tokenJson.get<string>();
+        outToken = responseJson["token"].GetString();
     }
 
     return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Send keep alive request to Pylon Master Server.
-// Input  : &netGameServer - 
-// Output : Returns true on success, false otherwise.
-//-----------------------------------------------------------------------------
-bool CPylon::KeepAlive(const NetGameServer_t& netGameServer)
-{
-    if (!g_pServer->IsActive() || !sv_pylonVisibility->GetBool()) // Check for active game.
-    {
-        return false;
-    }
-
-    string errorMsg;
-    string hostToken;
-
-    const bool result = PostServerHost(errorMsg, hostToken, netGameServer);
-    if (!result)
-    {
-        if (!errorMsg.empty() && m_ErrorMsg.compare(errorMsg) != NULL)
-        {
-            m_ErrorMsg = errorMsg;
-            Error(eDLL_T::SERVER, NO_ERROR, "%s\n", errorMsg.c_str());
-        }
-    }
-    else // Attempt to log the token, if there is one.
-    {
-        if (!hostToken.empty() && m_Token.compare(hostToken) != NULL)
-        {
-            m_Token = hostToken;
-            DevMsg(eDLL_T::SERVER, "Published server with token: %s'%s%s%s'\n",
-                g_svReset, g_svGreyB,
-                hostToken.c_str(), g_svReset);
-        }
-    }
-
-    return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -231,56 +219,50 @@ bool CPylon::KeepAlive(const NetGameServer_t& netGameServer)
 //			&outBannedVec  - 
 // Output : True on success, false otherwise.
 //-----------------------------------------------------------------------------
-bool CPylon::GetBannedList(const BannedVec_t& inBannedVec, BannedVec_t& outBannedVec) const
+bool CPylon::GetBannedList(const CBanSystem::BannedList_t& inBannedVec, CBanSystem::BannedList_t& outBannedVec) const
 {
-    nlohmann::json arrayJson = nlohmann::json::array();
+    rapidjson::Document requestJson;
+    requestJson.SetArray();
 
-    for (const auto& bannedPair : inBannedVec)
+    rapidjson::Document::AllocatorType& allocator = requestJson.GetAllocator();
+
+    FOR_EACH_VEC(inBannedVec, i)
     {
-        nlohmann::json player;
-        player["id"] = bannedPair.second;
-        player["ip"] = bannedPair.first;
-        arrayJson.push_back(player);
+        const CBanSystem::Banned_t& banned = inBannedVec[i];
+
+        rapidjson::Value player(rapidjson::kObjectType);
+        player.AddMember("id", banned.m_NucleusID, allocator);
+        player.AddMember("ip", rapidjson::Value(banned.m_Address.String(), allocator), allocator);
+        requestJson.PushBack(player, allocator);
     }
 
-    nlohmann::json playerArray;
-    playerArray["players"] = arrayJson;
+    rapidjson::Document responseJson;
 
     string outMessage;
     CURLINFO status;
 
-    if (!SendRequest("/banlist/bulkCheck", playerArray,
-        arrayJson, outMessage, status, "banned bulk check error"))
+    if (!SendRequest("/banlist/bulkCheck", requestJson, responseJson, outMessage, status, "banned bulk check error"))
     {
         return false;
     }
 
-    if (!arrayJson.contains("bannedPlayers"))
+    if (!responseJson.HasMember("bannedPlayers") || !responseJson["bannedPlayers"].IsArray())
     {
         outMessage = Format("Invalid response with status: %d", int(status));
         return false;
     }
 
-    try
+    const rapidjson::Value& bannedPlayers = responseJson["bannedPlayers"];
+    for (const rapidjson::Value& obj : bannedPlayers.GetArray())
     {
-        for (auto& obj : arrayJson["bannedPlayers"])
-        {
-            outBannedVec.push_back(
-                std::make_pair(
-                    obj.value("reason", "#DISCONNECT_BANNED"),
-                    obj.value("id", uint64_t(0))
-                )
-            );
-        }
-
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        Warning(eDLL_T::ENGINE, "%s - %s\n", __FUNCTION__, ex.what());
+        CBanSystem::Banned_t banned(
+            obj.HasMember("reason") ? obj["reason"].GetString() : "#DISCONNECT_BANNED",
+            obj.HasMember("id") && obj["id"].IsUint64() ? obj["id"].GetUint64() : NucleusID_t(NULL)
+        );
+        outBannedVec.AddToTail(banned);
     }
 
-    return false;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -290,36 +272,33 @@ bool CPylon::GetBannedList(const BannedVec_t& inBannedVec, BannedVec_t& outBanne
 //			&outReason - <- contains banned reason if any.
 // Output : True if banned, false if not banned.
 //-----------------------------------------------------------------------------
-bool CPylon::CheckForBan(const string& ipAddress, const uint64_t nucleusId,
-    const string& personaName, string& outReason) const
+bool CPylon::CheckForBan(const string& ipAddress, const uint64_t nucleusId, const string& personaName, string& outReason) const
 {
-    nlohmann::json requestJson = nlohmann::json::object();
-    requestJson["name"] = personaName;
-    requestJson["id"] = nucleusId;
-    requestJson["ip"] = ipAddress;
+    rapidjson::Document requestJson;
+    requestJson.SetObject();
 
-    nlohmann::json responseJson;
+    rapidjson::Document::AllocatorType& allocator = requestJson.GetAllocator();
+
+    requestJson.AddMember("name", rapidjson::Value(personaName.c_str(), allocator), allocator);
+    requestJson.AddMember("id", nucleusId, allocator);
+    requestJson.AddMember("ip", rapidjson::Value(ipAddress.c_str(), allocator), allocator);
+
+    rapidjson::Document responseJson;
     string outMessage;
     CURLINFO status;
 
-    if (!SendRequest("/banlist/isBanned", requestJson,
-        responseJson, outMessage, status, "banned check error"))
+    if (!SendRequest("/banlist/isBanned", requestJson, responseJson, outMessage, status, "banned check error"))
     {
         return false;
     }
 
-    try
+    if (responseJson.HasMember("banned") && responseJson["banned"].IsBool())
     {
-        if (responseJson["banned"].is_boolean() &&
-            responseJson["banned"].get<bool>())
+        if (responseJson["banned"].GetBool())
         {
-            outReason = responseJson.value("reason", "#DISCONNECT_BANNED");
+            outReason = responseJson.HasMember("reason") ? responseJson["reason"].GetString() : "#DISCONNECT_BANNED";
             return true;
         }
-    }
-    catch (const std::exception& ex)
-    {
-        Warning(eDLL_T::ENGINE, "%s - %s\n", __FUNCTION__, ex.what());
     }
 
     return false;
@@ -334,43 +313,56 @@ bool CPylon::CheckForBan(const string& ipAddress, const uint64_t nucleusId,
 //			&status -
 // Output : True on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CPylon::SendRequest(const char* endpoint, const nlohmann::json& requestJson,
-    nlohmann::json& responseJson, string& outMessage, CURLINFO& status, const char* errorText) const
+bool CPylon::SendRequest(const char* endpoint, const rapidjson::Document& requestJson,
+    rapidjson::Document& responseJson, string& outMessage, CURLINFO& status, const char* errorText) const
 {
-    string responseBody;
+    rapidjson::StringBuffer stringBuffer;
+    JSON_DocumentToBufferDeserialize(requestJson, stringBuffer);
 
-    if (!QueryServer(endpoint, requestJson.dump(4).c_str(), responseBody, outMessage, status))
+    string responseBody;
+    if (!QueryServer(endpoint, stringBuffer.GetString(), responseBody, outMessage, status))
     {
         return false;
     }
 
-    try
+    if (status == 200) // STATUS_OK
     {
-        if (status == 200) // STATUS_OK
-        {
-            responseJson = nlohmann::json::parse(responseBody);
-            LogBody(responseJson);
+        responseJson.Parse(responseBody.c_str());
 
-            if (responseJson["success"].is_boolean() &&
-                responseJson["success"].get<bool>())
-            {
-                return true;
-            }
-            else
-            {
-                ExtractError(responseJson, outMessage, status);
-                return false;
-            }
+        if (responseJson.HasParseError())
+        {
+            Warning(eDLL_T::ENGINE, "%s: JSON parse error at position %zu: %s\n", __FUNCTION__,
+                responseJson.GetErrorOffset(), rapidjson::GetParseError_En(responseJson.GetParseError()));
+
+            return false;
+        }
+
+        if (!responseJson.IsObject())
+        {
+            Warning(eDLL_T::ENGINE, "%s: JSON root was not an object\n", __FUNCTION__);
+            return false;
+        }
+
+        if (pylon_showdebuginfo->GetBool())
+        {
+            LogBody(responseJson);
+        }
+
+        if (responseJson.HasMember("success") &&
+            responseJson["success"].IsBool() &&
+            responseJson["success"].GetBool())
+        {
+            return true;
         }
         else
         {
-            ExtractError(responseBody, outMessage, status, errorText);
+            ExtractError(responseJson, outMessage, status);
             return false;
         }
     }
-    catch (const std::exception& ex)
+    else
     {
-        Warning(eDLL_T::ENGINE, "%s - Exception while parsing response:\n%s\n", __FUNCTION__, ex.what());
+        ExtractError(responseBody, outMessage, status, errorText);
         return false;
     }
 }
@@ -392,15 +384,24 @@ bool CPylon::QueryServer(const char* endpoint, const char* request,
 
     if (showDebug)
     {
-        DevMsg(eDLL_T::ENGINE, "Sending request to '%s' with endpoint '%s':\n%s\n",
+        Msg(eDLL_T::ENGINE, "Sending request to '%s' with endpoint '%s':\n%s\n",
             hostName, endpoint, request);
     }
 
     string finalUrl;
     CURLFormatUrl(finalUrl, hostName, endpoint);
 
+    finalUrl += Format("?language=%s", this->m_Language);
+
+    CURLParams params;
+
+    params.writeFunction = CURLWriteStringCallback;
+    params.timeout = curl_timeout->GetInt();
+    params.verifyPeer = ssl_verify_peer->GetBool();
+    params.verbose = curl_debug->GetBool();
+
     curl_slist* sList = nullptr;
-    CURL* curl = CURLInitRequest(finalUrl.c_str(), request, outResponse, sList);
+    CURL* curl = CURLInitRequest(finalUrl.c_str(), request, outResponse, sList, params);
     if (!curl)
     {
         return false;
@@ -417,7 +418,7 @@ bool CPylon::QueryServer(const char* endpoint, const char* request,
 
     if (showDebug)
     {
-        DevMsg(eDLL_T::ENGINE, "Host '%s' replied with status: '%d'\n",
+        Msg(eDLL_T::ENGINE, "Host '%s' replied with status: '%d'\n",
             hostName, outStatus);
     }
 
@@ -431,12 +432,14 @@ bool CPylon::QueryServer(const char* endpoint, const char* request,
 //          status      - 
 //          *errorText  - 
 //-----------------------------------------------------------------------------
-void CPylon::ExtractError(const nlohmann::json& resultJson, string& outMessage,
+void CPylon::ExtractError(const rapidjson::Document& resultJson, string& outMessage,
     CURLINFO status, const char* errorText) const
 {
-    if (resultJson["error"].is_string())
+
+    if (resultJson.IsObject() && resultJson.HasMember("error") &&
+        resultJson["error"].IsString())
     {
-        outMessage = resultJson["error"].get<string>();
+        outMessage = resultJson["error"].GetString();
     }
     else
     {
@@ -462,7 +465,9 @@ void CPylon::ExtractError(const string& response, string& outMessage,
 {
     if (!response.empty())
     {
-        nlohmann::json resultBody = nlohmann::json::parse(response);
+        rapidjson::Document resultBody;
+        resultBody.Parse(response.c_str());
+
         ExtractError(resultBody, outMessage, status, errorText);
     }
     else if (status)
@@ -480,13 +485,12 @@ void CPylon::ExtractError(const string& response, string& outMessage,
 // Purpose: Logs the response body if debug is enabled.
 // Input  : &responseJson -
 //-----------------------------------------------------------------------------
-void CPylon::LogBody(const nlohmann::json& responseJson) const
+void CPylon::LogBody(const rapidjson::Document& responseJson) const
 {
-    if (pylon_showdebuginfo->GetBool())
-    {
-        const string responseBody = responseJson.dump(4);
-        DevMsg(eDLL_T::ENGINE, "\n%s\n", responseBody.c_str());
-    }
+    rapidjson::StringBuffer stringBuffer;
+
+    JSON_DocumentToBufferDeserialize(responseJson, stringBuffer);
+    Msg(eDLL_T::ENGINE, "\n%s\n", stringBuffer.GetString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

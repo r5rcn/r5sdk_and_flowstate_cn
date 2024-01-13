@@ -39,6 +39,7 @@
 #define V_strstr strstr
 #define V_strncpy strncpy
 #define V_strdup _strdup
+#define V_strcat strcat
 
 #define Q_vsnprintf V_vsnprintf
 #define Q_snprintf V_snprintf
@@ -55,17 +56,18 @@
 #define Q_strstr V_strstr
 #define Q_strncpy V_strncpy
 #define Q_strdup V_strdup
+#define Q_strcat V_strcat
 
 template <size_t maxLenInCharacters> int V_vsprintf_safe(OUT_Z_ARRAY char(&pDest)[maxLenInCharacters], PRINTF_FORMAT_STRING const char* pFormat, va_list params) { return V_vsnprintf(pDest, maxLenInCharacters, pFormat, params); }
 
 
 char const* V_stristr(char const* pStr, char const* pSearch);
-const char* V_strnistr(const char* pStr, const char* pSearch, int64_t n);
-const char* V_strnchr(const char* pStr, char c, int64_t n);
+const char* V_strnistr(const char* pStr, const char* pSearch, ssize_t n);
+const char* V_strnchr(const char* pStr, char c, ssize_t n);
 bool V_isspace(int c);
 
 // Strip white space at the beginning and end of a string
-int64_t V_StrTrim(char* pStr);
+ssize_t V_StrTrim(char* pStr);
 
 int V_UTF8ToUnicode(const char* pUTF8, wchar_t* pwchDest, int cubDestSizeInBytes);
 int V_UnicodeToUTF8(const wchar_t* pUnicode, char* pUTF8, int cubDestSizeInBytes);

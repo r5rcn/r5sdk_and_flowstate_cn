@@ -9,6 +9,13 @@
 class CConsole : public ISurface
 {
 public:
+    enum PositionMode_t
+    {
+        // Park means the position is out of screen.
+        kPark = -1,
+        kFirst,
+    };
+
     ///////////////////////////////////////////////////////////////////////////
     CConsole(void);
     virtual ~CConsole(void);
@@ -27,7 +34,6 @@ private:
 
     bool AutoComplete(void);
     void ResetAutoComplete(void);
-    void ClearAutoComplete(void);
 
     void FindFromPartial(void);
     void ProcessCommand(string svCommand);
@@ -106,7 +112,6 @@ private:
 
 public:
     bool             m_bActivate = false;
-    vector<CSuggest> m_vsvCommandBases;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

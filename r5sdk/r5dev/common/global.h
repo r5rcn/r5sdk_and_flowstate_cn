@@ -12,10 +12,23 @@ extern ConVar* debug_draw_box_depth_test;
 
 extern ConVar* developer;
 extern ConVar* fps_max;
+extern ConVar* fps_max_vsync;
+
+#ifndef DEDICATED
+extern ConVar* fps_max_rt;
+extern ConVar* fps_max_rt_tolerance;
+extern ConVar* fps_max_rt_sleep_threshold;
+extern ConVar* fps_max_gfx;
+#endif // !DEDICATED
+
+extern ConVar* base_tickinterval_sp;
+extern ConVar* base_tickinterval_mp;
 
 // taken from S15:
 extern ConVar* usercmd_frametime_max;
 extern ConVar* usercmd_frametime_min;
+
+extern ConVar* usercmd_dualwield_enable;
 
 extern ConVar* staticProp_no_fade_scalar;
 extern ConVar* staticProp_gather_size_weight;
@@ -37,6 +50,8 @@ extern ConVar* mp_gamemode;
 extern ConVar* rcon_address;
 extern ConVar* rcon_password;
 
+extern ConVar* enable_CmdKeyValues;
+
 extern ConVar* r_debug_overlay_nodecay;
 extern ConVar* r_debug_overlay_invisible;
 extern ConVar* r_debug_overlay_wireframe;
@@ -48,6 +63,9 @@ extern ConVar* r_drawWorldMeshesDepthAtTheEnd;
 #ifndef DEDICATED
 extern ConVar* r_visualizetraces;
 extern ConVar* r_visualizetraces_duration;
+
+extern ConVar* gfx_nvnUseLowLatency;
+extern ConVar* gfx_nvnUseLowLatencyBoost;
 #endif // !DEDICATED
 
 extern ConVar* stream_overlay;
@@ -77,6 +95,7 @@ extern ConVar* navmesh_draw_polys;
 extern ConVar* navmesh_draw_poly_bounds;
 extern ConVar* navmesh_draw_poly_bounds_inner;
 #endif // DEDICATED
+extern ConVar* sv_language;
 extern ConVar* sv_showconnecting;
 extern ConVar* sv_globalBanlist;
 extern ConVar* sv_pylonVisibility;
@@ -87,8 +106,12 @@ extern ConVar* sv_forceChatToTeamOnly;
 
 extern ConVar* sv_single_core_dedi;
 
-extern ConVar* sv_updaterate_mp;
+extern ConVar* sv_maxunlag;
+extern ConVar* sv_clockcorrection_msecs;
+
 extern ConVar* sv_updaterate_sp;
+extern ConVar* sv_updaterate_mp;
+
 extern ConVar* sv_autoReloadRate;
 
 extern ConVar* sv_simulateBots;
@@ -105,13 +128,12 @@ extern ConVar* sv_voiceEcho;
 extern ConVar* sv_voiceenable;
 extern ConVar* sv_alltalk;
 
-extern ConVar* sv_usercmd_dualwield_enable;
 extern ConVar* player_userCmdsQueueWarning;
 
 //#ifdef DEDICATED
 extern ConVar* sv_rcon_debug;
 extern ConVar* sv_rcon_sendlogs;
-extern ConVar* sv_rcon_banpenalty;
+//extern ConVar* sv_rcon_banpenalty;
 extern ConVar* sv_rcon_maxfailures;
 extern ConVar* sv_rcon_maxignores;
 extern ConVar* sv_rcon_maxsockets;
@@ -131,11 +153,12 @@ extern ConVar* bhit_abs_origin;
 //-------------------------------------------------------------------------
 // CLIENT                                                                 |
 #ifndef DEDICATED
-extern ConVar* cl_rcon_request_sendlogs;
+extern ConVar* cl_rcon_inputonly;
 extern ConVar* cl_quota_stringCmdsPerSecond;
 
-extern ConVar* cl_cmdrate;
 extern ConVar* cl_move_use_dt;
+
+extern ConVar* enable_CmdKeyValues;
 
 extern ConVar* cl_notify_invert_x;
 extern ConVar* cl_notify_invert_y;
@@ -159,6 +182,8 @@ extern ConVar* cl_materialinfo_offset_x;
 extern ConVar* cl_materialinfo_offset_y;
 
 extern ConVar* cl_threaded_bone_setup;
+
+extern ConVar* cl_language;
 
 extern ConVar* con_drawnotify;
 extern ConVar* con_notifylines;
@@ -188,12 +213,12 @@ extern ConVar* con_notify_error_clr;
 
 extern ConVar* con_max_lines;
 extern ConVar* con_max_history;
-extern ConVar* con_suggestion_limit;
-extern ConVar* con_suggestion_showhelptext;
-extern ConVar* con_suggestion_showflags;
-extern ConVar* con_suggestion_flags_realtime;
+extern ConVar* con_suggest_limit;
+extern ConVar* con_suggest_showhelptext;
+extern ConVar* con_suggest_showflags;
 
 extern ConVar* origin_disconnectWhenOffline;
+extern ConVar* discord_updatePresence;
 #endif // !DEDICATED
 //-------------------------------------------------------------------------
 // FILESYSTEM                                                             |
@@ -225,6 +250,10 @@ extern ConVar* net_datablock_networkLossForSlowSpeed;
 extern ConVar* pylon_matchmaking_hostname;
 extern ConVar* pylon_host_update_interval;
 extern ConVar* pylon_showdebuginfo;
+
+extern ConVar* ssl_verify_peer;
+extern ConVar* curl_timeout;
+extern ConVar* curl_debug;
 //-------------------------------------------------------------------------
 // RTECH API                                                              |
 extern ConVar* rtech_debug;

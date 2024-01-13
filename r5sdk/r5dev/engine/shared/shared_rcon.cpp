@@ -79,7 +79,7 @@ bool CL_NetConConnect(CNetConBase* pBase, const char* pHostAdr, const int nHostP
 		return false;
 	}
 
-	DevMsg(eDLL_T::CLIENT, "Connected to: %s\n", pNetAdr->ToString());
+	Msg(eDLL_T::CLIENT, "Connected to: %s\n", pNetAdr->ToString());
 	return true;
 }
 
@@ -91,7 +91,7 @@ bool CL_NetConConnect(CNetConBase* pBase, const char* pHostAdr, const int nHostP
 //-----------------------------------------------------------------------------
 CConnectedNetConsoleData* SH_GetNetConData(CNetConBase* pBase, const int iSocket)
 {
-	const CSocketCreator* pCreator = pBase->GetSocketCreator();
+	CSocketCreator* pCreator = pBase->GetSocketCreator();
 	Assert(iSocket >= 0 && (pCreator->GetAcceptedSocketCount() == 0
 		|| iSocket < pCreator->GetAcceptedSocketCount()));
 
@@ -100,7 +100,7 @@ CConnectedNetConsoleData* SH_GetNetConData(CNetConBase* pBase, const int iSocket
 		return nullptr;
 	}
 
-	return pCreator->GetAcceptedSocketData(iSocket);
+	return &pCreator->GetAcceptedSocketData(iSocket);
 }
 
 //-----------------------------------------------------------------------------

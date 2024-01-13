@@ -6,8 +6,10 @@
 #include "tier1/cvar.h"
 #include "windows/id3dx.h"
 #include "windows/input.h"
+#include "geforce/reflex.h"
 #include "gameui/IConsole.h"
 #include "gameui/IBrowser.h"
+#include "engine/framelimit.h"
 #include "engine/sys_mainwind.h"
 #include "inputsystem/inputsystem.h"
 #include "public/bitmap/stb_image.h"
@@ -86,11 +88,11 @@ void ImGui_Init()
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.ImeWindowHandle = *g_pGameWindow;
+	io.ImeWindowHandle = g_pGame->GetWindow();
 	io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
 
-	ImGui_ImplWin32_Init(*g_pGameWindow);
-	ImGui_ImplDX11_Init(*g_ppGameDevice, *g_ppImmediateContext);
+	ImGui_ImplWin32_Init(g_pGame->GetWindow());
+	ImGui_ImplDX11_Init(D3D11Device(), D3D11DeviceContext());
 }
 
 void ImGui_Shutdown()
@@ -139,9 +141,12 @@ HRESULT __stdcall Present(IDXGISwapChain* pSwapChain, UINT nSyncInterval, UINT n
 		g_bImGuiInitialized = true;
 	}
 
+	g_FrameLimiter.Run();
 	DrawImGui();
 	///////////////////////////////////////////////////////////////////////////////
-	return s_fnSwapChainPresent(pSwapChain, nSyncInterval, nFlags);
+
+	HRESULT result = s_fnSwapChainPresent(pSwapChain, nSyncInterval, nFlags);
+	return result;
 }
 
 HRESULT __stdcall ResizeBuffers(IDXGISwapChain* pSwapChain, UINT nBufferCount, UINT nWidth, UINT nHeight, DXGI_FORMAT dxFormat, UINT nSwapChainFlags)
@@ -231,7 +236,7 @@ void CreateTextureResource(TextureHeader_t* textureHeader, INT_PTR imageData)
 
 	const uint32_t offsetStartResourceData = mipLevel << 4u;
 	const D3D11_SUBRESOURCE_DATA* subResData = (D3D11_SUBRESOURCE_DATA*)((uint8_t*)initialData + offsetStartResourceData);
-	const HRESULT createTextureRes = (*g_ppGameDevice)->CreateTexture2D(&textureDesc, subResData, &textureHeader->m_ppTexture);
+	const HRESULT createTextureRes = D3D11Device()->CreateTexture2D(&textureDesc, subResData, &textureHeader->m_ppTexture);
 	if (createTextureRes < S_OK)
 		Error(eDLL_T::RTECH, EXIT_FAILURE, "Couldn't create texture \"%s\": error code = %08x\n", textureHeader->m_pDebugName, createTextureRes);
 
@@ -249,7 +254,7 @@ void CreateTextureResource(TextureHeader_t* textureHeader, INT_PTR imageData)
 		shaderResource.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
 	}
 
-	const HRESULT createShaderResourceRes = (*g_ppGameDevice)->CreateShaderResourceView(textureHeader->m_ppTexture, &shaderResource, &textureHeader->m_ppShaderResourceView);
+	const HRESULT createShaderResourceRes = D3D11Device()->CreateShaderResourceView(textureHeader->m_ppTexture, &shaderResource, &textureHeader->m_ppShaderResourceView);
 	if (createShaderResourceRes < S_OK)
 		Error(eDLL_T::RTECH, EXIT_FAILURE, "Couldn't create shader resource view for texture \"%s\": error code = %08x\n", textureHeader->m_pDebugName, createShaderResourceRes);
 }
@@ -290,7 +295,7 @@ bool LoadTextureBuffer(unsigned char* buffer, int len, ID3D11ShaderResourceView*
 	subResource.pSysMem = pImageData;
 	subResource.SysMemPitch = desc.Width * 4;
 	subResource.SysMemSlicePitch = 0;
-	(*g_ppGameDevice)->CreateTexture2D(&desc, &subResource, &pTexture);
+	D3D11Device()->CreateTexture2D(&desc, &subResource, &pTexture);
 
 	// Create texture view
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
@@ -301,7 +306,7 @@ bool LoadTextureBuffer(unsigned char* buffer, int len, ID3D11ShaderResourceView*
 
 	if (pTexture)
 	{
-		(*g_ppGameDevice)->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
+		D3D11Device()->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
 		pTexture->Release();
 	}
 

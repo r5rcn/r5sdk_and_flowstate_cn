@@ -114,7 +114,7 @@ bool CCommand::Tokenize(const char* pCommand, cmd_source_t source, characterset_
 	size_t nLen = Q_strlen(pCommand);
 	if (nLen >= COMMAND_MAX_LENGTH - 1)
 	{
-		Warning(eDLL_T::ENGINE, "%s: Encountered command which overflows the tokenizer buffer... Skipping!\n", __FUNCTION__);
+		Warning(eDLL_T::COMMON, "%s: Encountered command which overflows the tokenizer buffer... Skipping!\n", __FUNCTION__);
 		return false;
 	}
 
@@ -170,7 +170,7 @@ bool CCommand::Tokenize(const char* pCommand, cmd_source_t source, characterset_
 
 		if (m_nArgc >= COMMAND_MAX_ARGC)
 		{
-			Warning(eDLL_T::ENGINE, "%s: Encountered command which overflows the argument buffer.. Clamped!\n", __FUNCTION__);
+			Warning(eDLL_T::COMMON, "%s: Encountered command which overflows the argument buffer.. Clamped!\n", __FUNCTION__);
 		}
 
 		nArgvBufferSize += nSize + 1;
@@ -273,91 +273,4 @@ void CCommand::Reset()
 	m_nArgv0Size = 0;
 	m_pArgSBuffer[0] = 0;
 	m_nQueuedVal = cmd_source_t::kCommandSrcInvalid;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: create
-//-----------------------------------------------------------------------------
-ConCommand* ConCommand::StaticCreate(const char* pszName, const char* pszHelpString, const char* pszUsageString,
-	int nFlags, FnCommandCallback_t pCallback, FnCommandCompletionCallback pCompletionFunc)
-{
-	ConCommand* pCommand = (ConCommand*)malloc(sizeof(ConCommand));
-	*(ConCommandBase**)pCommand = g_pConCommandVFTable;
-
-	pCommand->m_pNext = nullptr;
-	pCommand->m_bRegistered = false;
-
-	pCommand->m_pszName = pszName;
-	pCommand->m_pszHelpString = pszHelpString;
-	pCommand->m_pszUsageString = pszUsageString;
-	pCommand->s_pAccessor = nullptr;
-	pCommand->m_nFlags = nFlags;
-
-	pCommand->m_nNullCallBack = NullSub;
-	pCommand->m_pSubCallback = nullptr;
-	pCommand->m_fnCommandCallback = pCallback;
-	pCommand->m_bHasCompletionCallback = pCompletionFunc != nullptr ? true : false;
-	pCommand->m_bUsingNewCommandCallback = true;
-	pCommand->m_bUsingCommandCallbackInterface = false;
-	pCommand->m_fnCompletionCallback = pCompletionFunc ? pCompletionFunc : CallbackStub;
-
-	g_pCVar->RegisterConCommand(pCommand);
-	return pCommand;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: construct/allocate
-//-----------------------------------------------------------------------------
-ConCommand::ConCommand()
-	: m_nNullCallBack(nullptr)
-	, m_pSubCallback(nullptr)
-	, m_fnCommandCallbackV1(nullptr)
-	, m_fnCompletionCallback(nullptr)
-	, m_bHasCompletionCallback(false)
-	, m_bUsingNewCommandCallback(false)
-	, m_bUsingCommandCallbackInterface(false)
-{
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Checks if ConCommand has requested flags.
-// Input  : nFlags - 
-// Output : True if ConCommand has nFlags.
-//-----------------------------------------------------------------------------
-bool ConCommandBase::HasFlags(int nFlags) const
-{
-	return m_nFlags & nFlags;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Output : const ConCommandBase
-//-----------------------------------------------------------------------------
-ConCommandBase* ConCommandBase::GetNext(void) const
-{
-	return m_pNext;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Copies string using local new/delete operators
-// Input  : *szFrom - 
-// Output : char
-//-----------------------------------------------------------------------------
-char* ConCommandBase::CopyString(const char* szFrom) const
-{
-	size_t nLen;
-	char* szTo;
-
-	nLen = strlen(szFrom);
-	if (nLen <= 0)
-	{
-		szTo = new char[1];
-		szTo[0] = 0;
-	}
-	else
-	{
-		szTo = new char[nLen + 1];
-		memmove(szTo, szFrom, nLen + 1);
-	}
-	return szTo;
 }

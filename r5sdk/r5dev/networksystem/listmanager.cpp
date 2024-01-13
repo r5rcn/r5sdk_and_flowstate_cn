@@ -55,18 +55,18 @@ void CServerListManager::ClearServerList(void)
 //-----------------------------------------------------------------------------
 // Purpose: Launch server with given parameters
 //-----------------------------------------------------------------------------
-void CServerListManager::LaunchServer(void) const
+void CServerListManager::LaunchServer(const bool bChangeLevel) const
 {
     if (!ThreadInMainThread())
     {
-        g_TaskScheduler->Dispatch([this]()
+        g_TaskScheduler->Dispatch([this, bChangeLevel]()
             {
-                this->LaunchServer();
+                this->LaunchServer(bChangeLevel);
             }, 0);
         return;
     }
 
-    DevMsg(eDLL_T::ENGINE, "Starting server with name: \"%s\" map: \"%s\" playlist: \"%s\"\n",
+    Msg(eDLL_T::ENGINE, "Starting server with name: \"%s\" map: \"%s\" playlist: \"%s\"\n",
         m_Server.m_svHostName.c_str(), m_Server.m_svHostMap.c_str(), m_Server.m_svPlaylist.c_str());
 
     /*
@@ -77,7 +77,7 @@ void CServerListManager::LaunchServer(void) const
     KeyValues::ParsePlaylists(m_Server.m_svPlaylist.c_str());
     mp_gamemode->SetValue(m_Server.m_svPlaylist.c_str());
 
-    ProcessCommand(Format("%s \"%s\"", g_pServer->IsActive() ? "changelevel" : "map", m_Server.m_svHostMap.c_str()).c_str());
+    ProcessCommand(Format("%s \"%s\"", bChangeLevel ? "changelevel" : "map", m_Server.m_svHostMap.c_str()).c_str());
 }
 
 //-----------------------------------------------------------------------------

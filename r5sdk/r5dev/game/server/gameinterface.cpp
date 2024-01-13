@@ -15,8 +15,9 @@
 #include "gameinterface.h"
 #include "entitylist.h"
 #include "baseanimating.h"
+#include "engine/server/server.h"
 #include "game/shared/usercmd.h"
-#include "game/shared/util_shared.h"
+#include "game/server/util_server.h"
 
 //-----------------------------------------------------------------------------
 // This is called when a new game is started. (restart, map)
@@ -85,6 +86,17 @@ void __fastcall CServerGameDLL::OnReceivedSayTextMessage(void* thisptr, int send
 #endif
 }
 
+void DrawServerHitbox(int iEntity)
+{
+	IHandleEntity* pEntity = LookupEntityByIndex(iEntity);
+	CBaseAnimating* pAnimating = dynamic_cast<CBaseAnimating*>(pEntity);
+
+	if (pAnimating)
+	{
+		pAnimating->DrawServerHitboxes();
+	}
+}
+
 void DrawServerHitboxes(bool bRunOverlays)
 {
 	int nVal = sv_showhitboxes->GetInt();
@@ -93,27 +105,16 @@ void DrawServerHitboxes(bool bRunOverlays)
 	if (nVal == -1)
 		return;
 
-	std::function<void(int)> fnLookupAndDraw = [&](int iEntity)
-	{
-		IHandleEntity* pEntity = LookupEntityByIndex(iEntity);
-		CBaseAnimating* pAnimating = dynamic_cast<CBaseAnimating*>(pEntity);
-
-		if (pAnimating)
-		{
-			pAnimating->DrawServerHitboxes();
-		}
-	};
-
 	if (nVal == 0)
 	{
 		for (int i = 0; i < NUM_ENT_ENTRIES; i++)
 		{
-			fnLookupAndDraw(i);
+			DrawServerHitbox(i);
 		}
 	}
 	else // Lookup entity manually by index from 'sv_showhitboxes'.
 	{
-		fnLookupAndDraw(nVal);
+		DrawServerHitbox(nVal);
 	}
 }
 
@@ -137,16 +138,11 @@ void CServerGameClients::ProcessUserCmds(CServerGameClients* thisp, edict_t edic
 	if (totalCmds < 0 || totalCmds >= (MAX_BACKUP_COMMANDS_PROCESS - 1) ||
 		numCmds < 0 || numCmds > totalCmds)
 	{
-		//const char* name = "unknown";
-		//if (pPlayer)
-		//{
-		//	name = pPlayer->GetPlayerName();
-		//}
+		CClient* pClient = g_pServer->GetClient(edict-1);
 
-		//Warning(eDLL_T::SERVER, "%s: too many cmds %i sent for player %s\n", __FUNCTION__, totalCmds, name);
-		// !TODO: Drop the client from here.
-
+		Warning(eDLL_T::SERVER, "%s: Player '%s' sent too many cmds (%i)\n", __FUNCTION__, pClient->GetServerName(), totalCmds);
 		buf->SetOverflowFlag();
+
 		return;
 	}
 
@@ -158,7 +154,7 @@ void CServerGameClients::ProcessUserCmds(CServerGameClients* thisp, edict_t edic
 		from = to;
 	}
 
-	// Client not fully connected or server has gone inactive  or is paused, just ignore
+	// Client not fully connected or server has gone inactive or is paused, just ignore
 	if (ignore || !pPlayer)
 	{
 		return;

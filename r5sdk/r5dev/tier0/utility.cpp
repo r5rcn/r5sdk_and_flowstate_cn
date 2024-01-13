@@ -410,6 +410,17 @@ void CreateDirectories(string svInput, string* pszOutput, bool bWindows)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// For appending a slash at the end of the string if not already present.
+void AppendSlash(string& svInput, const char separator)
+{
+    char lchar = svInput[svInput.size() - 1];
+    if (lchar != '\\' && lchar != '/')
+    {
+        svInput.push_back(separator);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // For converting file paths to windows file paths.
 string ConvertToWinPath(const string& svInput)
 {
@@ -977,6 +988,18 @@ string PrintPercentageEscape(const string& svInput)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// For formatting a STL string to a prettified representation of input bytes.
+string FormatBytes(size_t nBytes)
+{
+    char szBuf[128];
+    const char* szSuffix[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
+    const int iBase = 1024;
+    size_t c = nBytes ? (std::min)((size_t)(log((double)nBytes) / log((double)iBase)), (size_t)sizeof(szSuffix) - 1) : 0;
+    snprintf(szBuf, sizeof(szBuf), "%1.2lf %s", nBytes / pow((double)iBase, c), szSuffix[c]);
+    return string(szBuf);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // For formatting a STL string using C-style format specifiers (va_list version).
 string FormatV(const char* szFormat, va_list args)
 {
@@ -1016,6 +1039,16 @@ string Format(const char* szFormat, ...)
     va_end(args);
 
     return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// For dumping a json document to a string buffer.
+void JSON_DocumentToBufferDeserialize(const rapidjson::Document& document, rapidjson::StringBuffer& buffer, unsigned int indent)
+{
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+
+    writer.SetIndent(' ', indent);
+    document.Accept(writer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

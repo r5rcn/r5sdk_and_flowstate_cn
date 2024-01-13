@@ -167,7 +167,7 @@ void CBrowser::RunTask()
         bInitialized = true;
     }
 
-    if (timer.GetDurationInProgress().GetSeconds() > pylon_host_update_interval->GetDouble())
+    if (timer.GetDurationInProgress().GetSeconds() > pylon_host_update_interval->GetFloat())
     {
         UpdateHostingStatus();
         timer.Start();
@@ -367,8 +367,8 @@ void CBrowser::BrowserPanel(void)
 //-----------------------------------------------------------------------------
 void CBrowser::RefreshServerList(void)
 {
-    DevMsg(eDLL_T::CLIENT, "Refreshing server list with matchmaking host '%s'\n", pylon_matchmaking_hostname->GetString());
-    
+    Msg(eDLL_T::CLIENT, "Refreshing server list with matchmaking host '%s'\n", pylon_matchmaking_hostname->GetString());
+
     std::string svServerListMessage;
     g_pServerListManager->RefreshServerList(svServerListMessage);
 
@@ -519,11 +519,15 @@ void CBrowser::HostPanel(void)
     if (ImGui::BeginCombo("Map", g_pServerListManager->m_Server.m_svHostMap.c_str()))
     {
         g_InstalledMapsMutex.lock();
-        for (const string& svMap : g_InstalledMaps)
+
+        FOR_EACH_VEC(g_InstalledMaps, i)
         {
-            if (ImGui::Selectable(svMap.c_str(), svMap == g_pServerListManager->m_Server.m_svHostMap))
+            const CUtlString& mapName = g_InstalledMaps[i];
+
+            if (ImGui::Selectable(mapName.String(),
+                mapName.IsEqual_CaseInsensitive(g_pServerListManager->m_Server.m_svHostMap.c_str())))
             {
-                g_pServerListManager->m_Server.m_svHostMap = svMap;
+                g_pServerListManager->m_Server.m_svHostMap = mapName.String();
             }
         }
 
@@ -559,6 +563,9 @@ void CBrowser::HostPanel(void)
     }
 
     ImGui::Spacing();
+
+    const bool bServerActive = g_pServer->IsActive();
+
     if (!g_pHostState->m_bActiveGame)
     {
         if (ImGui::Button("Start server", ImVec2(ImGui::GetWindowContentRegionWidth(), 32)))
@@ -568,7 +575,7 @@ void CBrowser::HostPanel(void)
             bool bEnforceField = g_pServerListManager->m_ServerVisibility == EServerVisibility_t::OFFLINE ? true : !g_pServerListManager->m_Server.m_svHostName.empty();
             if (bEnforceField && !g_pServerListManager->m_Server.m_svPlaylist.empty() && !g_pServerListManager->m_Server.m_svHostMap.empty())
             {
-                g_pServerListManager->LaunchServer(); // Launch server.
+                g_pServerListManager->LaunchServer(bServerActive); // Launch server.
             }
             else
             {
@@ -602,7 +609,7 @@ void CBrowser::HostPanel(void)
         {
             g_TaskScheduler->Dispatch([]()
                 {
-                    g_pBanSystem->Load();
+                    g_pBanSystem->LoadList();
                 }, 0);
         }
     }
@@ -622,7 +629,7 @@ void CBrowser::HostPanel(void)
         {
             if (!g_pServerListManager->m_Server.m_svHostMap.empty())
             {
-                g_pServerListManager->LaunchServer();
+                g_pServerListManager->LaunchServer(bServerActive);
             }
             else
             {
@@ -631,7 +638,7 @@ void CBrowser::HostPanel(void)
             }
         }
 
-        if (g_pServer->IsActive())
+        if (bServerActive)
         {
             ImGui::Spacing();
             ImGui::Separator();
@@ -653,7 +660,7 @@ void CBrowser::HostPanel(void)
 
             if (ImGui::Button("AI settings reparse", ImVec2(ImGui::GetWindowContentRegionWidth(), 32)))
             {
-                DevMsg(eDLL_T::ENGINE, "Reparsing AI data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
+                Msg(eDLL_T::ENGINE, "Reparsing AI data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
                 ProcessCommand("aisettings_reparse");
 
                 if (g_pClientState->IsActive())
@@ -664,7 +671,7 @@ void CBrowser::HostPanel(void)
 
             if (ImGui::Button("Weapon settings reparse", ImVec2(ImGui::GetWindowContentRegionWidth(), 32)))
             {
-                DevMsg(eDLL_T::ENGINE, "Reparsing weapon data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
+                Msg(eDLL_T::ENGINE, "Reparsing weapon data on %s\n", g_pClientState->IsActive() ? "server and client" : "server");
                 ProcessCommand("weapon_reparse");
             }
         }

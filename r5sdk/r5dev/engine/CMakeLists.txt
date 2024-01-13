@@ -20,15 +20,15 @@ add_sources( SOURCE_GROUP "Collision"
     "traceinit.h"
 )
 
-if( ${PROJECT_NAME} STREQUAL "engine" )
+if( NOT ${PROJECT_NAME} STREQUAL "engine_ds" )
 add_sources( SOURCE_GROUP "Debug"
     "debugoverlay.cpp"
     "debugoverlay.h"
 )
-endif()
 
-if( ${PROJECT_NAME} STREQUAL "engine" )
 add_sources( SOURCE_GROUP "Render"
+    "framelimit.cpp"
+    "framelimit.h"
     "gl_matsysiface.h"
     "gl_model_private.h"
     "gl_rmain.cpp"
@@ -89,7 +89,7 @@ add_sources( SOURCE_GROUP "System"
     "sdk_dll.h"
 )
 
-if( ${PROJECT_NAME} STREQUAL "engine" )
+if( NOT ${PROJECT_NAME} STREQUAL "engine_ds" )
 add_sources( SOURCE_GROUP "System"
     "sys_getmodes.cpp"
     "sys_getmodes.h"
@@ -98,20 +98,22 @@ add_sources( SOURCE_GROUP "System"
 )
 endif()
 
+if( NOT ${PROJECT_NAME} STREQUAL "engine_cl" )
 add_sources( SOURCE_GROUP "Server"
     "server/persistence.cpp"
     "server/persistence.h"
     "server/server.cpp"
     "server/server.h"
-    "server/sv_main.cpp"
-    "server/sv_main.h"
     "server/sv_rcon.cpp"
     "server/sv_rcon.h"
+    "server/sv_main.cpp"
+    "server/sv_main.h"
     "server/vengineserver_impl.cpp"
     "server/vengineserver_impl.h"
     "server/datablock_sender.cpp"
     "server/datablock_sender.h"
 )
+endif()
 
 add_sources( SOURCE_GROUP "Client"
     "client/cdll_engine_int.cpp"
@@ -129,7 +131,7 @@ add_sources( SOURCE_GROUP "Shared"
     "shared/shared_rcon.h"
 )
 
-if( ${PROJECT_NAME} STREQUAL "engine" )
+if( NOT ${PROJECT_NAME} STREQUAL "engine_ds" )
 add_sources( SOURCE_GROUP "Client" # Client only.
     "client/clientstate.cpp"
     "client/clientstate.h"
@@ -144,9 +146,7 @@ add_sources( SOURCE_GROUP "Client" # Client only.
     "client/datablock_receiver.cpp"
     "client/datablock_receiver.h"
 )
-endif()
 
-if( ${PROJECT_NAME} STREQUAL "engine" )
 add_sources( SOURCE_GROUP "GameUI"
     "${ENGINE_SOURCE_DIR}/gameui/IBrowser.cpp"
     "${ENGINE_SOURCE_DIR}/gameui/IBrowser.h"
@@ -202,7 +202,6 @@ add_sources( SOURCE_GROUP "Public"
     "${ENGINE_SOURCE_DIR}/public/idatablock.h"
     "${ENGINE_SOURCE_DIR}/public/idebugoverlay.h"
     "${ENGINE_SOURCE_DIR}/public/iengine.h"
-    "${ENGINE_SOURCE_DIR}/public/igame.h"
     "${ENGINE_SOURCE_DIR}/public/iserver.h"
     "${ENGINE_SOURCE_DIR}/public/isnapshotmgr.h"
     "${ENGINE_SOURCE_DIR}/public/inetchannel.h"
@@ -218,7 +217,7 @@ add_sources( SOURCE_GROUP "Public"
     "${ENGINE_SOURCE_DIR}/public/gamebspfile.h"
 )
 
-if( ${PROJECT_NAME} STREQUAL "engine" )
+if( NOT ${PROJECT_NAME} STREQUAL "engine_ds" )
 add_sources( SOURCE_GROUP "Public"
     "${ENGINE_SOURCE_DIR}/public/client_class.h"
     "${ENGINE_SOURCE_DIR}/public/ivrenderview.h"
@@ -232,8 +231,14 @@ if( ${PROJECT_NAME} STREQUAL "engine_ds" )
 target_compile_definitions( ${PROJECT_NAME} PRIVATE
     "DEDICATED"
 )
+elseif( ${PROJECT_NAME} STREQUAL "engine_cl" )
+target_compile_definitions( ${PROJECT_NAME} PRIVATE
+    "CLIENT_DLL"
+)
 endif()
+
 endmacro()
 
 add_engine_project( "engine" )
 add_engine_project( "engine_ds" )
+add_engine_project( "engine_cl" )

@@ -21,10 +21,23 @@ ConVar* debug_draw_box_depth_test          = nullptr;
 
 ConVar* developer                          = nullptr;
 ConVar* fps_max                            = nullptr;
+ConVar* fps_max_vsync                      = nullptr;
+
+#ifndef DEDICATED
+ConVar* fps_max_rt                         = nullptr;
+ConVar* fps_max_rt_tolerance               = nullptr;
+ConVar* fps_max_rt_sleep_threshold         = nullptr;
+ConVar* fps_max_gfx                        = nullptr;
+#endif // !DEDICATED
+
+ConVar* base_tickinterval_sp               = nullptr;
+ConVar* base_tickinterval_mp               = nullptr;
 
 // Taken from S15:
 ConVar* usercmd_frametime_max              = nullptr;
 ConVar* usercmd_frametime_min              = nullptr;
+
+ConVar* usercmd_dualwield_enable           = nullptr;
 
 ConVar* staticProp_no_fade_scalar          = nullptr;
 ConVar* staticProp_gather_size_weight      = nullptr;
@@ -46,6 +59,8 @@ ConVar* mp_gamemode                        = nullptr;
 ConVar* rcon_address                       = nullptr;
 ConVar* rcon_password                      = nullptr;
 
+ConVar* enable_CmdKeyValues                = nullptr;
+
 ConVar* r_debug_overlay_nodecay            = nullptr;
 ConVar* r_debug_overlay_invisible          = nullptr;
 ConVar* r_debug_overlay_wireframe          = nullptr;
@@ -57,6 +72,9 @@ ConVar* r_drawWorldMeshesDepthAtTheEnd     = nullptr;
 #ifndef DEDICATED
 ConVar* r_visualizetraces                  = nullptr;
 ConVar* r_visualizetraces_duration         = nullptr;
+
+ConVar* gfx_nvnUseLowLatency               = nullptr;
+ConVar* gfx_nvnUseLowLatencyBoost          = nullptr;
 #endif // !DEDICATED
 
 ConVar* stream_overlay                     = nullptr;
@@ -87,6 +105,8 @@ ConVar* navmesh_draw_poly_bounds           = nullptr;
 ConVar* navmesh_draw_poly_bounds_inner     = nullptr;
 #endif // !DEDICATED
 
+ConVar* sv_language                        = nullptr;
+
 ConVar* sv_showconnecting                  = nullptr;
 ConVar* sv_globalBanlist                   = nullptr;
 ConVar* sv_pylonVisibility                 = nullptr;
@@ -97,8 +117,12 @@ ConVar* sv_forceChatToTeamOnly             = nullptr;
 
 ConVar* sv_single_core_dedi                = nullptr;
 
-ConVar* sv_updaterate_mp                   = nullptr;
+ConVar* sv_maxunlag = nullptr;
+ConVar* sv_clockcorrection_msecs = nullptr;
+
 ConVar* sv_updaterate_sp                   = nullptr;
+ConVar* sv_updaterate_mp                   = nullptr;
+
 ConVar* sv_autoReloadRate                  = nullptr;
 
 ConVar* sv_simulateBots                    = nullptr;
@@ -115,13 +139,12 @@ ConVar* sv_voiceEcho                       = nullptr;
 ConVar* sv_voiceenable                     = nullptr;
 ConVar* sv_alltalk                         = nullptr;
 
-ConVar* sv_usercmd_dualwield_enable        = nullptr;
 ConVar* player_userCmdsQueueWarning        = nullptr;
 
 //#ifdef DEDICATED
 ConVar* sv_rcon_debug                      = nullptr;
 ConVar* sv_rcon_sendlogs                   = nullptr;
-ConVar* sv_rcon_banpenalty                 = nullptr; // TODO
+//ConVar* sv_rcon_banpenalty                 = nullptr; // TODO
 ConVar* sv_rcon_maxfailures                = nullptr;
 ConVar* sv_rcon_maxignores                 = nullptr;
 ConVar* sv_rcon_maxsockets                 = nullptr;
@@ -141,11 +164,11 @@ ConVar* bhit_abs_origin                    = nullptr;
 //-----------------------------------------------------------------------------
 // CLIENT                                                                     |
 #ifndef DEDICATED
-ConVar* cl_rcon_request_sendlogs           = nullptr;
+ConVar* cl_rcon_inputonly           = nullptr;
 ConVar* cl_quota_stringCmdsPerSecond       = nullptr;
 
-ConVar* cl_cmdrate                         = nullptr;
 ConVar* cl_move_use_dt                     = nullptr;
+ConVar* cl_updaterate_mp                   = nullptr;
 
 ConVar* cl_notify_invert_x                 = nullptr;
 ConVar* cl_notify_invert_y                 = nullptr;
@@ -169,6 +192,8 @@ ConVar* cl_materialinfo_offset_x           = nullptr;
 ConVar* cl_materialinfo_offset_y           = nullptr;
 
 ConVar* cl_threaded_bone_setup             = nullptr;
+
+ConVar* cl_language                        = nullptr;
 
 ConVar* con_drawnotify                     = nullptr;
 ConVar* con_notifylines                    = nullptr;
@@ -198,13 +223,14 @@ ConVar* con_notify_error_clr               = nullptr;
 
 ConVar* con_max_lines                      = nullptr;
 ConVar* con_max_history                    = nullptr;
-ConVar* con_suggestion_limit               = nullptr;
-ConVar* con_suggestion_showhelptext        = nullptr;
-ConVar* con_suggestion_showflags           = nullptr;
-ConVar* con_suggestion_flags_realtime      = nullptr;
+ConVar* con_suggest_limit               = nullptr;
+ConVar* con_suggest_showhelptext        = nullptr;
+ConVar* con_suggest_showflags           = nullptr;
 
 ConVar* origin_disconnectWhenOffline       = nullptr;
+ConVar* discord_updatePresence = nullptr;
 
+ConVar* settings_reflex = nullptr;
 ConVar* serverbrowser_hideEmptyServers = nullptr;
 ConVar* serverbrowser_mapFilter = nullptr;
 ConVar* serverbrowser_gamemodeFilter = nullptr;
@@ -239,6 +265,10 @@ ConVar* net_datablock_networkLossForSlowSpeed = nullptr;
 ConVar* pylon_matchmaking_hostname         = nullptr;
 ConVar* pylon_host_update_interval         = nullptr;
 ConVar* pylon_showdebuginfo                = nullptr;
+
+ConVar* ssl_verify_peer                    = nullptr;
+ConVar* curl_timeout                       = nullptr;
+ConVar* curl_debug                         = nullptr;
 //-----------------------------------------------------------------------------
 // RTECH API                                                                  |
 ConVar* rtech_debug                        = nullptr;
@@ -265,12 +295,14 @@ void ConVar_StaticInit(void)
 	hostdesc                       = ConVar::StaticCreate("hostdesc", "", FCVAR_RELEASE, "Host game server description.", false, 0.f, false, 0.f, nullptr, nullptr);
 	sdk_fixedframe_tickinterval    = ConVar::StaticCreate("sdk_fixedframe_tickinterval", "0.01", FCVAR_RELEASE, "The tick interval used by the SDK fixed frame.", false, 0.f, false, 0.f, nullptr, nullptr);
 
-	curl_debug      = ConVar::StaticCreate("curl_debug"     , "0" , FCVAR_DEVELOPMENTONLY, "Determines whether or not to enable curl debug logging.", false, 0.f, false, 0.f, nullptr, "1 = curl logs; 0 (zero) = no logs.");
+	curl_debug      = ConVar::StaticCreate("curl_debug"     , "0" , FCVAR_DEVELOPMENTONLY, "Determines whether or not to enable curl debug logging.", false, 0.f, false, 0.f, nullptr, "1 = curl logs; 0 (zero) = no logs");
 	curl_timeout    = ConVar::StaticCreate("curl_timeout"   , "15", FCVAR_DEVELOPMENTONLY, "Maximum time in seconds a curl transfer operation could take.", false, 0.f, false, 0.f, nullptr, nullptr);
-	ssl_verify_peer = ConVar::StaticCreate("ssl_verify_peer", "1" , FCVAR_DEVELOPMENTONLY, "Verify the authenticity of the peer's SSL certificate.", false, 0.f, false, 0.f, nullptr, "1 = curl verifies; 0 (zero) = no verification.");
+	ssl_verify_peer = ConVar::StaticCreate("ssl_verify_peer", "1" , FCVAR_DEVELOPMENTONLY, "Verify the authenticity of the peer's SSL certificate.", false, 0.f, false, 0.f, nullptr, "1 = curl verifies; 0 (zero) = no verification");
 
 	rcon_address  = ConVar::StaticCreate("rcon_address",  "[loopback]:37015", FCVAR_SERVER_CANNOT_QUERY | FCVAR_DONTRECORD | FCVAR_RELEASE, "Remote server access address.", false, 0.f, false, 0.f, nullptr, nullptr);
 	rcon_password = ConVar::StaticCreate("rcon_password", ""                , FCVAR_SERVER_CANNOT_QUERY | FCVAR_DONTRECORD | FCVAR_RELEASE, "Remote server access password (rcon is disabled if empty).", false, 0.f, false, 0.f, &RCON_PasswordChanged_f, nullptr);
+
+	enable_CmdKeyValues = ConVar::StaticCreate("enable_CmdKeyValues", "0", FCVAR_DEVELOPMENTONLY, "Toggle CmdKeyValues transmit and receive.", false, 0.f, false, 0.f, nullptr, nullptr);
 
 	r_debug_overlay_nodecay        = ConVar::StaticCreate("r_debug_overlay_nodecay"       , "0", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Keeps all debug overlays alive regardless of their lifetime. Use command 'clear_debug_overlays' to clear everything.", false, 0.f, false, 0.f, nullptr, nullptr);
 	r_debug_overlay_invisible      = ConVar::StaticCreate("r_debug_overlay_invisible"     , "1", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Show invisible debug overlays (alpha < 1 = 255).", false, 0.f, false, 0.f, nullptr, nullptr);
@@ -279,6 +311,16 @@ void ConVar_StaticInit(void)
 	r_drawWorldMeshes              = ConVar::StaticCreate("r_drawWorldMeshes"             , "1", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Render world meshes.", false, 0.f, false, 0.f, nullptr, nullptr);
 	r_drawWorldMeshesDepthOnly     = ConVar::StaticCreate("r_drawWorldMeshesDepthOnly"    , "1", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Render world meshes (depth only).", false, 0.f, false, 0.f, nullptr, nullptr);
 	r_drawWorldMeshesDepthAtTheEnd = ConVar::StaticCreate("r_drawWorldMeshesDepthAtTheEnd", "1", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Render world meshes (depth at the end).", false, 0.f, false, 0.f, nullptr, nullptr);
+
+#ifndef DEDICATED
+	fps_max_rt                 = ConVar::StaticCreate("fps_max_rt", "0", FCVAR_RELEASE, "Frame rate limiter within the render thread. -1 indicates use the desktop refresh. 0 is disabled.", true, -1.f, true, 295.f, nullptr, nullptr);
+	fps_max_rt_tolerance       = ConVar::StaticCreate("fps_max_rt_tolerance", "0.25", FCVAR_RELEASE, "Maximum amount of frame time before frame limiter restarts.", true, 0.f, false, 0.f, nullptr, nullptr);
+	fps_max_rt_sleep_threshold = ConVar::StaticCreate("fps_max_rt_sleep_threshold", "0.016666667", FCVAR_RELEASE, "Frame limiter starts to sleep when frame time exceeds this threshold.", true, 0.f, false, 0.f, nullptr, nullptr);
+
+	fps_max_gfx = ConVar::StaticCreate("fps_max_gfx", "0", FCVAR_RELEASE, "Frame rate limiter using NVIDIA Reflex Low Latency SDK. -1 indicates use the desktop refresh. 0 is disabled.", true, -1.f, true, 295.f, &GFX_NVN_Changed_f, nullptr);
+	gfx_nvnUseLowLatency      = ConVar::StaticCreate("gfx_nvnUseLowLatency"     , "1", FCVAR_RELEASE | FCVAR_ARCHIVE, "Enables NVIDIA Reflex Low Latency SDK."  , false, 0.f, false, 0.f, &GFX_NVN_Changed_f, nullptr);
+	gfx_nvnUseLowLatencyBoost = ConVar::StaticCreate("gfx_nvnUseLowLatencyBoost", "0", FCVAR_RELEASE | FCVAR_ARCHIVE, "Enables NVIDIA Reflex Low Latency Boost.", false, 0.f, false, 0.f, &GFX_NVN_Changed_f, nullptr);
+#endif // !DEDICATED
 
 	//-------------------------------------------------------------------------
 	// SHARED                                                                 |
@@ -304,6 +346,8 @@ void ConVar_StaticInit(void)
 	navmesh_draw_poly_bounds       = ConVar::StaticCreate("navmesh_draw_poly_bounds"       , "-1", FCVAR_DEVELOPMENTONLY, "Draws the bounds of the NavMesh polys.", false, 0.f, false, 0.f, nullptr, "Index: > 0 && < mesh->m_tileCount");
 	navmesh_draw_poly_bounds_inner = ConVar::StaticCreate("navmesh_draw_poly_bounds_inner" , "0" , FCVAR_DEVELOPMENTONLY, "Draws the inner bounds of the NavMesh polys (requires navmesh_draw_poly_bounds).", false, 0.f, false, 0.f, nullptr, "Index: > 0 && < mesh->m_tileCount");
 #endif // !DEDICATED
+
+	sv_language = ConVar::StaticCreate("sv_language", "english", FCVAR_RELEASE, "Language of the server. Sent to MasterServer for localising error messages.", false, 0.f, false, 0.f, LanguageChanged_f, nullptr);
 	sv_showconnecting  = ConVar::StaticCreate("sv_showconnecting" , "1", FCVAR_RELEASE, "Logs information about the connecting client to the console.", false, 0.f, false, 0.f, nullptr, nullptr);
 	sv_globalBanlist   = ConVar::StaticCreate("sv_globalBanlist"  , "1", FCVAR_RELEASE, "Determines whether or not to use the global banned list.", false, 0.f, false, 0.f, nullptr, "0 = Disable, 1 = Enable.");
 	sv_pylonVisibility = ConVar::StaticCreate("sv_pylonVisibility", "0", FCVAR_RELEASE, "Determines the visibility to the Pylon master server.", false, 0.f, false, 0.f, nullptr, "0 = Offline, 1 = Hidden, 2 = Public.");
@@ -315,9 +359,9 @@ void ConVar_StaticInit(void)
 
 	sv_rcon_debug       = ConVar::StaticCreate("sv_rcon_debug"      , "0" , FCVAR_RELEASE, "Show rcon debug information ( !slower! ).", false, 0.f, false, 0.f, nullptr, nullptr);
 	sv_rcon_sendlogs    = ConVar::StaticCreate("sv_rcon_sendlogs"   , "0" , FCVAR_RELEASE, "Network console logs to connected and authenticated sockets.", false, 0.f, false, 0.f, nullptr, nullptr);
-	sv_rcon_banpenalty  = ConVar::StaticCreate("sv_rcon_banpenalty" , "10", FCVAR_RELEASE, "Number of minutes to ban users who fail rcon authentication.", false, 0.f, false, 0.f, nullptr, nullptr);
-	sv_rcon_maxfailures = ConVar::StaticCreate("sv_rcon_maxfailures", "10", FCVAR_RELEASE, "Max number of times a user can fail rcon authentication before being banned.", true, 1.f, false, 0.f, nullptr, nullptr);
-	sv_rcon_maxignores  = ConVar::StaticCreate("sv_rcon_maxignores" , "15", FCVAR_RELEASE, "Max number of times a user can ignore the instruction message before being banned.", true, 1.f, false, 0.f, nullptr, nullptr);
+	//sv_rcon_banpenalty  = ConVar::StaticCreate("sv_rcon_banpenalty" , "10", FCVAR_RELEASE, "Number of minutes to ban users who fail rcon authentication.", false, 0.f, false, 0.f, nullptr, nullptr);
+	sv_rcon_maxfailures = ConVar::StaticCreate("sv_rcon_maxfailures", "10", FCVAR_RELEASE, "Max number of times an user can fail rcon authentication before being banned.", true, 1.f, false, 0.f, nullptr, nullptr);
+	sv_rcon_maxignores  = ConVar::StaticCreate("sv_rcon_maxignores" , "15", FCVAR_RELEASE, "Max number of times an user can ignore the instruction message before being banned.", true, 1.f, false, 0.f, nullptr, nullptr);
 	sv_rcon_maxsockets  = ConVar::StaticCreate("sv_rcon_maxsockets" , "32", FCVAR_RELEASE, "Max number of accepted sockets before the server starts closing redundant sockets.", true, 1.f, true, MAX_PLAYERS, nullptr, nullptr);
 	sv_rcon_maxconnections    = ConVar::StaticCreate("sv_rcon_maxconnections"   , "1"   , FCVAR_RELEASE, "Max number of authenticated connections before the server closes the listen socket.", true, 1.f, true, MAX_PLAYERS, &RCON_ConnectionCountChanged_f, nullptr);
 	sv_rcon_maxpacketsize     = ConVar::StaticCreate("sv_rcon_maxpacketsize"    , "1024", FCVAR_RELEASE, "Max number of bytes allowed in a command packet from a non-authenticated netconsole.", true, 0.f, false, 0.f, nullptr, nullptr);
@@ -327,8 +371,6 @@ void ConVar_StaticInit(void)
 	sv_validatePersonaName  = ConVar::StaticCreate("sv_validatePersonaName" , "1" , FCVAR_RELEASE, "Validate the client's textual persona name on connect.", true, 0.f, false, 0.f, nullptr, nullptr);
 	sv_minPersonaNameLength = ConVar::StaticCreate("sv_minPersonaNameLength", "4" , FCVAR_RELEASE, "The minimum length of the client's textual persona name.", true, 0.f, false, 0.f, nullptr, nullptr);
 	sv_maxPersonaNameLength = ConVar::StaticCreate("sv_maxPersonaNameLength", "16", FCVAR_RELEASE, "The maximum length of the client's textual persona name.", true, 0.f, false, 0.f, nullptr, nullptr);
-
-	sv_usercmd_dualwield_enable = ConVar::StaticCreate("sv_usercmd_dualwield_enable", "0", FCVAR_RELEASE, "Allows setting dual wield cycle slots, and activating multiple inventory weapons from UserCmd.", false, 0.f, false, 0.f, nullptr, nullptr);
 #endif // !CLIENT_DLL
 #if !defined (GAMEDLL_S0) && !defined (GAMEDLL_S1)
 	bhit_depth_test = ConVar::StaticCreate("bhit_depth_test", "0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Use depth test for bullet ray trace overlay.", false, 0.f, false, 0.f, nullptr, nullptr);
@@ -337,7 +379,7 @@ void ConVar_StaticInit(void)
 	//-------------------------------------------------------------------------
 	// CLIENT                                                                 |
 #ifndef DEDICATED
-	cl_rcon_request_sendlogs = ConVar::StaticCreate("cl_rcon_request_sendlogs", "1" , FCVAR_RELEASE, "Request the rcon server to send console logs on connect.", false, 0.f, false, 0.f, nullptr, nullptr);
+	cl_rcon_inputonly = ConVar::StaticCreate("cl_rcon_inputonly", "0" , FCVAR_RELEASE, "Tells the rcon server whether or not we are input only.", false, 0.f, false, 0.f, RCON_InputOnlyChanged_f, nullptr);
 	cl_quota_stringCmdsPerSecond = ConVar::StaticCreate("cl_quota_stringCmdsPerSecond", "16" , FCVAR_RELEASE, "How many string commands per second user is allowed to submit, 0 to allow all submissions.", true, 0.f, false, 0.f, nullptr, nullptr);
 
 	cl_notify_invert_x = ConVar::StaticCreate("cl_notify_invert_x", "0", FCVAR_DEVELOPMENTONLY, "Inverts the X offset for console notify debug overlay.", false, 0.f, false, 0.f, nullptr, nullptr);
@@ -390,28 +432,30 @@ void ConVar_StaticInit(void)
 	con_notify_warning_clr = ConVar::StaticCreate("con_notify_warning_clr", "180 180 20 255", FCVAR_MATERIAL_SYSTEM_THREAD, "Warning RUI console overlay log color.", false, 1.f, false, 50.f, nullptr, nullptr);
 	con_notify_error_clr   = ConVar::StaticCreate("con_notify_error_clr"  , "225 20 20 255" , FCVAR_MATERIAL_SYSTEM_THREAD, "Error RUI console overlay log color.", false, 1.f, false, 50.f, nullptr, nullptr);
 
-	con_max_lines                 = ConVar::StaticCreate("con_max_lines"                , "1024", FCVAR_DEVELOPMENTONLY, "Maximum number of lines in the console before cleanup starts.", true, 1.f, false, 0.f, nullptr, nullptr);
-	con_max_history               = ConVar::StaticCreate("con_max_history"              , "512" , FCVAR_DEVELOPMENTONLY, "Maximum number of command submission items before history cleanup starts.", true, 0.f, false, 0.f, nullptr, nullptr);
-	con_suggestion_limit          = ConVar::StaticCreate("con_suggestion_limit"         , "128" , FCVAR_DEVELOPMENTONLY, "Maximum number of suggestions the autocomplete window will show for the console.", true, 0.f, false, 0.f, nullptr, nullptr);
-	con_suggestion_showhelptext   = ConVar::StaticCreate("con_suggestion_showhelptext"  , "1"   , FCVAR_DEVELOPMENTONLY, "Show CommandBase help text in autocomplete window.", false, 0.f, false, 0.f, nullptr, nullptr);
-	con_suggestion_showflags      = ConVar::StaticCreate("con_suggestion_showflags"     , "1"   , FCVAR_DEVELOPMENTONLY, "Show CommandBase flags in autocomplete window.", false, 0.f, false, 0.f, nullptr, nullptr);
-	con_suggestion_flags_realtime = ConVar::StaticCreate("con_suggestion_flags_realtime", "1"   , FCVAR_DEVELOPMENTONLY, "Whether to show compile-time or run-time CommandBase flags.", false, 0.f, false, 0.f, nullptr, nullptr);
+	con_max_lines            = ConVar::StaticCreate("con_max_lines"             , "1024", FCVAR_DEVELOPMENTONLY, "Maximum number of lines in the console before cleanup starts.", true, 1.f, false, 0.f, nullptr, nullptr);
+	con_max_history          = ConVar::StaticCreate("con_max_history"           , "512" , FCVAR_DEVELOPMENTONLY, "Maximum number of command submission items before history cleanup starts.", true, 0.f, false, 0.f, nullptr, nullptr);
+	con_suggest_limit        = ConVar::StaticCreate("con_suggest_limit"         , "128" , FCVAR_DEVELOPMENTONLY, "Maximum number of suggestions the autocomplete window will show for the console.", true, 0.f, false, 0.f, nullptr, nullptr);
+	con_suggest_showhelptext = ConVar::StaticCreate("con_suggest_showhelptext"  , "1"   , FCVAR_DEVELOPMENTONLY, "Show CommandBase help text in autocomplete window.", false, 0.f, false, 0.f, nullptr, nullptr);
+	con_suggest_showflags    = ConVar::StaticCreate("con_suggest_showflags"     , "1"   , FCVAR_DEVELOPMENTONLY, "Show CommandBase flags in autocomplete window.", false, 0.f, false, 0.f, nullptr, nullptr);
 
-	serverbrowser_hideEmptyServers = ConVar::StaticCreate("serverbrowser_hideEmptyServers", "0", FCVAR_RELEASE, "Hide empty servers in the server browser", false, 0.f, false, 0.f, nullptr, nullptr);
-	serverbrowser_mapFilter        = ConVar::StaticCreate("serverbrowser_mapFilter", "0", FCVAR_RELEASE, "Filter servers by map in the server browser", false, 0.f, false, 0.f, nullptr, nullptr);
-	serverbrowser_gamemodeFilter   = ConVar::StaticCreate("serverbrowser_gamemodeFilter", "0", FCVAR_RELEASE, "Filter servers by gamemode in the server browser", false, 0.f, false, 0.f, nullptr, nullptr);
+	settings_reflex                = ConVar::StaticCreate("settings_reflex", "1", FCVAR_RELEASE, "Selected NVIDIA Reflex mode.", false, 0.f, false, 0.f, nullptr, "0 = Off. 1 = On. 2 = On + Boost.");
+	serverbrowser_hideEmptyServers = ConVar::StaticCreate("serverbrowser_hideEmptyServers", "0", FCVAR_RELEASE, "Hide empty servers in the server browser.", false, 0.f, false, 0.f, nullptr, nullptr);
+	serverbrowser_mapFilter        = ConVar::StaticCreate("serverbrowser_mapFilter", "0", FCVAR_RELEASE, "Filter servers by map in the server browser.", false, 0.f, false, 0.f, nullptr, nullptr);
+	serverbrowser_gamemodeFilter   = ConVar::StaticCreate("serverbrowser_gamemodeFilter", "0", FCVAR_RELEASE, "Filter servers by gamemode in the server browser.", false, 0.f, false, 0.f, nullptr, nullptr);
 
 #endif // !DEDICATED
 	// Taken from S15:
 	usercmd_frametime_max = ConVar::StaticCreate("usercmd_frametime_max", "0.100",    FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY,  "The largest amount of simulation seconds a UserCmd can have.", false, 0.f, false, 0.f, nullptr, nullptr);
 	usercmd_frametime_min = ConVar::StaticCreate("usercmd_frametime_min", "0.002857", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "The smallest amount of simulation seconds a UserCmd can have.", false, 0.f, false, 0.f, nullptr, nullptr);
+
+	usercmd_dualwield_enable = ConVar::StaticCreate("usercmd_dualwield_enable", "0", FCVAR_REPLICATED | FCVAR_RELEASE, "Allows setting dual wield cycle slots, and activating multiple inventory weapons from UserCmd.", false, 0.f, false, 0.f, nullptr, nullptr);
 	//-------------------------------------------------------------------------
 	// FILESYSTEM                                                             |
-	fs_showWarnings                   = ConVar::StaticCreate("fs_showWarnings"                       , "0", FCVAR_DEVELOPMENTONLY, "Logs the FileSystem warnings to the console, filtered by 'fs_warning_level' ( !slower! ).", true, 0.f, true, 2.f, nullptr, "0 = log to file. 1 = 0 + log to console. 2 = 1 + log to notify.");
+	fs_showWarnings                   = ConVar::StaticCreate("fs_showWarnings"                       , "0", FCVAR_DEVELOPMENTONLY, "Logs the FileSystem warnings to the console, filtered by 'fs_warning_level' ( !slower! ).", true, 0.f, true, 2.f, nullptr, "0 = log to file. 1 = 0 + log to console. 2 = 1 + log to notify");
 	fs_packedstore_entryblock_stats   = ConVar::StaticCreate("fs_packedstore_entryblock_stats"       , "0", FCVAR_DEVELOPMENTONLY, "Logs the stats of each file entry in the VPK during decompression ( !slower! ).", false, 0.f, false, 0.f, nullptr, nullptr);
 	fs_packedstore_workspace          = ConVar::StaticCreate("fs_packedstore_workspace"           , "ship", FCVAR_DEVELOPMENTONLY, "Determines the current VPK workspace.", false, 0.f, false, 0.f, nullptr, nullptr);
 	fs_packedstore_compression_level  = ConVar::StaticCreate("fs_packedstore_compression_level", "default", FCVAR_DEVELOPMENTONLY, "Determines the VPK compression level.", false, 0.f, false, 0.f, nullptr, "fastest faster default better uber");
-	fs_packedstore_max_helper_threads = ConVar::StaticCreate("fs_packedstore_max_helper_threads"    , "-1", FCVAR_DEVELOPMENTONLY, "Max # of additional \"helper\" threads to create during compression.", true, -1, true, LZHAM_MAX_HELPER_THREADS, nullptr, "Must range between [-1,LZHAM_MAX_HELPER_THREADS], where -1=max practical.");
+	fs_packedstore_max_helper_threads = ConVar::StaticCreate("fs_packedstore_max_helper_threads"    , "-1", FCVAR_DEVELOPMENTONLY, "Max # of additional \"helper\" threads to create during compression.", true, -1, true, LZHAM_MAX_HELPER_THREADS, nullptr, "Must range between [-1,LZHAM_MAX_HELPER_THREADS], where -1=max practical");
 	//-------------------------------------------------------------------------
 	// MATERIALSYSTEM                                                         |
 #ifndef DEDICATED
@@ -419,14 +463,14 @@ void ConVar_StaticInit(void)
 #endif // !DEDICATED
 	//-------------------------------------------------------------------------
 	// SQUIRREL                                                               |
-	script_show_output      = ConVar::StaticCreate("script_show_output" , "0", FCVAR_RELEASE, "Prints the VM output to the console ( !slower! ).", true, 0.f, true, 2.f, nullptr, "0 = log to file. 1 = 0 + log to console. 2 = 1 + log to notify.");
-	script_show_warning     = ConVar::StaticCreate("script_show_warning", "0", FCVAR_RELEASE, "Prints the VM warning output to the console ( !slower! ).", true, 0.f, true, 2.f, nullptr, "0 = log to file. 1 = 0 + log to console. 2 = 1 + log to notify.");
+	script_show_output      = ConVar::StaticCreate("script_show_output" , "0", FCVAR_RELEASE, "Prints the VM output to the console ( !slower! ).", true, 0.f, true, 2.f, nullptr, "0 = log to file. 1 = 0 + log to console. 2 = 1 + log to notify");
+	script_show_warning     = ConVar::StaticCreate("script_show_warning", "0", FCVAR_RELEASE, "Prints the VM warning output to the console ( !slower! ).", true, 0.f, true, 2.f, nullptr, "0 = log to file. 1 = 0 + log to console. 2 = 1 + log to notify");
 	//-------------------------------------------------------------------------
 	// NETCHANNEL                                                             |
 	net_tracePayload           = ConVar::StaticCreate("net_tracePayload"          , "0", FCVAR_DEVELOPMENTONLY                    , "Log the payload of the send/recv datagram to a file on the disk.", false, 0.f, false, 0.f, nullptr, nullptr);
 	net_encryptionEnable       = ConVar::StaticCreate("net_encryptionEnable"      , "1", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED , "Use AES encryption on game packets.", false, 0.f, false, 0.f, nullptr, nullptr);
 	net_useRandomKey           = ConVar::StaticCreate("net_useRandomKey"          , "1"                        , FCVAR_RELEASE    , "Use random AES encryption key for game packets.", false, 0.f, false, 0.f, &NET_UseRandomKeyChanged_f, nullptr);
-	net_processTimeBudget      = ConVar::StaticCreate("net_processTimeBudget"     ,"200"                       , FCVAR_RELEASE    , "Net message process time budget in milliseconds (removing netchannel if exceeded).", true, 0.f, false, 0.f, nullptr, "0 = disabled.");
+	net_processTimeBudget      = ConVar::StaticCreate("net_processTimeBudget"     ,"200"                       , FCVAR_RELEASE    , "Net message process time budget in milliseconds (removing netchannel if exceeded).", true, 0.f, false, 0.f, nullptr, "0 = disabled");
 	//-------------------------------------------------------------------------
 	// NETWORKSYSTEM                                                          |
 	pylon_matchmaking_hostname = ConVar::StaticCreate("pylon_matchmaking_hostname", "ms.r5reloaded.com", FCVAR_RELEASE, "Holds the pylon matchmaking hostname.", false, 0.f, false, 0.f, &MP_HostName_Changed_f, nullptr);
@@ -438,12 +482,12 @@ void ConVar_StaticInit(void)
 	//-------------------------------------------------------------------------
 	// RUI                                                                    |
 #ifndef DEDICATED
-	rui_drawEnable = ConVar::StaticCreate("rui_drawEnable", "1", FCVAR_RELEASE, "Draws the RUI if set.", false, 0.f, false, 0.f, nullptr, "1 = Draw, 0 = No Draw.");
+	rui_drawEnable = ConVar::StaticCreate("rui_drawEnable", "1", FCVAR_RELEASE, "Draws the RUI if set.", false, 0.f, false, 0.f, nullptr, "1 = draw; 0 (zero) = no draw");
 #endif // !DEDICATED
 	//-------------------------------------------------------------------------
 	// MILES                                                                  |
 #ifndef DEDICATED
-	miles_debug = ConVar::StaticCreate("miles_debug", "0", FCVAR_RELEASE, "Enables debug prints for the Miles Sound System.", false, 0.f, false, 0.f, nullptr, "1 = Print, 0 = No Print");
+	miles_debug = ConVar::StaticCreate("miles_debug", "0", FCVAR_RELEASE, "Enables debug prints for the Miles Sound System.", false, 0.f, false, 0.f, nullptr, "1 = print; 0 (zero) = no print");
 #endif // !DEDICATED
 	//-------------------------------------------------------------------------
 }
@@ -461,11 +505,15 @@ void ConVar_InitShipped(void)
 #endif // !CLIENT_DLL
 	developer                        = g_pCVar->FindVar("developer");
 	fps_max                          = g_pCVar->FindVar("fps_max");
+	fps_max_vsync                    = g_pCVar->FindVar("fps_max_vsync");
+	base_tickinterval_sp             = g_pCVar->FindVar("base_tickinterval_sp");
+	base_tickinterval_mp             = g_pCVar->FindVar("base_tickinterval_mp");
 	fs_showAllReads                  = g_pCVar->FindVar("fs_showAllReads");
 #ifndef DEDICATED
-	cl_cmdrate                       = g_pCVar->FindVar("cl_cmdrate");
 	cl_move_use_dt                   = g_pCVar->FindVar("cl_move_use_dt");
+	cl_updaterate_mp                 = g_pCVar->FindVar("cl_updaterate_mp");
 	cl_threaded_bone_setup           = g_pCVar->FindVar("cl_threaded_bone_setup");
+	cl_language                      = g_pCVar->FindVar("cl_language");
 #endif // !DEDICATED
 	single_frame_shutdown_for_reload = g_pCVar->FindVar("single_frame_shutdown_for_reload");
 	enable_debug_overlays            = g_pCVar->FindVar("enable_debug_overlays");
@@ -488,6 +536,7 @@ void ConVar_InitShipped(void)
 	old_gather_props                 = g_pCVar->FindVar("old_gather_props");
 #ifndef DEDICATED
 	origin_disconnectWhenOffline     = g_pCVar->FindVar("origin_disconnectWhenOffline");
+	discord_updatePresence           = g_pCVar->FindVar("discord_updatePresence");
 #endif // !DEDICATED
 	mp_gamemode                      = g_pCVar->FindVar("mp_gamemode");
 	ip_cvar                          = g_pCVar->FindVar("ip");
@@ -501,8 +550,11 @@ void ConVar_InitShipped(void)
 #ifndef CLIENT_DLL
 	sv_stats = g_pCVar->FindVar("sv_stats");
 
-	sv_updaterate_mp = g_pCVar->FindVar("sv_updaterate_mp");
+	sv_maxunlag = g_pCVar->FindVar("sv_maxunlag");
+	sv_clockcorrection_msecs = g_pCVar->FindVar("sv_clockcorrection_msecs");
+
 	sv_updaterate_sp = g_pCVar->FindVar("sv_updaterate_sp");
+	sv_updaterate_mp = g_pCVar->FindVar("sv_updaterate_mp");
 
 	sv_showhitboxes = g_pCVar->FindVar("sv_showhitboxes");
 	sv_forceChatToTeamOnly = g_pCVar->FindVar("sv_forceChatToTeamOnly");
@@ -513,6 +565,9 @@ void ConVar_InitShipped(void)
 	sv_voiceEcho = g_pCVar->FindVar("sv_voiceEcho");
 	sv_alltalk = g_pCVar->FindVar("sv_alltalk");
 	player_userCmdsQueueWarning = g_pCVar->FindVar("player_userCmdsQueueWarning");
+
+	sv_updaterate_sp->RemoveFlags(FCVAR_DEVELOPMENTONLY);
+	sv_updaterate_mp->RemoveFlags(FCVAR_DEVELOPMENTONLY);
 
 	sv_showhitboxes->SetMin(-1); // Allow user to go over each entity manually without going out of bounds.
 	sv_showhitboxes->SetMax(NUM_ENT_ENTRIES - 1);
@@ -528,15 +583,26 @@ void ConVar_InitShipped(void)
 #endif // !(GAMEDLL_S0) || !(GAMEDLL_S1) || !(GAMEDLL_S2)
 #endif // !CLIENT_DLL
 #ifndef DEDICATED
+	cl_updaterate_mp->RemoveFlags(FCVAR_DEVELOPMENTONLY);
+
 	cl_threaded_bone_setup->RemoveFlags(FCVAR_DEVELOPMENTONLY);
 	rui_defaultDebugFontFace->RemoveFlags(FCVAR_DEVELOPMENTONLY);
 	origin_disconnectWhenOffline->RemoveFlags(FCVAR_DEVELOPMENTONLY);
+	discord_updatePresence->RemoveFlags(FCVAR_DEVELOPMENTONLY);
 #endif // !DEDICATED
+	fps_max_vsync->RemoveFlags(FCVAR_DEVELOPMENTONLY);
+
+	base_tickinterval_sp->RemoveFlags(FCVAR_DEVELOPMENTONLY);
+	base_tickinterval_mp->RemoveFlags(FCVAR_DEVELOPMENTONLY);
+
 	mp_gamemode->RemoveFlags(FCVAR_DEVELOPMENTONLY);
 	mp_gamemode->RemoveChangeCallback(mp_gamemode->m_fnChangeCallbacks[0]);
 	mp_gamemode->InstallChangeCallback(MP_GameMode_Changed_f, false);
 	net_usesocketsforloopback->RemoveFlags(FCVAR_DEVELOPMENTONLY);
 	net_usesocketsforloopback->InstallChangeCallback(NET_UseSocketsForLoopbackChanged_f, false);
+#ifndef DEDICATED
+	cl_language->InstallChangeCallback(LanguageChanged_f, false);
+#endif // !DEDICATED
 }
 
 //-----------------------------------------------------------------------------

@@ -41,8 +41,13 @@ public:
 	inline int GetNumClasses(void) const { return m_nServerClasses; }
 	inline int GetClassBits(void) const { return m_nServerClassBits; }
 
-	inline CClient* GetClient(int nIndex) { Assert(nIndex < MAX_PLAYERS); return &m_Clients[nIndex]; }
+	inline int GetSpawnCount(void) const { return m_nSpawnCount; }
+	inline int GetMaxClients(void) const { return m_nMaxClients; }
 
+	inline int64_t GetMaxTeams(void) const { return m_iMaxTeams; }
+	inline CClient* GetClient(int nIndex) { Assert(nIndex >= NULL && nIndex < MAX_PLAYERS); return &m_Clients[nIndex]; }
+
+	inline float GetTime(void) const { return m_nTickCount * m_flTickInterval; }
 	inline float GetCPUUsage(void) const { return m_fCPUPercent; }
 
 	inline bool IsActive(void) const { return m_State >= server_state_t::ss_active; }
@@ -81,14 +86,18 @@ private:
 	char                          m_szHostInfo[128];             // see '[r5apex_ds.exe + 0x237740]' for more details. fmt: '[IPv6]:PORT:TIMEi64u'
 	char                          m_nGap0[520];
 	int                           m_nSpawnCount;
-	int                           m_nMaxclients;
-	char                          gap_3C0[64];
+	int                           m_nMaxClients;
+	char                          gap_3C0[8];                    // Unknown count (something for teams), see '[r5apex_ds.exe + 0x2777E9]'
+	int64_t                       m_iMaxTeams;
+	float                         m_flTickInterval;              // Time for 1 tick in seconds
+	float                         m_flTimescale;                 // The game time scale (multiplied in conjunction with host_timescale)
+	char                          gap_3D8[40];
 	CClient                       m_Clients[MAX_PLAYERS];
 	char                          gap_25263c0[48];
 	float                         m_fCPUPercent;
 	float                         m_fStartTime;
 	float                         m_fLastCPUCheckTime;
-	bool                          m_bUnk252643C[128];            // Bools of MAX_PLAYERS?
+	bool                          m_bTeams[MAX_TEAMS];           // Something with teams, unclear what this does; see '[r5apex_ds.exe + 0x30CE40]'
 };
 #if defined (GAMEDLL_S0) || defined (GAMEDLL_S1)
 // !TODO: check if struct size is correct for S1!

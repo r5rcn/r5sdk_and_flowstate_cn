@@ -1,398 +1,12 @@
-#include "tier1/utlrbtree.h"
-#include "tier1/utlmap.h"
-#include "tier1/NetAdr.h"
+//=============================================================================//
+//
+// Purpose:
+//
+//=============================================================================//
+#include "mathlib/color.h"
+#include "tier1/convar.h"
 #include "tier1/cvar.h"
-#include "public/const.h"
-#include "engine/sys_dll2.h"
 #include "filesystem/filesystem.h"
-#include "vstdlib/concommandhash.h"
-
-//-----------------------------------------------------------------------------
-// Purpose: create
-//-----------------------------------------------------------------------------
-ConVar* ConVar::StaticCreate(const char* pszName, const char* pszDefaultValue,
-	int nFlags, const char* pszHelpString, bool bMin, float fMin, bool bMax,
-	float fMax, FnChangeCallback_t pCallback, const char* pszUsageString)
-{
-	ConVar* pNewConVar = (ConVar*)malloc(sizeof(ConVar));
-
-	pNewConVar->m_bRegistered = false;
-	*(ConVar**)pNewConVar = g_pConVarVBTable;
-	char* pConVarVFTable = (char*)pNewConVar + sizeof(ConCommandBase);
-	*(IConVar**)pConVarVFTable = g_pConVarVFTable;
-
-	pNewConVar->m_pszName = nullptr;
-	pNewConVar->m_pszHelpString = nullptr;
-	pNewConVar->m_pszUsageString = nullptr;
-	pNewConVar->s_pAccessor = nullptr;
-	pNewConVar->m_nFlags = FCVAR_NONE;
-	pNewConVar->m_pNext = nullptr;
-
-	pNewConVar->m_fnChangeCallbacks.Init();
-
-	v_ConVar_Register(pNewConVar, pszName, pszDefaultValue, nFlags,
-		pszHelpString, bMin, fMin, bMax, fMax, pCallback, pszUsageString);
-	return pNewConVar;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: destroy
-//-----------------------------------------------------------------------------
-void ConVar::Destroy(void)
-{
-	v_ConVar_Unregister(this);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: construct/allocate
-//-----------------------------------------------------------------------------
-ConVar::ConVar(void)
-	: m_pParent(nullptr)
-	, m_pszDefaultValue(nullptr)
-	, m_bHasMin(false)
-	, m_fMinVal(0.f)
-	, m_bHasMax(false)
-	, m_fMaxVal(0.f)
-{
-	m_Value.m_pszString = nullptr;
-	m_Value.m_iStringLength = 0;
-	m_Value.m_fValue = 0.0f;
-	m_Value.m_nValue = 0;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: destructor
-//-----------------------------------------------------------------------------
-//ConVar::~ConVar(void)
-//{
-//	if (m_Value.m_pszString)
-//	{
-//		delete[] m_Value.m_pszString);
-//		m_Value.m_pszString = NULL;
-//	}
-//}
-
-////-----------------------------------------------------------------------------
-//// Purpose: Returns the base ConVar name.
-//// Output : const char*
-////-----------------------------------------------------------------------------
-//const char* ConVar::GetBaseName(void) const
-//{
-//	return m_pParent->m_pszName;
-//}
-//
-////-----------------------------------------------------------------------------
-//// Purpose: Returns the ConVar help text.
-//// Output : const char*
-////-----------------------------------------------------------------------------
-//const char* ConVar::GetHelpText(void) const
-//{
-//	return m_pParent->m_pszHelpString;
-//}
-//
-////-----------------------------------------------------------------------------
-//// Purpose: Returns the ConVar usage text.
-//// Output : const char*
-////-----------------------------------------------------------------------------
-//const char* ConVar::GetUsageText(void) const
-//{
-//	return m_pParent->m_pszUsageString;
-//}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : flMaxVal - 
-//-----------------------------------------------------------------------------
-void ConVar::SetMax(float flMaxVal)
-{
-	m_pParent->m_fMaxVal = flMaxVal;
-	m_pParent->m_bHasMax = true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : flMinVal - 
-//-----------------------------------------------------------------------------
-void ConVar::SetMin(float flMinVal)
-{
-	m_pParent->m_fMinVal = flMinVal;
-	m_pParent->m_bHasMin = true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : flMinVal - 
-// Output : true if there is a min set.
-//-----------------------------------------------------------------------------
-bool ConVar::GetMin(float& flMinVal) const
-{
-	flMinVal = m_pParent->m_fMinVal;
-	return m_pParent->m_bHasMin;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : flMaxVal - 
-// Output : true if there is a max set.
-//-----------------------------------------------------------------------------
-bool ConVar::GetMax(float& flMaxVal) const
-{
-	flMaxVal = m_pParent->m_fMaxVal;
-	return m_pParent->m_bHasMax;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the min value.
-// Output : float
-//-----------------------------------------------------------------------------
-float ConVar::GetMinValue(void) const
-{
-	return m_pParent->m_fMinVal;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the max value.
-// Output : float
-//-----------------------------------------------------------------------------
-float ConVar::GetMaxValue(void) const
-{
-	return m_pParent->m_fMaxVal;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: checks if ConVar has min value.
-// Output : bool
-//-----------------------------------------------------------------------------
-bool ConVar::HasMin(void) const
-{
-	return m_pParent->m_bHasMin;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: checks if ConVar has max value.
-// Output : bool
-//-----------------------------------------------------------------------------
-bool ConVar::HasMax(void) const
-{
-	return m_pParent->m_bHasMax;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the ConVar int value.
-// Input  : nValue - 
-//-----------------------------------------------------------------------------
-void ConVar::SetValue(int nValue)
-{
-	ConVar* pCVar = reinterpret_cast<ConVar*>(m_pParent);
-	pCVar->InternalSetIntValue(nValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the ConVar float value.
-// Input  : flValue - 
-//-----------------------------------------------------------------------------
-void ConVar::SetValue(float flValue)
-{
-	ConVar* pCVar = reinterpret_cast<ConVar*>(m_pParent);
-	pCVar->InternalSetFloatValue(flValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the ConVar string value.
-// Input  : *szValue - 
-//-----------------------------------------------------------------------------
-void ConVar::SetValue(const char* pszValue)
-{
-	ConVar* pCVar = reinterpret_cast<ConVar*>(m_pParent);
-	pCVar->InternalSetValue(pszValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the ConVar color value.
-// Input  : value - 
-//-----------------------------------------------------------------------------
-void ConVar::SetValue(Color value)
-{
-	ConVar* pCVar = reinterpret_cast<ConVar*>(m_pParent);
-	pCVar->InternalSetColorValue(value);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *value - 
-//-----------------------------------------------------------------------------
-void ConVar::InternalSetColorValue(Color value)
-{
-	// Stuff color values into an int
-	int nValue = 0;
-
-	unsigned char* pColorElement = (reinterpret_cast<unsigned char*>(&nValue));
-	pColorElement[0] = value[0];
-	pColorElement[1] = value[1];
-	pColorElement[2] = value[2];
-	pColorElement[3] = value[3];
-
-	// Call the int internal set
-	InternalSetIntValue(nValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Reset to default value.
-//-----------------------------------------------------------------------------
-void ConVar::Revert(void)
-{
-	SetValue(m_pszDefaultValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns the default ConVar value.
-// Output : const char
-//-----------------------------------------------------------------------------
-const char* ConVar::GetDefault(void) const
-{
-	return m_pParent->m_pszDefaultValue;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the default ConVar value.
-// Input  : *pszDefault -
-//-----------------------------------------------------------------------------
-void ConVar::SetDefault(const char* pszDefault)
-{
-	static const char* pszEmpty = "";
-	m_pszDefaultValue = pszDefault ? pszDefault : pszEmpty;
-	assert(m_pszDefaultValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: sets the ConVar color value from string.
-// Input  : *pszValue - 
-//-----------------------------------------------------------------------------
-bool ConVar::SetColorFromString(const char* pszValue)
-{
-	bool bColor = false;
-
-	// Try pulling RGBA color values out of the string.
-	int nRGBA[4];
-	int nParamsRead = sscanf_s(pszValue, "%i %i %i %i",
-		&(nRGBA[0]), &(nRGBA[1]), &(nRGBA[2]), &(nRGBA[3]));
-
-	if (nParamsRead >= 3)
-	{
-		// This is probably a color!
-		if (nParamsRead == 3)
-		{
-			// Assume they wanted full alpha.
-			nRGBA[3] = 255;
-		}
-
-		if (nRGBA[0] >= 0 && nRGBA[0] <= 255 &&
-			nRGBA[1] >= 0 && nRGBA[1] <= 255 &&
-			nRGBA[2] >= 0 && nRGBA[2] <= 255 &&
-			nRGBA[3] >= 0 && nRGBA[3] <= 255)
-		{
-			//printf("*** WOW! Found a color!! ***\n");
-
-			// This is definitely a color!
-			bColor = true;
-
-			// Stuff all the values into each byte of our int.
-			unsigned char* pColorElement =
-				(reinterpret_cast<unsigned char*>(&m_Value.m_nValue));
-
-			pColorElement[0] = (unsigned char)nRGBA[0];
-			pColorElement[1] = (unsigned char)nRGBA[1];
-			pColorElement[2] = (unsigned char)nRGBA[2];
-			pColorElement[3] = (unsigned char)nRGBA[3];
-
-			// Copy that value into our float.
-			m_Value.m_fValue = static_cast<float>(m_Value.m_nValue);
-		}
-	}
-
-	return bColor;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: changes the ConVar string value.
-// Input  : *pszTempVal - flOldValue
-//-----------------------------------------------------------------------------
-void ConVar::ChangeStringValue(const char* pszTempVal)
-{
-	Assert(!(m_nFlags & FCVAR_NEVER_AS_STRING));
-
-	char* pszOldValue = (char*)stackalloc(m_Value.m_iStringLength);
-	memcpy(pszOldValue, m_Value.m_pszString, m_Value.m_iStringLength);
-
-	size_t len = strlen(pszTempVal) + 1;
-
-	if (len > m_Value.m_iStringLength)
-	{
-		if (m_Value.m_pszString)
-		{
-			delete[] m_Value.m_pszString;
-		}
-
-		m_Value.m_pszString = new char[len];
-		m_Value.m_iStringLength = len;
-	}
-
-	memcpy(reinterpret_cast<void*>(m_Value.m_pszString), pszTempVal, len);
-
-	// Invoke any necessary callback function
-	for (int i = 0; i < m_fnChangeCallbacks.Count(); ++i)
-	{
-		m_fnChangeCallbacks[i](this, pszOldValue, NULL);
-	}
-
-	if (g_pCVar)
-	{
-		g_pCVar->CallGlobalChangeCallbacks(this, pszOldValue);
-	}
-
-	stackfree(pszOldValue);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Install a change callback (there shouldn't already be one....)
-// Input  : callback - 
-//			bInvoke - 
-//-----------------------------------------------------------------------------
-void ConVar::InstallChangeCallback(FnChangeCallback_t callback, bool bInvoke /*=true*/)
-{
-	if (!callback)
-	{
-		Warning(eDLL_T::ENGINE, "%s: Called with NULL callback; ignoring!!!\n",
-			__FUNCTION__);
-		return;
-	}
-
-	if (m_pParent->m_fnChangeCallbacks.Find(callback)
-		!= m_pParent->m_fnChangeCallbacks.InvalidIndex())
-	{
-		// Same ptr added twice, sigh...
-		Warning(eDLL_T::ENGINE, "%s: Ignoring duplicate change callback!!!\n",
-			__FUNCTION__);
-		return;
-	}
-
-	m_pParent->m_fnChangeCallbacks.AddToTail(callback);
-
-	// Call it immediately to set the initial value...
-	if (bInvoke)
-	{
-		callback(this, m_Value.m_pszString, m_Value.m_fValue);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Install a change callback (there shouldn't already be one....)
-// Input  : callback - 
-//-----------------------------------------------------------------------------
-void ConVar::RemoveChangeCallback(FnChangeCallback_t callback)
-{
-	m_pParent->m_fnChangeCallbacks.FindAndRemove(callback);
-}
 
 #define SET_CONVARFLAG(x, y) SetFlag(FCVAR_##x, #x, y)
 //-----------------------------------------------------------------------------
@@ -426,12 +40,15 @@ ConVarFlags::ConVarFlags() : m_StringToFlags(DefLessFunc(const char*))
 	SET_CONVARFLAG(RELOAD_MATERIALS, "reload_materials");
 	SET_CONVARFLAG(RELOAD_TEXTURES, "reload_textures");
 	SET_CONVARFLAG(NOT_CONNECTED, "not_connected");
-	SET_CONVARFLAG(MATERIAL_SYSTEM_THREAD, "materialsystem_thread");
-	SET_CONVARFLAG(MATERIAL_THREAD_MASK, "material_thread_mask");
+	SET_CONVARFLAG(MATERIAL_SYSTEM_THREAD, "material_system_thread");
 	SET_CONVARFLAG(ARCHIVE_PLAYERPROFILE, "playerprofile");
+	SET_CONVARFLAG(ACCESSIBLE_FROM_THREADS, "accessible_from_threads");
+	SET_CONVARFLAG(STUDIO_SYSTEM, "studio_system");
+	SET_CONVARFLAG(SERVER_FRAME_THREAD, "server_frame_thread");
 	SET_CONVARFLAG(SERVER_CAN_EXECUTE, "server_can_execute");
 	SET_CONVARFLAG(SERVER_CANNOT_QUERY, "server_cannot_query");
 	SET_CONVARFLAG(CLIENTCMD_CAN_EXECUTE, "clientcmd_can_execute");
+	SET_CONVARFLAG(PLATFORM_SYSTEM, "platform_system");
 }
 
 //-----------------------------------------------------------------------------
@@ -480,7 +97,7 @@ bool ConVar_ParseFlagString(const char* pszFlags, int& nFlags, const char* pszCo
 			int find = g_ConVarFlags.m_StringToFlags.FindElement(sFlag.Get(), -1);
 			if (find == -1)
 			{
-				Warning(eDLL_T::ENGINE,
+				Warning(eDLL_T::COMMON,
 					"%s: Attempted to parse invalid flag '%s' for convar '%s'\n",
 					__FUNCTION__, sFlag.Get(), pszConVarName);
 
@@ -591,11 +208,11 @@ void ConVar_PrintDescription(ConCommandBase* pVar)
 	pStr = pVar->GetHelpText();
 	if (pStr && *pStr)
 	{
-		DevMsg(eDLL_T::ENGINE, "%-80s - %.80s\n", outstr, pStr);
+		Msg(eDLL_T::COMMON, "%-80s - %.80s\n", outstr, pStr);
 	}
 	else
 	{
-		DevMsg(eDLL_T::ENGINE, "%-80s\n", outstr);
+		Msg(eDLL_T::COMMON, "%-80s\n", outstr);
 	}
 }
 
@@ -668,7 +285,7 @@ static void PrintCvar(ConVar* var, bool logging, FileHandle_t& fh)
 	}
 
 	// Print to console
-	DevMsg(eDLL_T::ENGINE, "%-40s : %-8s : %-16s : %s\n", var->GetName(),
+	Msg(eDLL_T::COMMON, "%-40s : %-8s : %-16s : %s\n", var->GetName(),
 		valstr, flagstr, StripTabsAndReturns(var->GetHelpText(), tempbuff, sizeof(tempbuff)));
 	if (logging)
 	{
@@ -686,7 +303,7 @@ static void PrintCommand(const ConCommand* cmd, bool logging, FileHandle_t& f)
 {
 	// Print to console
 	char tempbuff[512] = { 0 };
-	DevMsg(eDLL_T::ENGINE, "%-40s : %-8s : %-16s : %s\n", cmd->GetName(),
+	Msg(eDLL_T::COMMON, "%-40s : %-8s : %-16s : %s\n", cmd->GetName(),
 		"cmd", "", StripTabsAndReturns(cmd->GetHelpText(), tempbuff, sizeof(tempbuff)));
 
 	if (logging)
@@ -805,7 +422,7 @@ void CCvarUtilities::CvarList(const CCommand& args)
 	// Print usage?
 	if (iArgs == 2 && !Q_strcasecmp(args[1], "?"))
 	{
-		DevMsg(eDLL_T::ENGINE, "convar_list:  [ log logfile ] [ partial ]\n");
+		Msg(eDLL_T::COMMON, "convar_list:  [ log logfile ] [ partial ]\n");
 		return;
 	}
 
@@ -820,7 +437,7 @@ void CCvarUtilities::CvarList(const CCommand& args)
 		}
 		else
 		{
-			DevMsg(eDLL_T::ENGINE, "Couldn't open '%s' for writing!\n", fn);
+			Msg(eDLL_T::COMMON, "Couldn't open '%s' for writing!\n", fn);
 			return;
 		}
 
@@ -837,7 +454,7 @@ void CCvarUtilities::CvarList(const CCommand& args)
 	}
 
 	// Banner
-	DevMsg(eDLL_T::ENGINE, "convar list\n--------------\n");
+	Msg(eDLL_T::COMMON, "convar list\n--------------\n");
 
 	CUtlRBTree< ConCommandBase* > sorted(0, 0, ConCommandBaseLessFunc);
 	CCvar::CCVarIteratorInternal* itint = g_pCVar->FactoryInternalIterator();
@@ -894,12 +511,12 @@ void CCvarUtilities::CvarList(const CCommand& args)
 	// Show total and syntax help...
 	if (partial && partial[0])
 	{
-		DevMsg(eDLL_T::ENGINE, "--------------\n%3i convars/concommands for [%s]\n",
+		Msg(eDLL_T::COMMON, "--------------\n%3i convars/concommands for [%s]\n",
 			sorted.Count(), partial);
 	}
 	else
 	{
-		DevMsg(eDLL_T::ENGINE, "--------------\n%3i total convars/concommands\n",
+		Msg(eDLL_T::COMMON, "--------------\n%3i total convars/concommands\n",
 			sorted.Count());
 	}
 
@@ -919,7 +536,7 @@ void CCvarUtilities::CvarHelp(const CCommand& args)
 
 	if (args.ArgC() != 2)
 	{
-		DevMsg(eDLL_T::ENGINE, "Usage:  help <cvarname>\n");
+		Msg(eDLL_T::COMMON, "Usage:  help <cvarname>\n");
 		return;
 	}
 
@@ -930,7 +547,7 @@ void CCvarUtilities::CvarHelp(const CCommand& args)
 	var = g_pCVar->FindCommandBase(search);
 	if (!var)
 	{
-		DevMsg(eDLL_T::ENGINE, "help:  no cvar or command named %s\n", search);
+		Msg(eDLL_T::COMMON, "help:  no cvar or command named %s\n", search);
 		return;
 	}
 
@@ -967,7 +584,7 @@ void CCvarUtilities::CvarDifferences(const CCommand& args)
 	}
 
 	delete itint;
-	DevMsg(eDLL_T::ENGINE, "--------------\n%3i changed convars\n", i);
+	Msg(eDLL_T::COMMON, "--------------\n%3i changed convars\n", i);
 }
 
 //-----------------------------------------------------------------------------
@@ -977,12 +594,12 @@ void CCvarUtilities::CvarFindFlags_f(const CCommand& args)
 {
 	if (args.ArgC() < 2)
 	{
-		DevMsg(eDLL_T::ENGINE, "Usage:  convar_findByFlags <string>\n");
-		DevMsg(eDLL_T::ENGINE, "Available flags to search for: \n");
+		Msg(eDLL_T::COMMON, "Usage:  convar_findByFlags <string>\n");
+		Msg(eDLL_T::COMMON, "Available flags to search for: \n");
 
 		for (int i = 0; i < ARRAYSIZE(g_ConVarFlags.m_FlagsToDesc); i++)
 		{
-			DevMsg(eDLL_T::ENGINE, "   - %s\n", g_ConVarFlags.m_FlagsToDesc[i].desc);
+			Msg(eDLL_T::COMMON, "   - %s\n", g_ConVarFlags.m_FlagsToDesc[i].desc);
 		}
 		return;
 	}
@@ -1058,236 +675,8 @@ int CCvarUtilities::CvarFindFlagsCompletionCallback(const char* partial,
 	return values;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns all ConVars
-//-----------------------------------------------------------------------------
-unordered_map<string, ConCommandBase*> CCvar::DumpToMap(void)
-{
-	stringstream ss;
-	CCVarIteratorInternal* itint = FactoryInternalIterator(); // Allocate new InternalIterator.
-
-	unordered_map<string, ConCommandBase*> allConVars;
-
-	for (itint->SetFirst(); itint->IsValid(); itint->Next()) // Loop through all instances.
-	{
-		ConCommandBase* pCommand = itint->Get();
-		const char* pszCommandName = pCommand->m_pszName;
-		allConVars[pszCommandName] = pCommand;
-	}
-
-	delete itint;
-
-	return allConVars;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 CCvar* g_pCVar = nullptr;
-
-
-//-----------------------------------------------------------------------------
-// Console command hash data structure
-//-----------------------------------------------------------------------------
-CConCommandHash::CConCommandHash()
-{
-	Purge(true);
-}
-
-CConCommandHash::~CConCommandHash()
-{
-	Purge(false);
-}
-
-void CConCommandHash::Purge(bool bReinitialize)
-{
-	m_aBuckets.Purge();
-	m_aDataPool.Purge();
-	if (bReinitialize)
-	{
-		Init();
-	}
-}
-
-// Initialize.
-void CConCommandHash::Init(void)
-{
-	// kNUM_BUCKETS must be a power of two.
-	COMPILE_TIME_ASSERT((kNUM_BUCKETS & (kNUM_BUCKETS - 1)) == 0);
-
-	// Set the bucket size.
-	m_aBuckets.SetSize(kNUM_BUCKETS);
-	for (int iBucket = 0; iBucket < kNUM_BUCKETS; ++iBucket)
-	{
-		m_aBuckets[iBucket] = m_aDataPool.InvalidIndex();
-	}
-
-	// Calculate the grow size.
-	int nGrowSize = 4 * kNUM_BUCKETS;
-	m_aDataPool.SetGrowSize(nGrowSize);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Insert data into the hash table given its key (unsigned int), 
-//			WITH a check to see if the element already exists within the hash.
-//-----------------------------------------------------------------------------
-CConCommandHash::CCommandHashHandle_t CConCommandHash::Insert(ConCommandBase* cmd)
-{
-	// Check to see if that key already exists in the buckets (should be unique).
-	CCommandHashHandle_t hHash = Find(cmd);
-	if (hHash != InvalidHandle())
-		return hHash;
-
-	return FastInsert(cmd);
-}
-//-----------------------------------------------------------------------------
-// Purpose: Insert data into the hash table given its key (unsigned int),
-//          WITHOUT a check to see if the element already exists within the hash.
-//-----------------------------------------------------------------------------
-CConCommandHash::CCommandHashHandle_t CConCommandHash::FastInsert(ConCommandBase* cmd)
-{
-	// Get a new element from the pool.
-	intptr_t iHashData = m_aDataPool.Alloc(true);
-	HashEntry_t* RESTRICT pHashData = &m_aDataPool[iHashData];
-	if (!pHashData)
-		return InvalidHandle();
-
-	HashKey_t key = Hash(cmd);
-
-	// Add data to new element.
-	pHashData->m_uiKey = key;
-	pHashData->m_Data = cmd;
-
-	// Link element.
-	int iBucket = key & kBUCKETMASK; // HashFuncs::Hash( uiKey, m_uiBucketMask );
-	m_aDataPool.LinkBefore(m_aBuckets[iBucket], iHashData);
-	m_aBuckets[iBucket] = iHashData;
-
-	return iHashData;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Remove a given element from the hash.
-//-----------------------------------------------------------------------------
-void CConCommandHash::Remove(CCommandHashHandle_t hHash) /*RESTRICT*/
-{
-	HashEntry_t* /*RESTRICT*/ entry = &m_aDataPool[hHash];
-	HashKey_t iBucket = entry->m_uiKey & kBUCKETMASK;
-	if (m_aBuckets[iBucket] == hHash)
-	{
-		// It is a bucket head.
-		m_aBuckets[iBucket] = m_aDataPool.Next(hHash);
-	}
-	else
-	{
-		// Not a bucket head.
-		m_aDataPool.Unlink(hHash);
-	}
-
-	// Remove the element.
-	m_aDataPool.Remove(hHash);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Remove all elements from the hash
-//-----------------------------------------------------------------------------
-void CConCommandHash::RemoveAll(void)
-{
-	m_aBuckets.RemoveAll();
-	m_aDataPool.RemoveAll();
-}
-
-//-----------------------------------------------------------------------------
-// Find hash entry corresponding to a string name
-//-----------------------------------------------------------------------------
-CConCommandHash::CCommandHashHandle_t CConCommandHash::Find(
-	const char* name, HashKey_t hashkey) const /*RESTRICT*/
-{
-	// hash the "key" - get the correct hash table "bucket"
-	int iBucket = hashkey & kBUCKETMASK;
-
-	for (datapool_t::IndexLocalType_t iElement = m_aBuckets[iBucket];
-		iElement != m_aDataPool.InvalidIndex(); iElement = m_aDataPool.Next(iElement))
-	{
-		const HashEntry_t& element = m_aDataPool[iElement];
-		if (element.m_uiKey == hashkey && // if hashes of strings match,
-			Q_stricmp(name, element.m_Data->GetName()) == 0) // then test the actual strings
-		{
-			return iElement;
-		}
-	}
-
-	// found nuffink
-	return InvalidHandle();
-}
-
-//-----------------------------------------------------------------------------
-// Find a command in the hash.
-//-----------------------------------------------------------------------------
-CConCommandHash::CCommandHashHandle_t CConCommandHash::Find(const ConCommandBase* cmd) const /*RESTRICT*/
-{
-	// Set this #if to 1 if the assert at bottom starts whining --
-	// that indicates that a console command is being double-registered,
-	// or something similarly non-fatally bad. With this #if 1, we'll search
-	// by name instead of by pointer, which is more robust in the face
-	// of double registered commands, but obviously slower.
-#if 0 
-	return Find(cmd->GetName());
-#else
-	HashKey_t hashkey = Hash(cmd);
-	int iBucket = hashkey & kBUCKETMASK;
-
-	// hunt through all entries in that bucket
-	for (datapool_t::IndexLocalType_t iElement = m_aBuckets[iBucket];
-		iElement != m_aDataPool.InvalidIndex(); iElement = m_aDataPool.Next(iElement))
-	{
-		const HashEntry_t& element = m_aDataPool[iElement];
-		if (element.m_uiKey == hashkey && // if the hashes match... 
-			element.m_Data == cmd) // and the pointers...
-		{
-			// in debug, test to make sure we don't have commands under the same name
-			// or something goofy like that
-			Assert(iElement == Find(cmd->GetName()),
-				"ConCommand %s had two entries in the hash!", cmd->GetName());
-
-			// return this element
-			return iElement;
-		}
-	}
-
-	// found nothing.
-#ifdef DBGFLAG_ASSERT // double check against search by name
-	CCommandHashHandle_t dbghand = Find(cmd->GetName());
-
-	Assert(InvalidHandle() == dbghand,
-		"ConCommand %s couldn't be found by pointer, but was found by name!", cmd->GetName());
-#endif
-	return InvalidHandle();
-#endif
-}
-
-
-//#ifdef _DEBUG
-// Dump a report to MSG
-void CConCommandHash::Report(void)
-{
-	DevMsg(eDLL_T::ENGINE, "Console command hash bucket load:\n");
-	int total = 0;
-	for (int iBucket = 0; iBucket < kNUM_BUCKETS; ++iBucket)
-	{
-		int count = 0;
-		CCommandHashHandle_t iElement = m_aBuckets[iBucket]; // get the head of the bucket
-		while (iElement != m_aDataPool.InvalidIndex())
-		{
-			++count;
-			iElement = m_aDataPool.Next(iElement);
-		}
-
-		DevMsg(eDLL_T::ENGINE, "%d: %d\n", iBucket, count);
-		total += count;
-	}
-
-	DevMsg(eDLL_T::ENGINE, "\tAverage: %.1f\n", total / ((float)(kNUM_BUCKETS)));
-}
-//#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 void VCVar::Attach() const

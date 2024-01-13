@@ -28,7 +28,7 @@ bool SVC_Print::ProcessImpl()
 
 		if (len < sizeof(m_szTextBuffer))
 		{
-			DevMsg(eDLL_T::SERVER, m_szText[len-1] == '\n' ? "%s" : "%s\n", m_szText);
+			Msg(eDLL_T::SERVER, m_szText[len-1] == '\n' ? "%s" : "%s\n", m_szText);
 		}
 	}
 
@@ -56,7 +56,7 @@ bool SVC_UserMessage::ProcessImpl()
 
 			if (len && len < sizeof(text))
 			{
-				DevMsg(eDLL_T::SERVER, text[len - 1] == '\n' ? "%s" : "%s\n", text);
+				Msg(eDLL_T::SERVER, text[len - 1] == '\n' ? "%s" : "%s\n", text);
 			}
 		}
 	}
@@ -99,7 +99,7 @@ bool CLC_SetPlaylistVarOverride::WriteToBufferImpl(CLC_SetPlaylistVarOverride* t
 bool Base_CmdKeyValues::ReadFromBufferImpl(Base_CmdKeyValues* thisptr, bf_read* buffer)
 {
 	// Abusable netmsg; only allow if cheats are enabled.
-	if (!sv_cheats->GetBool())
+	if (!enable_CmdKeyValues->GetBool())
 	{
 		return false;
 	}
@@ -109,7 +109,7 @@ bool Base_CmdKeyValues::ReadFromBufferImpl(Base_CmdKeyValues* thisptr, bf_read* 
 bool Base_CmdKeyValues::WriteToBufferImpl(Base_CmdKeyValues* thisptr, bf_write* buffer)
 {
 	// Abusable netmsg; only allow if cheats are enabled.
-	if (!sv_cheats->GetBool())
+	if (!enable_CmdKeyValues->GetBool())
 	{
 		return false;
 	}

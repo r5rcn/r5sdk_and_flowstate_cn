@@ -69,7 +69,7 @@ macro( add_module MODULE_TYPE MODULE_NAME REUSE_PCH FOLDER_NAME WARNINGS_AS_ERRO
 
     set_target_properties( ${MODULE_NAME} PROPERTIES FOLDER ${FOLDER_NAME} )
 
-    if( ${GLOBAL_WARNINGS_AS_ERRORS} )
+    if( ${OPTION_WARNINGS_AS_ERRORS} )
         warnings_as_errors( ${PROJECT_NAME} ${WARNINGS_AS_ERRORS} )
     endif()
 
@@ -135,6 +135,7 @@ macro( thirdparty_suppress_warnings )
     if( MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
         target_compile_options( ${PROJECT_NAME} PRIVATE
             /wd4100 # Unreferenced formal parameter.
+            /wd4131 # Using old-style declarations
             /wd4152 # Function/data pointer conversion in expression.
             /wd4200 # Zero-sized array in union; SDL2 uses this for compiler compatibility.
             /wd4201 # Nameless struct/union.
@@ -142,6 +143,8 @@ macro( thirdparty_suppress_warnings )
             /wd4267 # Type conversion truncation; protobuf has many, but this appears intentional.
             /wd4307 # Integral constant overflow.
             /wd4389 # Signed/unsigned mismatch.
+            /wd4456 # Declaration hides previous local declaration.
+            /wd4457 # Declaration hides function parameter.
             /wd4505 # Unreferenced local function has been removed.
         )
     endif()

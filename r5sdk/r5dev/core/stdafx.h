@@ -19,7 +19,12 @@
 #include "thirdparty/lzham/include/lzham.h"
 
 #include "thirdparty/curl/include/curl/curl.h"
-#include "thirdparty/nlohmann/json.hpp"
+
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
+#include "rapidjson/error/en.h"
 
 #if !defined(DEDICATED) && !defined(PLUGINSDK)
 #include "thirdparty/imgui/imgui.h"
@@ -30,6 +35,10 @@
 #include "thirdparty/imgui/misc/cpp/imgui_stdlib.h"
 #include "thirdparty/imgui/backends/imgui_impl_dx11.h"
 #include "thirdparty/imgui/backends/imgui_impl_win32.h"
+
+#include "thirdparty/nvapi/pclstats.h"
+#include "thirdparty/nvapi/nvapi.h"
+#include "thirdparty/nvapi/nvapi_lite_common.h"
 #endif // !DEDICATED && !PLUGINSDK
 
 

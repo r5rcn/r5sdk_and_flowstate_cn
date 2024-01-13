@@ -32,6 +32,7 @@
 #include "mathlib/sha1.h"
 #include "filesystem/filesystem.h"
 #include "vpc/keyvalues.h"
+#include "localize/ilocalize.h"
 #include "vpklib/packedstore.h"
 
 static const std::regex s_DirFileRegex{ R"((?:.*\/)?([^_]*_)(.*)(.bsp.pak000_dir).*)" };
@@ -312,7 +313,7 @@ void CPackedStore::BuildManifest(const CUtlVector<VPKEntryBlock_t>& entryBlocks,
 	CUtlString outPath;
 	outPath.Format("%s%s%s.txt", workspacePath.Get(), "manifest/", manifestName.Get());
 
-	CUtlBuffer outBuf(int64_t(0), 0, CUtlBuffer::TEXT_BUFFER);
+	CUtlBuffer outBuf(ssize_t(0), 0, CUtlBuffer::TEXT_BUFFER);
 	kv.RecursiveSaveToFile(outBuf, 0);
 
 	FileSystem()->CreateDirHierarchy(outPath.DirName().Get(), "PLATFORM");
@@ -335,7 +336,7 @@ void CPackedStore::ValidateCRC32PostDecomp(const CUtlString& assetPath, const ui
 		return;
 	}
 
-	uint32_t nLen = FileSystem()->Size(hAsset);
+	const ssize_t nLen = FileSystem()->Size(hAsset);
 	std::unique_ptr<uint8_t[]> pBuf(new uint8_t[nLen]);
 
 	FileSystem()->Read(pBuf.get(), nLen, hAsset);
@@ -363,7 +364,7 @@ bool CPackedStore::Deduplicate(const uint8_t* pEntryBuffer, VPKChunkDescriptor_t
 	auto p = m_ChunkHashMap.insert({ entryHash.c_str(), descriptor });
 	if (!p.second) // Map to existing chunk to avoid having copies of the same data.
 	{
-		DevMsg(eDLL_T::FS, "Mapping chunk '%zu' ('%s') to existing chunk at '0x%llx'\n",
+		Msg(eDLL_T::FS, "Mapping chunk '%zu' ('%s') to existing chunk at '0x%llx'\n",
 			chunkIndex, entryHash.c_str(), p.first->second.m_nPackFileOffset);
 		descriptor = p.first->second;
 
@@ -402,7 +403,7 @@ bool CPackedStore::ShouldPrune(const CUtlString& filePath, CUtlVector<CUtlString
 
 	if (fileHandle)
 	{
-		const int nSize = FileSystem()->Size(fileHandle);
+		const ssize_t nSize = FileSystem()->Size(fileHandle);
 
 		if (!nSize)
 		{
@@ -467,8 +468,8 @@ void CPackedStore::PackWorkspace(const VPKPair_t& vpkPair, const char* workspace
 		return;
 	}
 
-	uint64_t nSharedTotal = NULL;
-	uint64_t nSharedCount = NULL;
+	size_t nSharedTotal = NULL;
+	size_t nSharedCount = NULL;
 
 	FOR_EACH_VEC(entryValues, i)
 	{
@@ -489,13 +490,13 @@ void CPackedStore::PackWorkspace(const VPKPair_t& vpkPair, const char* workspace
 			szDestPath++;
 		}
 
-		uint32_t nLen = FileSystem()->Size(hAsset);
+		const ssize_t nLen = FileSystem()->Size(hAsset);
 		std::unique_ptr<uint8_t[]> pBuf(new uint8_t[nLen]);
 
 		FileSystem()->Read(pBuf.get(), nLen, hAsset);
 		FileSystem()->Seek(hAsset, 0, FileSystemSeek_t::FILESYSTEM_SEEK_HEAD);
 
-		DevMsg(eDLL_T::FS, "Packing entry '%i' ('%s')\n", i, szDestPath);
+		Msg(eDLL_T::FS, "Packing entry '%i' ('%s')\n", i, szDestPath);
 		int index = entryBlocks.AddToTail(VPKEntryBlock_t(
 			pBuf.get(),
 			nLen,
@@ -512,7 +513,7 @@ void CPackedStore::PackWorkspace(const VPKPair_t& vpkPair, const char* workspace
 		{
 			VPKChunkDescriptor_t& descriptor = entryBlock.m_Fragments[j];
 
-			FileSystem()->Read(pEntryBuffer.get(), int(descriptor.m_nCompressedSize), hAsset);
+			FileSystem()->Read(pEntryBuffer.get(), descriptor.m_nCompressedSize, hAsset);
 			descriptor.m_nPackFileOffset = FileSystem()->Tell(hPackFile);
 
 			if (entryValue.m_bDeduplicate && Deduplicate(pEntryBuffer.get(), descriptor, j))
@@ -542,13 +543,13 @@ void CPackedStore::PackWorkspace(const VPKPair_t& vpkPair, const char* workspace
 				descriptor.m_nCompressedSize = descriptor.m_nUncompressedSize;
 			}
 
-			FileSystem()->Write(pEntryBuffer.get(), int(descriptor.m_nCompressedSize), hPackFile);
+			FileSystem()->Write(pEntryBuffer.get(), descriptor.m_nCompressedSize, hPackFile);
 		}
 
 		FileSystem()->Close(hAsset);
 	}
 
-	DevMsg(eDLL_T::FS, "*** Build block totaling '%u' bytes with '%llu' shared bytes among '%llu' chunks\n", FileSystem()->Tell(hPackFile), nSharedTotal, nSharedCount);
+	Msg(eDLL_T::FS, "*** Build block totaling '%zd' bytes with '%zu' shared bytes among '%zu' chunks\n", FileSystem()->Tell(hPackFile), nSharedTotal, nSharedCount);
 	FileSystem()->Close(hPackFile);
 
 	m_ChunkHashMap.clear();
@@ -626,19 +627,19 @@ void CPackedStore::UnpackWorkspace(const VPKDir_t& vpkDir, const char* workspace
 				continue;
 			}
 
-			DevMsg(eDLL_T::FS, "Unpacking entry '%i' from block '%hu' ('%s')\n",
+			Msg(eDLL_T::FS, "Unpacking entry '%i' from block '%hu' ('%s')\n",
 				j, packFileIndex, pEntryPath);
 
 			FOR_EACH_VEC(entryBlock.m_Fragments, k)
 			{
 				const VPKChunkDescriptor_t& fragment = entryBlock.m_Fragments[k];
 
-				FileSystem()->Seek(hPackFile, int(fragment.m_nPackFileOffset), FileSystemSeek_t::FILESYSTEM_SEEK_HEAD);
-				FileSystem()->Read(pSourceBuffer.get(), int(fragment.m_nCompressedSize), hPackFile);
+				FileSystem()->Seek(hPackFile, fragment.m_nPackFileOffset, FileSystemSeek_t::FILESYSTEM_SEEK_HEAD);
+				FileSystem()->Read(pSourceBuffer.get(), fragment.m_nCompressedSize, hPackFile);
 
 				if (fragment.m_nCompressedSize == fragment.m_nUncompressedSize) // Data is not compressed.
 				{
-					FileSystem()->Write(pSourceBuffer.get(), int(fragment.m_nUncompressedSize), hAsset);
+					FileSystem()->Write(pSourceBuffer.get(), fragment.m_nUncompressedSize, hAsset);
 					continue;
 				}
 
@@ -658,7 +659,7 @@ void CPackedStore::UnpackWorkspace(const VPKDir_t& vpkDir, const char* workspace
 				}
 				else // If successfully decompressed, write to file.
 				{
-					FileSystem()->Write(pDestBuffer.get(), int(nDstLen), hAsset);
+					FileSystem()->Write(pDestBuffer.get(), nDstLen, hAsset);
 				}
 			}
 
@@ -794,9 +795,9 @@ VPKPair_t::VPKPair_t(const char* pLocale, const char* pTarget, const char* pLeve
 {
 	bool bFoundLocale = false;
 
-	for (size_t i = 0; i < SDK_ARRAYSIZE(DIR_LOCALE); i++)
+	for (size_t i = 0; i < SDK_ARRAYSIZE(g_LanguageNames); i++)
 	{
-		if (V_strcmp(pLocale, DIR_LOCALE[i]) == NULL)
+		if (V_strcmp(pLocale, g_LanguageNames[i]) == NULL)
 		{
 			bFoundLocale = true;
 		}
@@ -804,8 +805,8 @@ VPKPair_t::VPKPair_t(const char* pLocale, const char* pTarget, const char* pLeve
 
 	if (!bFoundLocale)
 	{
-		Warning(eDLL_T::FS, "Locale '%s' not supported; using default '%s'\n", pLocale, DIR_LOCALE[0]);
-		pLocale = DIR_LOCALE[0];
+		Warning(eDLL_T::FS, "Locale '%s' not supported; using default '%s'\n", pLocale, g_LanguageNames[0]);
+		pLocale = g_LanguageNames[0];
 	}
 
 	bool bFoundTarget = false;
@@ -865,9 +866,9 @@ VPKDir_t::VPKDir_t(const CUtlString& dirFilePath, bool bSanitizeName)
 
 	bool bHasLocale = false;
 
-	for (size_t i = 0; i < SDK_ARRAYSIZE(DIR_LOCALE); i++)
+	for (size_t i = 0; i < SDK_ARRAYSIZE(g_LanguageNames); i++)
 	{
-		if (sanitizedName.Find(DIR_LOCALE[i]) != -1)
+		if (sanitizedName.Find(g_LanguageNames[i]) != -1)
 		{
 			bHasLocale = true;
 			break;
@@ -877,7 +878,7 @@ VPKDir_t::VPKDir_t(const CUtlString& dirFilePath, bool bSanitizeName)
 	if (!bHasLocale) // Only sanitize if no locale was provided.
 	{
 		CUtlString packDirPrefix;
-		packDirPrefix.Append(DIR_LOCALE[0]);
+		packDirPrefix.Append(g_LanguageNames[0]);
 
 		for (size_t i = 0; i < SDK_ARRAYSIZE(DIR_TARGET); i++)
 		{
@@ -954,9 +955,9 @@ CUtlString VPKDir_t::StripLocalePrefix(const CUtlString& directoryPath) const
 {
 	CUtlString fileName = directoryPath.UnqualifiedFilename();
 
-	for (size_t i = 0; i < SDK_ARRAYSIZE(DIR_LOCALE); i++)
+	for (size_t i = 0; i < SDK_ARRAYSIZE(g_LanguageNames); i++)
 	{
-		fileName = fileName.Replace(DIR_LOCALE[i], "");
+		fileName = fileName.Replace(g_LanguageNames[i], "");
 	}
 
 	return fileName;
@@ -1063,14 +1064,14 @@ int VPKDir_t::CTreeBuilder::WriteTree(FileHandle_t hDirectoryFile) const
 
 	for (auto& iKeyValue : m_FileTree)
 	{
-		FileSystem()->Write(iKeyValue.first.c_str(), int(iKeyValue.first.length() + 1), hDirectoryFile);
+		FileSystem()->Write(iKeyValue.first.c_str(), iKeyValue.first.length() + 1, hDirectoryFile);
 		for (auto& jKeyValue : iKeyValue.second)
 		{
-			FileSystem()->Write(jKeyValue.first.c_str(), int(jKeyValue.first.length() + 1), hDirectoryFile);
+			FileSystem()->Write(jKeyValue.first.c_str(), jKeyValue.first.length() + 1, hDirectoryFile);
 			for (auto& vEntry : jKeyValue.second)
 			{
-				CUtlString entryPath = vEntry.m_EntryPath.UnqualifiedFilename().StripExtension();
-				FileSystem()->Write(entryPath.Get(), int(entryPath.Length() + 1), hDirectoryFile);
+				const CUtlString entryPath = vEntry.m_EntryPath.UnqualifiedFilename().StripExtension();
+				FileSystem()->Write(entryPath.Get(), entryPath.Length() + 1, hDirectoryFile);
 
 				FileSystem()->Write(&vEntry.m_nFileCRC, sizeof(uint32_t), hDirectoryFile);
 				FileSystem()->Write(&vEntry.m_iPreloadSize, sizeof(uint16_t), hDirectoryFile);
@@ -1133,7 +1134,7 @@ void VPKDir_t::BuildDirectoryFile(const CUtlString& directoryPath, const CUtlVec
 	WriteTreeSize(hDirectoryFile);
 
 	FileSystem()->Close(hDirectoryFile);
-	DevMsg(eDLL_T::FS, "*** Build directory totaling '%llu' bytes with '%i' entries and '%i' descriptors\n",
+	Msg(eDLL_T::FS, "*** Build directory totaling '%zu' bytes with '%i' entries and '%i' descriptors\n",
 		size_t(sizeof(VPKDirHeader_t) + m_Header.m_nDirectorySize), entryBlocks.Count(), nDescriptors);
 }
 //-----------------------------------------------------------------------------

@@ -23,7 +23,7 @@ void CSurface::Init()
 	this->SetText("Dashboard");
 	this->SetClientSize({ WindowX, WindowY });
 	this->SetFormBorderStyle(Forms::FormBorderStyle::FixedSingle);
-	this->SetStartPosition(Forms::FormStartPosition::CenterParent);
+	this->SetStartPosition(Forms::FormStartPosition::CenterScreen);
 	this->SetMinimizeBox(true);
 	this->SetMaximizeBox(false);
 	this->SetBackColor(Drawing::Color(47, 54, 61));
@@ -1187,8 +1187,8 @@ eLaunchMode CSurface::BuildParameter(string& svParameters)
 	}
 	case eMode::CLIENT:
 	{
-		AppendParameterInternal(svParameters, "-noworkerdll"); // This prevents init of worker dll 
-		//(this dll is always imported, but we want client.dll to do the work instead).
+		// Tells the loader module to only load the client dll.
+		AppendParameterInternal(svParameters, "-noserverdll");
 
 		// GAME ###############################################################
 		if (this->m_DeveloperToggle->Checked())

@@ -30,6 +30,7 @@ int ReadUserCmd(bf_read* buf, CUserCmd* move, CUserCmd* from)
 	// Viewangles must be normalized; applying invalid angles on the client
 	// will result in undefined behavior, or a crash.
 	move->viewangles.Normalize();
+	move->pitchangles.Normalize();
 
 	// Some players abused a feature of the engine which allows you to perform
 	// custom weapon activities. After some research, it appears that only the
@@ -52,7 +53,7 @@ int ReadUserCmd(bf_read* buf, CUserCmd* move, CUserCmd* from)
 	// Checks are only required if cycleslot is valid; see 'CPlayer::UpdateWeaponSlots'.
 	if (move->cycleslot != WEAPON_INVENTORY_SLOT_INVALID)
 	{
-		const bool dualWieldEnabled = sv_usercmd_dualwield_enable->GetBool();
+		const bool dualWieldEnabled = usercmd_dualwield_enable->GetBool();
 
 		// Client could instruct the server to switch cycle slots for inventory
 		// weapons, however, the client could also cycle to the dual wield slots.

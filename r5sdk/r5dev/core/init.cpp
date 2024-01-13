@@ -122,11 +122,13 @@
 #include "game/server/gameinterface.h"
 #include "game/server/movehelper_server.h"
 #include "game/server/physics_main.h"
+#include "game/server/vscript_server.h"
 #endif // !CLIENT_DLL
 #ifndef DEDICATED
 #include "game/client/viewrender.h"
 #include "game/client/input.h"
 #include "game/client/movehelper_client.h"
+#include "game/client/vscript_client.h"
 #endif // !DEDICATED
 #include "public/edict.h"
 #ifndef DEDICATED
@@ -147,9 +149,34 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef DEDICATED
+// These command line parameters disable a bunch of things in the engine that
+// the dedicated server does not need, therefore, reducing a lot of overhead.
+void InitCommandLineParameters()
+{
+	CommandLine()->AppendParm("-collate", "");
+	CommandLine()->AppendParm("-multiple", "");
+	CommandLine()->AppendParm("-noorigin", "");
+	CommandLine()->AppendParm("-nodiscord", "");
+	CommandLine()->AppendParm("-noshaderapi", "");
+	CommandLine()->AppendParm("-nobakedparticles", "");
+	CommandLine()->AppendParm("-novid", "");
+	CommandLine()->AppendParm("-nomenuvid", "");
+	CommandLine()->AppendParm("-nosound", "");
+	CommandLine()->AppendParm("-nomouse", "");
+	CommandLine()->AppendParm("-nojoy", "");
+	CommandLine()->AppendParm("-nosendtable", "");
+}
+#endif // DEDICATED
+
+void ScriptConstantRegistrationCallback(CSquirrelVM* s)
+{
+	Script_RegisterListenServerConstants(s);
+}
+
 void Systems_Init()
 {
-	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	Msg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
 	QuerySystemInfo();
 
 	DetourRegister();
@@ -159,8 +186,8 @@ void Systems_Init()
 	DetourInit();
 	initTimer.End();
 
-	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
-	DevMsg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->InitDB()",
+	Msg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	Msg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->InitDB()",
 		initTimer.GetDuration().GetSeconds(), initTimer.GetDuration().GetCycles());
 
 	initTimer.Start();
@@ -187,12 +214,34 @@ void Systems_Init()
 	}
 
 	initTimer.End();
-	DevMsg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->Attach()",
+	Msg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->Attach()",
 		initTimer.GetDuration().GetSeconds(), initTimer.GetDuration().GetCycles());
-	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
-	DevMsg(eDLL_T::NONE, "\n");
+	Msg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	Msg(eDLL_T::NONE, "\n");
 
 	ConVar_StaticInit();
+
+#ifdef DEDICATED
+	InitCommandLineParameters();
+#endif // DEDICATED
+
+	// Script context registration callbacks.
+	ScriptConstantRegister_Callback = ScriptConstantRegistrationCallback;
+
+#ifndef CLIENT_DLL
+	ServerScriptRegister_Callback = Script_RegisterServerFunctions;
+	CoreServerScriptRegister_Callback = Script_RegisterCoreServerFunctions;
+	AdminPanelScriptRegister_Callback = Script_RegisterAdminPanelFunctions;
+#endif// !CLIENT_DLL
+
+#ifndef SERVER_DLL
+	ClientScriptRegister_Callback = Script_RegisterClientFunctions;
+	UiScriptRegister_Callback =  Script_RegisterUIFunctions;
+#endif // !SERVER_DLL
+
+#ifdef CLIENT_DLL
+	g_bClientDLL = true;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -225,10 +274,10 @@ void Systems_Shutdown()
 	DetourTransactionCommit();
 
 	shutdownTimer.End();
-	DevMsg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->Detach()",
+	Msg(eDLL_T::NONE, "%-16s '%10.6f' seconds ('%12lu' clocks)\n", "Detour->Detach()",
 		shutdownTimer.GetDuration().GetSeconds(), shutdownTimer.GetDuration().GetCycles());
-	DevMsg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
-	DevMsg(eDLL_T::NONE, "\n");
+	Msg(eDLL_T::NONE, "+-------------------------------------------------------------+\n");
+	Msg(eDLL_T::NONE, "\n");
 }
 
 /////////////////////////////////////////////////////
@@ -275,20 +324,20 @@ void QuerySystemInfo()
 
 		if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) // Only log the primary device.
 		{
-			DevMsg(eDLL_T::NONE, "%-25s: '%s'\n", "GPU model identifier", dd.DeviceString);
+			Msg(eDLL_T::NONE, "%-25s: '%s'\n", "GPU model identifier", dd.DeviceString);
 		}
 	}
 #endif // !DEDICATED
 
 	const CPUInformation& pi = GetCPUInformation();
 
-	DevMsg(eDLL_T::NONE, "%-25s: '%s'\n","CPU model identifier", pi.m_szProcessorBrand);
-	DevMsg(eDLL_T::NONE, "%-25s: '%s'\n","CPU vendor tag", pi.m_szProcessorID);
-	DevMsg(eDLL_T::NONE, "%-25s: '%12hhu' ('%2hhu' %s)\n", "CPU core count", pi.m_nPhysicalProcessors, pi.m_nLogicalProcessors, "logical");
-	DevMsg(eDLL_T::NONE, "%-25s: '%12lld' ('%6.1f' %s)\n", "CPU core speed", pi.m_Speed, float(pi.m_Speed / 1000000), "MHz");
-	DevMsg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L1 cache", "(KiB)", pi.m_nL1CacheSizeKb, pi.m_nL1CacheDesc);
-	DevMsg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L2 cache", "(KiB)", pi.m_nL2CacheSizeKb, pi.m_nL2CacheDesc);
-	DevMsg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L3 cache", "(KiB)", pi.m_nL3CacheSizeKb, pi.m_nL3CacheDesc);
+	Msg(eDLL_T::NONE, "%-25s: '%s'\n","CPU model identifier", pi.m_szProcessorBrand);
+	Msg(eDLL_T::NONE, "%-25s: '%s'\n","CPU vendor tag", pi.m_szProcessorID);
+	Msg(eDLL_T::NONE, "%-25s: '%12hhu' ('%2hhu' %s)\n", "CPU core count", pi.m_nPhysicalProcessors, pi.m_nLogicalProcessors, "logical");
+	Msg(eDLL_T::NONE, "%-25s: '%12lld' ('%6.1f' %s)\n", "CPU core speed", pi.m_Speed, float(pi.m_Speed / 1000000), "MHz");
+	Msg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L1 cache", "(KiB)", pi.m_nL1CacheSizeKb, pi.m_nL1CacheDesc);
+	Msg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L2 cache", "(KiB)", pi.m_nL2CacheSizeKb, pi.m_nL2CacheDesc);
+	Msg(eDLL_T::NONE, "%-20s%s: '%12lu' ('0x%-8X')\n", "L3 cache", "(KiB)", pi.m_nL3CacheSizeKb, pi.m_nL3CacheDesc);
 
 	MEMORYSTATUSEX statex{};
 	statex.dwLength = sizeof(statex);
@@ -301,8 +350,8 @@ void QuerySystemInfo()
 		DWORDLONG availPhysical = (statex.ullAvailPhys / 1024) / 1024;
 		DWORDLONG availVirtual = (statex.ullAvailVirtual / 1024) / 1024;
 
-		DevMsg(eDLL_T::NONE, "%-20s%s: '%12llu' ('%9llu' %s)\n", "Total system memory", "(MiB)", totalPhysical, totalVirtual, "virtual");
-		DevMsg(eDLL_T::NONE, "%-20s%s: '%12llu' ('%9llu' %s)\n", "Avail system memory", "(MiB)", availPhysical, availVirtual, "virtual");
+		Msg(eDLL_T::NONE, "%-20s%s: '%12llu' ('%9llu' %s)\n", "Total system memory", "(MiB)", totalPhysical, totalVirtual, "virtual");
+		Msg(eDLL_T::NONE, "%-20s%s: '%12llu' ('%9llu' %s)\n", "Avail system memory", "(MiB)", availPhysical, availVirtual, "virtual");
 	}
 	else
 	{
@@ -334,6 +383,14 @@ void CheckCPU() // Respawn's engine and our SDK utilize POPCNT, SSE3 and SSSE3 (
 		ExitProcess(0xFFFFFFFF);
 	}
 }
+
+#if defined (DEDICATED)
+#define SIGDB_FILE "cfg/server/startup.bin"
+#elif defined (CLIENT_DLL)
+#define SIGDB_FILE "cfg/client/startup.bin"
+#else
+#define SIGDB_FILE "cfg/startup.bin"
+#endif
 
 void DetourInit() // Run the sigscan
 {
@@ -391,7 +448,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 
 	// Tier1
 	REGISTER(VCommandLine);
-	REGISTER(VConCommand);
+	REGISTER(VConVar);
 	REGISTER(VCVar);
 
 	// VPC
@@ -440,9 +497,9 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	// StaticPropMgr
 	REGISTER(VStaticPropMgr);
 
-#ifndef DEDICATED
 	// MaterialSystem
 	REGISTER(VMaterialSystem);
+#ifndef DEDICATED
 	REGISTER(VMaterialGlue);
 	REGISTER(VShaderGlue);
 
@@ -519,11 +576,7 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VGL_Screen);
 #endif // !DEDICATED
 
-#ifndef CLIENT_DLL
-	// !!! SERVER DLL ONLY !!!
 	REGISTER(HSV_Main);
-	// !!! END SERVER DLL ONLY !!!
-#endif // !CLIENT_DLL
 
 #ifndef DEDICATED
 	REGISTER(VGame); // REGISTER CLIENT ONLY!
@@ -547,9 +600,10 @@ void DetourRegister() // Register detour classes to be searched and hooked.
 	REGISTER(VAnimation);
 	REGISTER(VUtil_Shared);
 
-	REGISTER(V_Weapon_Bolt);
-
 #ifndef CLIENT_DLL
+
+	// In shared code, but weapon bolt is SERVER only.
+	REGISTER(V_Weapon_Bolt);
 
 	// Game/server
 	REGISTER(VAI_Network);

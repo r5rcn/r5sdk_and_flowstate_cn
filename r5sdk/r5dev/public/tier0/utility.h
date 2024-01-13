@@ -33,6 +33,8 @@ string CreateTimedFileName();
 string CreateUUID();
 void CreateDirectories(string svInput, string* pszOutput = nullptr, bool bWindows = false);
 
+void AppendSlash(string& svInput, const char separator = '\\');
+
 string ConvertToWinPath(const string& svInput);
 string ConvertToUnixPath(const string& svInput);
 
@@ -80,8 +82,11 @@ void PrintM128i64(__m128i in);
 void AppendPrintf(char* pBuffer, size_t nBufSize, char const* pFormat, ...);
 string PrintPercentageEscape(const string& svInput);
 
+string FormatBytes(size_t nBytes);
 string FormatV(const char* szFormat, va_list args);
 string Format(const char* szFormat, ...);
+
+void JSON_DocumentToBufferDeserialize(const rapidjson::Document& document, rapidjson::StringBuffer& buffer, unsigned int indent = 4);
 
 /////////////////////////////////////////////////////////////////////////////
 // Array

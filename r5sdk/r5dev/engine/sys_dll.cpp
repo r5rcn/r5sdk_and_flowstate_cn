@@ -79,7 +79,7 @@ int CModAppSystemGroup::StaticMain(CModAppSystemGroup* pModAppSystemGroup)
 	g_pEngine->SetQuitting(IEngine::QUIT_NOTQUITTING);
 	if (g_pEngine->Load(pModAppSystemGroup->IsServerOnly(), g_pEngineParms->baseDirectory))
 	{
-		if (CEngineAPI_MainLoop())
+		if (CEngineAPI::MainLoop())
 		{
 			nRunResult = RUN_RESTART;
 		}
@@ -102,36 +102,29 @@ bool CModAppSystemGroup::StaticCreate(CModAppSystemGroup* pModAppSystemGroup)
 	pModAppSystemGroup->SetServerOnly();
 	*m_bIsDedicated = true;
 #endif // DEDICATED
-	g_pFactory->GetFactoriesFromRegister();
-	g_pFactory->AddFactory(FACTORY_INTERFACE_VERSION, g_pFactory);
-	g_pFactory->AddFactory(INTERFACEVERSION_PLUGINSYSTEM, g_pPluginSystem);
-	g_pFactory->AddFactory(KEYVALUESSYSTEM_INTERFACE_VERSION, g_pKeyValuesSystem);
 
-	//InitPluginSystem(pModAppSystemGroup);
-	//CALL_PLUGIN_CALLBACKS(g_pPluginSystem->GetCreateCallbacks(), pModAppSystemGroup);
+	EXPOSE_INTERFACE_FN((InstantiateInterfaceFn)PluginSystem, CPluginSystem, INTERFACEVERSION_PLUGINSYSTEM);
+	EXPOSE_INTERFACE_FN((InstantiateInterfaceFn)KeyValuesSystem, CKeyValuesSystem, KEYVALUESSYSTEM_INTERFACE_VERSION);
+
+	InitPluginSystem(pModAppSystemGroup);
+	CALL_PLUGIN_CALLBACKS(g_pPluginSystem->GetCreateCallbacks(), pModAppSystemGroup);
 
 	g_pModSystem->Init();
 
-	g_pDebugOverlay = g_pFactory->GetFactoryPtr(VDEBUG_OVERLAY_INTERFACE_VERSION, false).RCast<CIVDebugOverlay*>();
+	g_pDebugOverlay = (CIVDebugOverlay*)g_pFactorySystem->GetFactory(VDEBUG_OVERLAY_INTERFACE_VERSION);
 #ifndef CLIENT_DLL
-	g_pServerGameDLL = g_pFactory->GetFactoryPtr(INTERFACEVERSION_SERVERGAMEDLL, false).RCast<CServerGameDLL*>();
-	g_pServerGameClients = g_pFactory->GetFactoryPtr(INTERFACEVERSION_SERVERGAMECLIENTS_NEW, false).RCast<CServerGameClients*>();
+	g_pServerGameDLL = (CServerGameDLL*)g_pFactorySystem->GetFactory(INTERFACEVERSION_SERVERGAMEDLL);
+	g_pServerGameClients = (CServerGameClients*)g_pFactorySystem->GetFactory(INTERFACEVERSION_SERVERGAMECLIENTS_NEW);
 	if (!g_pServerGameClients)
-		g_pServerGameClients = g_pFactory->GetFactoryPtr(INTERFACEVERSION_SERVERGAMECLIENTS, false).RCast<CServerGameClients*>();
-	g_pServerGameEntities = g_pFactory->GetFactoryPtr(INTERFACEVERSION_SERVERGAMEENTS, false).RCast<CServerGameEnts*>();
+		g_pServerGameClients = (CServerGameClients*)g_pFactorySystem->GetFactory(INTERFACEVERSION_SERVERGAMECLIENTS);
+	g_pServerGameEntities = (CServerGameEnts*)g_pFactorySystem->GetFactory(INTERFACEVERSION_SERVERGAMEENTS);
 
 #endif // !CLIENT_DLL
 #ifndef DEDICATED
-	g_pClientEntityList = g_pFactory->GetFactoryPtr(VCLIENTENTITYLIST_INTERFACE_VERSION, false).RCast<CClientEntityList*>();
-	g_pEngineTraceClient = g_pFactory->GetFactoryPtr(INTERFACEVERSION_ENGINETRACE_CLIENT, false).RCast<CEngineTraceClient*>();
+	g_pClientEntityList = (CClientEntityList*)g_pFactorySystem->GetFactory(VCLIENTENTITYLIST_INTERFACE_VERSION);
+	g_pEngineTraceClient = (CEngineTraceClient*)g_pFactorySystem->GetFactory(INTERFACEVERSION_ENGINETRACE_CLIENT);
 
 	g_pImGuiConfig->Load(); // Load ImGui configs.
-	for (auto& map : g_pCVar->DumpToMap())
-	{
-		g_pConsole->m_vsvCommandBases.push_back(
-			CSuggest(map.first, map.second->GetFlags()));
-	}
-
 	DirectX_Init();
 
 #endif // !DEDICATED
@@ -151,14 +144,14 @@ bool CModAppSystemGroup::StaticCreate(CModAppSystemGroup* pModAppSystemGroup)
 //-----------------------------------------------------------------------------
 void CModAppSystemGroup::InitPluginSystem(CModAppSystemGroup* pModAppSystemGroup)
 {
-	// DEBUG CODE FOR PLUGINS
-	g_pPluginSystem->PluginSystem_Init();
-	for (auto& it : g_pPluginSystem->GetPluginInstances())
+	g_pPluginSystem->Init();
+
+	for (auto& it : g_pPluginSystem->GetInstances())
 	{
-		if (g_pPluginSystem->LoadPluginInstance(it))
-			DevMsg(eDLL_T::ENGINE, "Loaded plugin: '%s'\n", it.m_svPluginName.c_str());
+		if (g_pPluginSystem->LoadInstance(it))
+			Msg(eDLL_T::ENGINE, "Loaded plugin: '%s'\n", it.m_Name.String());
 		else
-			Warning(eDLL_T::ENGINE, "Failed loading plugin: '%s'\n", it.m_svPluginName.c_str());
+			Warning(eDLL_T::ENGINE, "Failed loading plugin: '%s'\n", it.m_Name.String());
 	}
 }
 
@@ -169,8 +162,8 @@ void CModAppSystemGroup::InitPluginSystem(CModAppSystemGroup* pModAppSystemGroup
 int HSys_Error_Internal(char* fmt, va_list args)
 {
 	char buffer[2048];
-	Error(eDLL_T::COMMON, NO_ERROR, "_______________________________________________________________\n");
-	Error(eDLL_T::COMMON, NO_ERROR, "] ENGINE ERROR ################################################\n");
+	Error(eDLL_T::ENGINE, NO_ERROR, "_______________________________________________________________\n");
+	Error(eDLL_T::ENGINE, NO_ERROR, "] ENGINE ERROR ################################################\n");
 
 	int nLen = vsprintf(buffer, fmt, args);
 	bool shouldNewline = true;
@@ -178,7 +171,7 @@ int HSys_Error_Internal(char* fmt, va_list args)
 	if (nLen > 0)
 		shouldNewline = buffer[nLen - 1] != '\n';
 
-	Error(eDLL_T::COMMON, NO_ERROR, shouldNewline ? "%s\n" : "%s", buffer);
+	Error(eDLL_T::ENGINE, NO_ERROR, shouldNewline ? "%s\n" : "%s", buffer);
 
 	///////////////////////////////////////////////////////////////////////////
 	return Sys_Error_Internal(fmt, args);

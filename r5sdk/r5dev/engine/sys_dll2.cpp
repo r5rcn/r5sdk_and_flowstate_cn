@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -10,14 +10,19 @@
 #include "tier1/cmd.h"
 #include "tier1/cvar.h"
 #include "tier1/strtools.h"
+#include "engine/sys_engine.h"
 #include "engine/sys_dll.h"
 #include "engine/sys_dll2.h"
 #include "engine/host_cmd.h"
 #include "engine/traceinit.h"
-#include "rtech/rtech_utils.h"
 #ifndef DEDICATED
+#include "engine/sys_mainwind.h"
+#include "materialsystem/cmaterialsystem.h"
+#include "windows/id3dx.h"
 #include "client/vengineclient_impl.h"
+#include "geforce/reflex.h"
 #endif // !DEDICATED
+#include "rtech/rtech_utils.h"
 #include "filesystem/filesystem.h"
 constexpr char DFS_ENABLE_PATH[] = "/vpk/enable.txt";
 
@@ -151,11 +156,88 @@ void CEngineAPI::VSetStartupInfo(CEngineAPI* pEngineAPI, StartupInfo_t* pStartup
 #endif // !(GAMEDLL_S0) || !(GAMEDLL_S1)
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CEngineAPI::PumpMessages()
+{
+#ifndef DEDICATED
+    CEngineAPI_PumpMessages();
+#endif // !DEDICATED
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CEngineAPI::MainLoop()
+{
+    // Main message pump
+    while (true)
+    {
+        // Pump messages unless someone wants to quit
+        if (g_pEngine->GetQuitting() != IEngine::QUIT_NOTQUITTING)
+        {
+            if (g_pEngine->GetQuitting() != IEngine::QUIT_TODESKTOP)
+                return true;
+
+            return false;
+        }
+
+#ifndef DEDICATED
+        const MaterialAdapterInfo_t& adapterInfo = g_pMaterialAdapterMgr->GetAdapterInfo();
+
+        // Only run on NVIDIA display drivers; AMD and Intel are not
+        // supported by NVIDIA Reflex.
+        if (adapterInfo.m_VendorID == NVIDIA_VENDOR_ID)
+        {
+            if (GFX_HasPendingLowLatencyParameterUpdates())
+            {
+                const bool bUseLowLatencyMode = gfx_nvnUseLowLatency->GetBool();
+                const bool bUseLowLatencyBoost = gfx_nvnUseLowLatencyBoost->GetBool();
+
+                float fpsMax = fps_max_gfx->GetFloat();
+
+                if (fpsMax == -1.0f)
+                {
+                    const float globalFps = fps_max->GetFloat();
+
+                    // Make sure the global fps limiter is 'unlimited'
+                    // before we let the gfx frame limiter cap it to
+                    // the desktop's refresh rate; not adhering to
+                    // this will result in a major performance drop.
+                    if (globalFps == 0.0f)
+                        fpsMax = g_pGame->GetTVRefreshRate();
+                    else
+                        fpsMax = 0.0f; // Don't let NVIDIA limit the frame rate.
+                }
+
+                GFX_UpdateLowLatencyParameters(D3D11Device(), bUseLowLatencyMode,
+                    bUseLowLatencyBoost, false, fpsMax);
+            }
+
+            GFX_RunLowLatencyFrame(D3D11Device());
+        }
+
+        CEngineAPI::PumpMessages();
+#endif // !DEDICATED
+
+        if (g_pEngine->Frame())
+        {
+#ifndef DEDICATED
+            // Only increment frame number if we ran an actual engine frame.
+            GFX_IncrementFrameNumber();
+#endif // !DEDICATED
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void VSys_Dll2::Attach() const
 {
 	DetourAttach(&CEngineAPI_Init, &CEngineAPI::VInit);
 	DetourAttach(&CEngineAPI_ModInit, &CEngineAPI::VModInit);
+	DetourAttach(&CEngineAPI_PumpMessages, &CEngineAPI::PumpMessages);
+	DetourAttach(&CEngineAPI_MainLoop, &CEngineAPI::MainLoop);
 	DetourAttach(&v_CEngineAPI_SetStartupInfo, &CEngineAPI::VSetStartupInfo);
 }
 
@@ -163,5 +245,7 @@ void VSys_Dll2::Detach() const
 {
 	DetourDetach(&CEngineAPI_Init, &CEngineAPI::VInit);
 	DetourDetach(&CEngineAPI_ModInit, &CEngineAPI::VModInit);
+	DetourDetach(&CEngineAPI_PumpMessages, &CEngineAPI::PumpMessages);
+	DetourDetach(&CEngineAPI_MainLoop, &CEngineAPI::MainLoop);
 	DetourDetach(&v_CEngineAPI_SetStartupInfo, &CEngineAPI::VSetStartupInfo);
 }

@@ -576,7 +576,7 @@ function _MG_Spectate_by_name(entity player, string name){
 		}	
 	} else {
 		Message(player, "无效参数", "可能原因:\n 错误的玩家名\n 你已经在观战某人\n 取消隐藏玩家\n 退出滑翔\n ")
-		return
+		return 
 	}
 	
 	
@@ -1455,7 +1455,7 @@ function MovementGym_Map1() {
 	int seconds = user.p.finalTime
         
 	//Display player Time
-	  Message(user, "你的用时: " + minutes + ":" + realseconds)
+	Message(user, "你的用时: " + _MG_Convert_Sec_to_Time(seconds))
 	
 	//Add to results file
 	string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + _MG_Convert_Sec_to_Time(seconds) + "|" + GetUnixTimestamp() + "|Map1"
@@ -2428,7 +2428,7 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	int seconds = user.p.finalTime
         
 	//Display player Time
-	  Message(user, "你的用时: " + minutes + ":" + realseconds)
+	Message(user, "你的用时: " + _MG_Convert_Sec_to_Time(seconds))
 	
 	//Add to results file
 	string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + _MG_Convert_Sec_to_Time(seconds) + "|" + GetUnixTimestamp() + "|Map2"
@@ -4158,7 +4158,7 @@ Remote_CallFunction_NonReplay( user, "MG_StopWatch_toggle", false)
 	int seconds = user.p.finalTime
         
 	//Display player Time
-	Message(user, "Your Final Time: " + _MG_Convert_Sec_to_Time(seconds))
+	Message(user, "你的用时: " + _MG_Convert_Sec_to_Time(seconds))
 	
 	//Add to results file
 	string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + _MG_Convert_Sec_to_Time(seconds) + "|" + GetUnixTimestamp() + "|Map3"
@@ -9399,7 +9399,7 @@ function MovementGym_Grapple2() {
 //          int realseconds = seconds - (minutes * 60)
 //
 //          //Display player Time
-//          Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+//          Message(user, "你的用时: " + minutes + ":" + realseconds)
 //
 //          //Add to results file
 //          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map3"
@@ -9414,7 +9414,7 @@ function MovementGym_Grapple2() {
 //        } else {
 //
 //          //Display player Time
-//          Message(user, "Your Final Time: " + seconds + " seconds")
+//          Message(user, "你的用时: " + seconds + " seconds")
 //
 //          //Add to results file
 //          string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map3"

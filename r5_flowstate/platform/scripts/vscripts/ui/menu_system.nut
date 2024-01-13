@@ -186,8 +186,8 @@ void function InitSystemPanel( var panel )
 	file.hubButtonData[ panel ].label = "返回HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
 
-	file.invisButtonData[ panel ].label = "切换隐藏其他玩家"
-	file.invisButtonData[ panel ].activateFunc = RunInvis
+	file.MGsettingsButtonData[ panel ].label = "身法练习设置"
+	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
 
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
 	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand

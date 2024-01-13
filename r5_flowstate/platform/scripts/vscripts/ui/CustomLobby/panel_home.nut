@@ -56,7 +56,7 @@ struct
 	bool searching = false
 	bool foundserver = false
 	bool noservers = false
-	bool usercancled = false
+	bool searchCancelled = false
 	bool firststart = false
 	bool navInputCallbacksRegistered = false
 	
@@ -77,22 +77,9 @@ struct
 	bool HasPages = false
 } promo
 
-global table<int, string> SearchStages = {
-	[ 0 ] = "寻找中.",
-	[ 1 ] = "寻找中..",
-	[ 2 ] = "寻找中..."
-}
-
-global table<int, string> CreatingStages = {
-	[ 0 ] = "创建中.",
-	[ 1 ] = "创建中..",
-	[ 2 ] = "创建中..."
-}
-
-global table<int, string> ConnectingStages = {
-	[ 0 ] = "连接中.",
-	[ 1 ] = "连接中..",
-	[ 2 ] = "连接中..."
+string function GetProgressText(string v, int n = 0)
+{
+	return v + RepeatString( ".", (n % 3) + 1 )
 }
 
 void function InitHomePanel( var panel )
@@ -148,7 +135,7 @@ void function InitHomePanel( var panel )
 
 void function Play_SetupUI()
 {
-	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", Localize( "#BETA_BUILD_WATERMARK" ) )
+	HudElem_SetRuiArg( Hud_GetChild( file.panel, "R5RVersionButton" ), "buttonText", "FS v4.1 - R5Reloaded v2.3" )
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "playerName", GetPlayerName() )
 	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountLevel", GetAccountDisplayLevel( 100 ) )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "accountBadge", $"rui/gladiator_cards/badges/account_t21" )
@@ -156,16 +143,16 @@ void function Play_SetupUI()
 
 	var playersButton = Hud_GetChild( file.panel, "PlayersButton" )
 	ToolTipData playersToolTip
-	playersToolTip.titleText = "在线玩家"
-	playersToolTip.descText = MS_GetPlayerCount() + " 名玩家在线"
+	playersToolTip.titleText = "Players Online"
+	playersToolTip.descText = MS_GetPlayerCount() + " Players Online"
 	Hud_SetToolTipData( playersButton, playersToolTip )
 	HudElem_SetRuiArg( playersButton, "buttonText", "" + MS_GetPlayerCount() )
 	Hud_SetWidth( playersButton, Hud_GetBaseWidth( playersButton ) * 2 )
 
 	var serversButton = Hud_GetChild( file.panel, "ServersButton" )
 	ToolTipData serversToolTip
-	serversToolTip.titleText = "在线服务器"
-	serversToolTip.descText = MS_GetServerCount() + " 个服务器正在运行"
+	serversToolTip.titleText = "Servers Running"
+	serversToolTip.descText = MS_GetServerCount() + " Servers Running"
 	Hud_SetToolTipData( serversButton, serversToolTip )
 	HudElem_SetRuiArg( serversButton, "buttonText", "" + MS_GetServerCount() )
 	Hud_SetWidth( serversButton, Hud_GetBaseWidth( serversButton ) * 2 )
@@ -179,7 +166,7 @@ void function Play_SetupUI()
 
 	if(!file.firststart)
 	{
-		g_SelectedPlaylist = "随机服务器"
+		g_SelectedPlaylist = "Random Server"
 		R5RPlay_SetSelectedPlaylist(JoinType.QuickServerJoin)
 		file.firststart = true
 	}
@@ -241,20 +228,20 @@ void function R5RPlay_SetSelectedPlaylist(int quickPlayType)
 				if(g_SelectedTopServer.svServerName.len() > 30)
 					servername = g_SelectedTopServer.svServerName.slice(0, 30) + "..."
 
-				SetGamemodeButtonRUI(servername, "未准备", true, GetUIMapAsset(g_SelectedTopServer.svMapName ))
+				SetGamemodeButtonRUI(servername, "Not Ready", true, GetUIMapAsset(g_SelectedTopServer.svMapName ))
 			break;
 		case JoinType.QuickServerJoin:
 			quickplay.quickPlayType = JoinType.QuickServerJoin
 
 			asset image = $"rui/menu/gamemode/play_apex"
-			if(g_SelectedPlaylist == "随机服务器")
+			if(g_SelectedPlaylist == "Random Server")
 				image = $"rui/menu/gamemode/ranked_1"
 
-			SetGamemodeButtonRUI(GetUIPlaylistName(g_SelectedPlaylist), "未准备", true, image)
+			SetGamemodeButtonRUI(GetUIPlaylistName(g_SelectedPlaylist), "Not Ready", true, image)
 			break;
 		case JoinType.QuickPlay:
 			quickplay.quickPlayType = JoinType.QuickPlay
-			SetGamemodeButtonRUI(GetUIMapName(g_SelectedQuickPlayMap), "未准备", true, g_SelectedQuickPlayImage)
+			SetGamemodeButtonRUI(GetUIMapName(g_SelectedQuickPlayMap), "Not Ready", true, g_SelectedQuickPlayImage)
 			break;
 	}
 }
@@ -274,7 +261,7 @@ void function SetSearchingText(string text)
 void function ReadyButton_OnActivate(var button)
 {
 	if(file.searching) {
-		file.usercancled = true
+		file.searchCancelled = true
 		file.searching = false
 		return;
 	}
@@ -285,55 +272,62 @@ void function ReadyButton_OnActivate(var button)
 
 	GamemodeButtonSetSearching(true)
 
-	switch(quickplay.quickPlayType)
+	switch( quickplay.quickPlayType )
 	{
 		case JoinType.TopServerJoin:
-			thread JoinMatch(button, ConnectingStages)
+			thread JoinMatch( button, "Connecting" )
 			break;
 		case JoinType.QuickServerJoin:
-			thread FindMatch( button )
+			thread FindMatch( button, "Searching" )
 			break;
 		case JoinType.QuickPlay:
-			thread JoinMatch(button, CreatingStages)
+			thread JoinMatch( button, "Creating" )
+			break;
+		default:
+			printt("ReadyButton: Unimplemented join type")
 			break;
 	}
+
 }
 
-void function JoinMatch(var button, table<int, string> StringStages)
+void function JoinMatch( var button, string v )
 {
 	HudElem_SetRuiArg(button, "buttonText", Localize("#CANCEL"))
 
 	for (int i = 0; i < 6; i++)
 	{
-		if(file.usercancled)
+		if(file.searchCancelled)
 			break;
 		
-		SetSearchingText(StringStages[i % 3])
+		SetSearchingText( GetProgressText( v, i ) )
 		wait 0.5
 	}
 
-	if (!file.usercancled)
+	if (!file.searchCancelled)
 	{
 		EmitUISound("UI_Menu_Apex_Launch")
 		switch(quickplay.quickPlayType)
 		{
+			#if LISTEN_SERVER
+			// Amos: rework this?
 			case JoinType.QuickPlay:
-				SetSearchingText("启动服务器")
+				SetSearchingText("Starting Match")
 				wait 2
 				CreateServer(GetUIMapName(g_SelectedQuickPlayMap), "", g_SelectedQuickPlayMap, g_SelectedQuickPlay, eServerVisibility.OFFLINE)
 				break;
+			#endif // LISTEN_SERVER
 			case JoinType.TopServerJoin:
-				SetSearchingText("正在连接至比赛")
+				SetSearchingText("Joining Match")
 				wait 2
 				ConnectToListedServer(g_SelectedTopServer.svServerID)
 				break;
 		}
 	}
 
-	if(file.usercancled)
+	if(file.searchCancelled)
 		EmitUISound("UI_Menu_Deny")
 	
-	file.usercancled = false
+	file.searchCancelled = false
 	file.searching = false;
 	RuiSetBool(Hud_GetRui(Hud_GetChild(file.panel, "SelfButton")), "isReady", false)
 	HudElem_SetRuiArg(button, "buttonText", Localize("#READY"))
@@ -341,29 +335,24 @@ void function JoinMatch(var button, table<int, string> StringStages)
 	GamemodeButtonSetSearching(false)
 }
 
-void function FindMatch(var button)
+void function FindMatch(var button, string v)
 {
 	HudElem_SetRuiArg( button, "buttonText", Localize( "#CANCEL" ) )
 
 	thread FindServer()
 
 	int i = 0;
-	while(!file.foundserver)
+	while(!file.foundserver && !file.searchCancelled)
 	{
-		if(file.usercancled) {
-			file.foundserver = true
-			file.noservers = true
-			continue
-		}
+		wait 0.5
 
-		SetSearchingText(SearchStages[i])
+		SetSearchingText( GetProgressText( v, i ) )
 
 		i++
-		if(i > 2)
-			i = 0
-		
-		wait 0.5
 	}
+
+	if(file.searchCancelled)
+		file.noservers = true
 	
 	UpdateQuickJoinButtons(button)
 }
@@ -372,29 +361,28 @@ void function UpdateQuickJoinButtons(var button)
 {
 	float waittime = 2
 
-	if(file.usercancled)
+	if(file.searchCancelled)
 	{
 		EmitUISound( "UI_Menu_Deny" )
 		file.noservers = true
-		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "未准备" )
+		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "Not Ready" )
 		waittime = 0
 	}
 	else if(file.noservers)
 	{
 		EmitUISound( "UI_Menu_Deny" )
-		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "未找到服务器" )
+		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "No servers found" )
 	}
 	else if(!file.noservers)
 	{
 		EmitUISound( "UI_Menu_Apex_Launch" )
-		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "正在连接至比赛" )
+		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "Joining Match" )
 	}
 
 	wait waittime
 
-	if(!file.noservers) {
+	if(!file.noservers)
 		ConnectToListedServer(file.m_vSelectedServer.svServerID)
-	}
 
 	HudElem_SetRuiArg( button, "buttonText", Localize( "#READY" ) )
 	RuiSetBool( Hud_GetRui( Hud_GetChild( file.panel, "SelfButton" ) ), "isReady", false )
@@ -404,7 +392,7 @@ void function UpdateQuickJoinButtons(var button)
 	file.searching = false
 	file.noservers = false
 	file.foundserver = false
-	file.usercancled = false
+	file.searchCancelled = false
 }
 
 void function FindServer(bool refresh = false)
@@ -448,7 +436,7 @@ void function FindServer(bool refresh = false)
 		if ( file.m_vServerList[i].svCurrentPlayers == file.m_vServerList[i].svMaxPlayers )
 			continue;
 
-		if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "随机服务器")
+		if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "Random Server")
 			continue;
 
 		// Server fits our requirements, add it to the list
@@ -463,7 +451,7 @@ void function FindServer(bool refresh = false)
 			if ( file.m_vServerList[i].svCurrentPlayers == file.m_vServerList[i].svMaxPlayers )
 				continue;
 
-			if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "随机服务器")
+			if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "Random Server")
 				continue;
 
 			// Server fits our requirements, add it to the list

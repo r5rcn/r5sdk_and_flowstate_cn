@@ -1,7 +1,6 @@
 #base "_base_lmg.txt"
 #base "_base_barrels_medium.txt"
 #base "_base_stocks_tactical.txt"
-
 #base "_base_mags_energy.txt"
 
 WeaponData
@@ -15,7 +14,7 @@ WeaponData
 	"menu_icon"										"rui/weapon_icons/r5/weapon_lstar"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_lstar"
 	"ammo_pool_type"								"special"
-
+	
 	"weapon_type_flags"								"WPT_PRIMARY"
 	"weaponClass" 									"human"
 	"body_type"										"stalker"
@@ -23,24 +22,19 @@ WeaponData
 	"pickup_hold_prompt"  							"Hold [USE] [WEAPONNAME]"
 	"pickup_press_prompt" 							"[USE] [WEAPONNAME]"
 	"leveled_pickup"								"1"
-	 "ammo_pool_type"                                "special"
 
 	"cooldown_type"									"chargeFrac"
-    "cooldown_time"	                                "0.4" // actually, "blowoff animation time"
+    "cooldown_time"	                                "0.16" // actually, "blowoff animation time"
     "charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
     "charge_cooldown_time"                          "3.63"  // controls length of overheat anim (along with delay)
-    "charge_cooldown_delay"                         "0.06"
-	
+    "charge_cooldown_delay"                         "0.08"
 	"charge_overheats_when_full"                    "1"
 	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 	"entity_color_from_charge"						"1"
 
-                     
     "projectile_launch_speed"                       "24000"
 
-                                       
-      
 	"projectile_drag_coefficient" 					"0.0"
 	"projectile_gravity_scale"						"0.5"
 	"projectile_lifetime" 							"4.0"
@@ -81,7 +75,7 @@ WeaponData
 	//Sounds
 	"fire_sound_1_player_1p"						"Weapon_LSTAR_Fire_1P"
 	//"fire_sound_1_player_3p"						"Weapon_LSTAR_Fire_3P"
-	//"fire_sound_2_player_1p"						"weapon_lstar_secondshot_1p"
+	"fire_sound_2_player_1p"						"weapon_lstar_secondshot_1p"
 	"fire_sound_2_player_3p"						"Weapon_LSTAR_SecondShot_3P"
 
 	//"idle_sound_player_1p"							"weapon_lstar_idle_gears_1p"
@@ -132,21 +126,12 @@ WeaponData
 
 	"bolt_hitsize"									"0.0"
                      
-                                         
-                                      
-                                       
-                                      
-                                            
-                                        
-     
 	"bolt_hitsize_grow1_time"						"0.075"
 	"bolt_hitsize_grow1_size"						"1" //"5.0"
 	"bolt_hitsize_grow2_time"						"0.18"
 	"bolt_hitsize_grow2_size"						"2.5" //"7.0"
 	"bolt_hitsize_growfinal_lerptime"				"0.18"
 	"bolt_hitsize_growfinal_size"					"3.5" //"7.0"
-      
-
 
 	"bolt_gravity_enabled"							"1"
 
@@ -309,11 +294,8 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-                      
-                                                 
-      
-		"viewkick_pitch_softScale"						"2.0"   //"2.0"
-       
+
+	"viewkick_pitch_softScale"						"2.6"   //"2.0"
 	"viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
@@ -344,10 +326,7 @@ WeaponData
 	"viewkick_scale_yaw_valueLerpStart"   			"5"
 	"viewkick_scale_pitch_valueLerpEnd" 			"0"
 	"viewkick_scale_yaw_valueLerpEnd" 				"5"
-                     
-                                                          
-                                               
-     
+
     "viewkick_scale_valueDecayDelay"  				"0.1"
     "viewkick_scale_valueDecayRate"   				"60"
       
@@ -390,17 +369,6 @@ WeaponData
     "chance_for_bonus_last_shot_in_clip"			"0"
     "critical_hit"									"1"
 
-
-                     
-                                                       
-                                        
-                                                       
-                                                                                      
-                                   
-                                    
-
-     
-
 	"ammo_clip_size"   								"0"
 	//"ammo_clip_reload_max"							"40"
 	"ammo_min_to_fire"								"1"
@@ -410,10 +378,6 @@ WeaponData
     "ammo_stockpile_max"                            "324"
     "ammo_default_total"                            "324"    //for crate weapons, default total should be clip size + stockpile max
     "uses_ammo_pool"								"0"
-
-    "pass_through_depth"                            "64"
-    "pass_through_damage_preserved_scale"           "0.6"
-      
 
     "reload_alt_anim"								"0"
 
@@ -425,7 +389,7 @@ WeaponData
     "damage_near_value_titanarmor"					"16"
     "damage_far_value_titanarmor" 					"16"
     "damage_very_far_value_titanarmor" 				"16"
-	"damage_shield_scale"      			"1.6"
+
     "damage_rodeo" 									"100"
     "explosion_damage"								"30"
     "damage_near_distance"							"1500"
@@ -473,12 +437,7 @@ WeaponData
 	"dof_nearDepthEnd"							    "0.0"
 
 	// Behavior
-                     
-                                                          
-     
 	"fire_rate"   									"10.0"
-      
-
 	"zoom_time_in"                                  "0.34"
 	"zoom_time_out"                                 "0.3"
 	"zoom_fov"										"55"
@@ -516,103 +475,21 @@ WeaponData
     //"clip_bodygroup_show_for_milestone_2"	"0"
     //"clip_bodygroup_show_for_milestone_3"	"0"
 
-
-	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_LSTAR"
-	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_LSTAR"
-
+ 	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_LSTAR"
+	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_LSTAR"              
 
 	Mods
 	{
-
-	survival_finite_ammo
-	{
-		"ammo_no_remove_from_stockpile"		"0"
-		   "uses_ammo_pool"					"0"
-	}
-
-                        
-                        
-   
-                                                                 
-                                                                                  
-   
-
-                          
-         
-                                              
-
-                               
-
-                                                                                                          
-                                                                
-
-                                                                                
-                                                                      
-
-                                        
-                                          
-                                                          
-
-                                   
-                                        
-                                                               
-
-                                     
-                                                
-                                           
-                                             
-
-                                    
-                                 
-                                     
-                                          
-                                          
-                                              
-                                
-
-                                          
-                                                   
-
-                                                        
-
-                                                                         
-                                                                         
-
-                                                                   
-                                                                 
-
-                                                    
-                                                              
-                                                               
-                                                              
-                                                              
-                                                           
-                                       
-   
-      
-
-                  
-                   
-         
-         
-      
-
-	//Stocks reduce the overheat lens change time as they would reduce reloads on other weapons.
-		"stock_tactical_l1"
+	    crate
 	    {
-            "cooldown_time"	                                "*0.967" //"0.4" // actually, "blowoff animation time"
+	        "damage_shield_scale"      			"1.6"
 	    }
-        "stock_tactical_l2"
-        {
-            "cooldown_time"	                                "*0.933" //"0.4" // actually, "blowoff animation time"
-        }
-        "stock_tactical_l3"
-        {
-            "cooldown_time"	                                "*0.9" //"0.4" // actually, "blowoff animation time"
-        }
 
-	//Magazines allow the Lstar to shoot more before overheating and reduce the cooldown and delay so they cool off faster
-	//no mag = 22 shots
+        survival_finite_ammo
+        {
+            "ammo_no_remove_from_stockpile"		"0"
+	   		"uses_ammo_pool"					"0"
+        }
         energy_mag_l1
         {
             "charge_cooldown_time"                          "*0.967"  // non-overheat
@@ -709,10 +586,10 @@ WeaponData
         {
             "ui1_enable"			"0"
         }
-
-
 	}
 
+	// THIS IS A BUNCH OF DIRTY HACKS! We can't put actual primitive values for ui args, so we have to link it to some value.
+    //  I'm using eWeaponVar.ammo_per_shot = 1 to set the showChargeFrac "bool" and to avoid divide by 0 issues with clipSize
 
     //classic
     UiData6
@@ -819,20 +696,7 @@ WeaponData
 		"mesh"							"models/weapons/attachments/lstar_rui_lower"
 		Args
 		{
-			vis					player_zoomfrac
-			centerOffset		weapon_ads_center_offset
-		}
-	}
-
-	"ui2_enable"		"1"
-	"ui2_draw_cloaked"	"1"
-	UiData2
-	{
-		"ui"					"ui/lstar_screens"
-		"mesh"					"models/weapons/attachments/lstar_rui_lower"
-		Args
-		{
-			clipAmmo			weapon_ammoClipCount
+			clipAmmo			weapon_ammo
 			clipSize			weapon_clipSize
 			lifetimeShots		weapon_lifetime_shots
 			ammoFrac			weapon_ammofrac
@@ -847,14 +711,28 @@ WeaponData
 		}
 	}
 
+	"ui2_enable"		"0"
+	"ui2_draw_cloaked"	"1"
+	UiData2
+	{
+		"ui"					"ui/aog_ammo_counter_lstar"
+		"mesh"					"models/weapons/attachments/aog_rui_lower"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+		}
+	}
+
 	"ui3_enable"		"0"
 	UiData3
 	{
-		"ui"					"ui/lstar_screens_rcee"
-		"mesh"					"models/weapons/attachments/lstar_rui_lower"
+		"ui"						"ui/lstar_screens_rcee"
+		"mesh"						"models/weapons/attachments/lstar_rui_lower"
 		Args
 		{
-			lastDryFireTime		weapon_latest_dryfire_time
+			lastDryFireTime			weapon_latest_dryfire_time
 		}
 	}
 
@@ -866,14 +744,14 @@ WeaponData
     "ui10_draw_cloaked"	"1"
     UiData10
     {
-        "ui"					"ui/cro_threat_sights"
-        "mesh"					"models/weapons/attachments/cro_rui_upper"
+        "ui"							"ui/cro_threat_sights"
+        "mesh"							"models/weapons/attachments/cro_rui_upper"
         Args
         {
-            zoomFrac			player_zoomfrac
-            ammo				weapon_ammoClipCount
-            clipSize			weapon_clipSize
-            centerOffset		weapon_ads_center_offset
+            zoomFrac					player_zoomfrac
+            ammo						weapon_ammo
+            clipSize					weapon_clipSize
+            centerOffset				weapon_ads_center_offset
         }
     }
 

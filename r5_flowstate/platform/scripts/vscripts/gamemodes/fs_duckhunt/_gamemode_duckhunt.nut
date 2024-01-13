@@ -1,5 +1,5 @@
 //APEX DUCKHUNT
-//Made by @CafeFPS (Retículo Endoplasmático#5955)
+//Made by @CafeFPS
 
 // Darkes#8647 - duckhunt maps
 // everyone else - advice
@@ -136,7 +136,7 @@ void function _OnPlayerConnected(entity player)
     {
 		case eGameState.WaitingForPlayers:
 		case eGameState.MapVoting:
-			Message(player, "APEX DUCK HUNT", "Made by @CafeFPS & Darkes#8647. Game is starting.", 4)
+			// Message(player, "APEX DUCK HUNT", "Game is starting.", 4)
 
 			_HandleRespawn(player)
 			Survival_SetInventoryEnabled( player, false )
@@ -169,7 +169,7 @@ void function _OnPlayerConnected(entity player)
 		default:
 			break
 	}
-
+	TakeAllPassives(player)
 	Remote_CallFunction_NonReplay( player, "UpdateRUITest")
 	UpdatePlayerCounts()
 }
@@ -183,8 +183,8 @@ void function SetupTeamPlayer(entity player)
 	player.SetVelocity(Vector(0,0,0))
 
 	TakeLoadoutRelatedWeapons(player)
-	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 	DeployAndEnableWeapons(player)
 	Survival_SetInventoryEnabled( player, false )
 	Highlight_SetFriendlyHighlight( player, "prophunt_teammate" )
@@ -213,9 +213,12 @@ void function SetupTeamPlayer(entity player)
 void function _OnEntitiesDidLoad()
 {
 	AddSpawnCallback("zipline", _OnPropDynamicSpawned)
+	AddSpawnCallback("zipline_end", _OnPropDynamicSpawned)
 	AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-	SpawnDuckHuntMap() //fake spawn, this will precache props
-	SpawnDuckHuntMap2() //fake spawn, this will precache props
+	AddSpawnCallback("script_mover_lightweight", _OnPropDynamicSpawned)
+	AddSpawnCallback("prop_script", _OnPropDynamicSpawned)
+
+	PrecacheMapsProps()
 }
 
 void function _OnPropDynamicSpawned(entity prop)
@@ -338,14 +341,6 @@ void function _OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 
 			thread function() : (victim, attacker, damageInfo)
 			{
-				if( victim.GetPlayerGameStat( PGS_DEATHS ) < DUCKHUNT_MAX_LIFES_FOR_DUCKS && victim.GetTeam() == TEAM_MILITIA ) //IsWorldSpawn( attacker )
-				{
-					printt(victim.GetPlayerGameStat( PGS_DEATHS ))
-					int deaths = victim.GetPlayerGameStat( PGS_DEATHS )
-					deaths++
-					victim.SetPlayerGameStat( PGS_DEATHS, deaths)
-				}
-
 				if(victim.GetTeam() == TEAM_IMC && GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() == 0)
 				{
 					FS_DUCKHUNT.winnerTeam = TEAM_MILITIA
@@ -397,8 +392,8 @@ void function _OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 
 					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 					player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-					player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-					player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+					player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+					player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 					player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
 					DeployAndEnableWeapons(player)
 					Survival_SetInventoryEnabled( player, false )
@@ -428,8 +423,8 @@ void function _OnPlayerKilled(entity victim, entity attacker, var damageInfo)
 
 					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 					player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-					player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-					player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+					player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+					player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 					player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
 					DeployAndEnableWeapons(player)
 					Survival_SetInventoryEnabled( player, false )
@@ -580,7 +575,10 @@ void function _HandleRespawn(entity player)
 	Remote_CallFunction_NonReplay(player, "Minimap_DisableDraw_Internal")
 	if(GetGameState() == eGameState.Playing)
 		Remote_CallFunction_NonReplay( player, "DUCKHUNT_CustomHint", 1, DUCKHUNT_MAX_LIFES_FOR_DUCKS - player.GetPlayerGameStat( PGS_DEATHS ))
+
+	TakeAllPassives(player)
 	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+
 	player.MovementEnable()
 
 	if(IsPlayerEliminated(player))
@@ -599,10 +597,10 @@ void function DUCKHUNT_Lobby()
 
 		if(FS_DUCKHUNT.winnerTeam != 0)
 		{
-			Message(player, FS_DUCKHUNT.winnerTeam == TEAM_MILITIA ? "DUCKS WIN" : "HUNTERS WIN", "Use SET HUNTER button in Pause menu to become a hunter.", 6)
+			Message(player, FS_DUCKHUNT.winnerTeam == TEAM_MILITIA ? "DUCKS WIN" : "HUNTERS WIN", "", 6)
 		} else
 		{
-			Message( player, "APEX DUCK HUNT", "Made by @CafeFPS & Darkes#8647", 4 )
+			Message( player, "APEX DUCK HUNT", "", 4 )
 		}
 
 		_HandleRespawn(player)
@@ -629,7 +627,6 @@ void function DUCKHUNT_Lobby()
 	Signal(svGlobal.levelEnt, "EndScriptedPropsThread")
 	WaitFrame()
 	DestroyServerProps()
-
 	bool enteredwaitingidk = false
 
 	if(GetPlayerArray().len() < 2)
@@ -659,21 +656,22 @@ void function DUCKHUNT_Lobby()
 			Message(player, "DUCKHUNT", "STARTING", 3, "")
 		}
 
-		wait 5
+		wait 3
 	}
 
 	if(IsOdd(FS_DUCKHUNT.currentRound))
 	{
 		FS_DUCKHUNT.spawnedmap = 0
-		thread SpawnDuckHuntMap()
-	}else
-	{
+		SpawnDuckHuntMap()
+	}
+	else
+	{	
 		FS_DUCKHUNT.spawnedmap = 1
-		thread SpawnDuckHuntMap2()
+		SpawnDuckHuntMap2()
 	}
 
-	wait 15
-
+	wait 3
+	printt( "Handling team for players" )
 	_HandleTeamForAllPlayers()
 }
 
@@ -723,8 +721,8 @@ void function DUCKHUNT_GameLoop()
 
 		TakeLoadoutRelatedWeapons(player)
 
-		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
 		DeployAndEnableWeapons(player)
 		Survival_SetInventoryEnabled( player, true )
@@ -772,8 +770,8 @@ void function DUCKHUNT_GameLoop()
 
 		TakeLoadoutRelatedWeapons(player)
 
-		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
 
 		DeployAndEnableWeapons(player)
 		Survival_SetInventoryEnabled( player, false )
@@ -1058,7 +1056,7 @@ void function CreateFanPusher(vector origin, vector angles2)
 	entity fx2 = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( $"P_s2s_flap_wind" ), origin, angles2 )
 	fx2.SetParent(rotator)
 
-	if(GameRules_GetGameMode() == "flowstate_infection") return
+	if(GameRules_GetGameMode() == "fs_infected") return
 
 	thread function() : (rotator, origin, angles2)
 	{
@@ -1143,8 +1141,6 @@ void function SpawnKillerWalls(vector origin)
 
 void function SpawnMovingPlatform(vector origin)
 {
-	EndSignal(svGlobal.levelEnt, "EndScriptedPropsThread")
-
 	vector angles1 = Vector(0,0,0)
 
 	for(int i = 0; i < 7; i++)
@@ -1207,8 +1203,6 @@ void function SpawnMovingPlatform(vector origin)
 
 void function SpawnMovingPlatformWithFanPusher(vector origin)
 {
-	EndSignal(svGlobal.levelEnt, "EndScriptedPropsThread")
-
 	entity platform = CreateEntity( "prop_dynamic" )
 	{
 		platform.kv.solid = SOLID_VPHYSICS
@@ -1261,5 +1255,4 @@ void function SpawnMovingPlatformWithFanPusher(vector origin)
 		DispatchSpawn(circle)
 		circle.SetParent(platform)
 	}
-
 }

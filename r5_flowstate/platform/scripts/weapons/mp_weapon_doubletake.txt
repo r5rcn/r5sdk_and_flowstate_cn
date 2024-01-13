@@ -1,11 +1,5 @@
-#base "_base_sniper.txt"
-#base "_base_sniper_optics.txt"
-
-                   
+#base "_base_marksman_weapon.txt"
 #base "_base_mags_energy.txt"
-
-
-#base "_base_stocks_sniper.txt"
 
 "WeaponData"
 {
@@ -17,7 +11,7 @@
 	"longdesc"                                     "#WPN_DOUBLETAKE_LONGDESC"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
-
+	
 	// UI - HUD
 	"menu_icon"										"rui/weapon_icons/r5/weapon_triple_take"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_triple_take"
@@ -43,13 +37,13 @@
 	"OnProjectileCollision"                         "OnProjectileCollision_weapon_doubletake"
 
 	"charge_time" 					"0.85"
-	"charge_cooldown_time"			"0.1"
+	"charge_cooldown_time"			"1"
 	"charge_cooldown_delay"   		"0.1"
 
 	"charge_levels"					"4"
 	"charge_level_base"				"1"
 
-	"rui_crosshair_index"			"1"
+	"rui_crosshair_index"			"0"
 
 	// Enable Hopup RUIs
 	"ui20_enable"					"1"
@@ -75,10 +69,10 @@
 
 	// Behavior - ADS (tied to animation)
 	//
-	"ads_fov_zoomfrac_start"                       "0.2"
-    "ads_fov_zoomfrac_end"                         "0.9"
-    "viewmodel_offset_zoom_frac_start"             "0.2"
-    "viewmodel_offset_zoom_frac_end"               "0.9"
+	"ads_fov_zoomfrac_start"                "0.2"
+    "ads_fov_zoomfrac_end"                  "0.9"
+    "viewmodel_offset_zoom_frac_start"      "0.2"
+    "viewmodel_offset_zoom_frac_end"        "0.9"
 
 	// Damage
 	//
@@ -237,9 +231,9 @@
 	//
 	"fire_sound_1_npc"                             "Weapon_DoubleTake_Fire_NPC"
 	"fire_sound_1_player_1p"                       "Weapon_DoubleTake_Fire_1P"
-	//"fire_sound_2_player_1p"                       "large_shell_drop"
+	"fire_sound_2_player_1p"                       "large_shell_drop"
 	"fire_sound_1_player_3p"                       "Weapon_DoubleTake_Fire_3P"
-	//"fire_sound_2_player_3p"                       "large_shell_drop"
+	"fire_sound_2_player_3p"                       "large_shell_drop"
 
 	// Sound - Low Ammo
 	"low_ammo_sound_name_1"                        "DoubleTake_LowAmmo_Shot1"
@@ -350,28 +344,37 @@
     "burn_tick_rate"                "0.8"       //how often we do a damage tick = (tick_rate / burn_time)
     "sound_burn_damage_tick_1p" 	"flesh_thermiteburn_3p_vs_1p"
 
-	"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_TRIPLETAKE"
-	"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_TRIPLETAKE"
-
-	"player_overheat_per_bullet"        "28"
-
 	"Mods"
 	{
-	    gold
+        gold
         {
         }
-
-		"survival_finite_ammo"
+        hopup_kinetic_loader
+        {
+        }
+		hopup_kinetic_choke
 		{
-			"ammo_stockpile_max"             "24"
-			"ammo_default_total"             "0"
-			"ammo_no_remove_from_stockpile"  "0"
-			"uses_ammo_pool"                 "1"
-			"low_ammo_fraction"              "0.3"
+		}
+        kinetic_choke
+        {
+            "mod_activity_modifier"			"fire_select"
+
+                                    
+
+                                                  
+
+                 
+
+            			"charge_time" 					"*0.36"
+
+                  
+        }
+		hopup_energy_choke
+		{
 		}
 
-		"hopup_energy_choke"
-		{
+		choke //toggle mod of hopup_energy_choke
+			{
 			"mod_activity_modifier"			"fire_select"
 
                         
@@ -572,15 +575,14 @@
 		{
 			"ammo_clip_size"   					"10"
 		}
-      
-
-               
-                                                                                                     
-                    
-         
-                                                                                          
-         
-      
+		energy_mag_l4
+		{
+			"ammo_clip_size"   					"10"
+		}
+        amped_damage
+        {
+            "projectile_trail_effect_0"     				"P_tracer_proj_sniper_shield_breaker"
+        }
 	}
 
 	// RUI
@@ -634,7 +636,6 @@
 			vis					player_zoomfrac
 			charge				player_chargeFrac
 			chargeEnabled		eWeaponVar.custom_int_0
-			centerOffset		weapon_ads_center_offset
 		}
 	}
 

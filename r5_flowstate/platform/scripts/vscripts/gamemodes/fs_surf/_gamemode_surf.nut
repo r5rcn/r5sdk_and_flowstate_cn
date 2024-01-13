@@ -4,12 +4,6 @@ globalize_all_functions
 #endif
 globalize_all_functions
 
-enum eTDMState
-{
-	IN_PROGRESS = 0
-	NEXT_ROUND_NOW = 1
-}
-
 struct {
 int tdmState = eTDMState.IN_PROGRESS
 array<entity> playerSpawnedProps
@@ -58,7 +52,7 @@ void function _OnPlayerConnectedSURF(entity player)
 	player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
 	player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
 	player.SetSkin(RandomInt(6))
-	Message(player, "欢迎来到APEX滑翔", "Surf maps made by the community - Game mode implementation by Colombia", 10)
+	Message(player, "WELCOME TO APEX SURF", "Surf maps made by the community - Game mode implementation by Colombia", 10)
     player.TakeOffhandWeapon(OFFHAND_TACTICAL)
     player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
     TakeAllWeapons( player )
@@ -164,7 +158,7 @@ void function DestroyPlayerPropsSURF()
 
 void function ActualSURFLobby()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 	printt("Flowstate DEBUG - Starting Lobby")
@@ -232,7 +226,7 @@ WaitFrame()
 
 void function ActualSURFGameLoop()
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+//By Retículo Endoplasmático#5955 (CafeFPS)//
 ///////////////////////////////////////////////////////
 {
 printt("Flowstate DEBUG - Surf map and game started.")
@@ -297,7 +291,7 @@ while( Time() <= endTime )
 			{
 				if(IsValid(player))
 				{
-					Message(player,"注意","滑翔地图两分钟后更换", 10)
+					Message(player,"ATTENTION","Surf map changing in 2 minutes.", 10)
 				}
 			}
 		}
@@ -307,7 +301,7 @@ while( Time() <= endTime )
 			{
 				if(IsValid(player))
 				{
-					Message(player,"注意","滑翔地图15秒后更换", 10)
+					Message(player,"ATTENTION","Surf map changing in 15 seconds.", 10)
 				}
 			}
 		}
@@ -442,7 +436,7 @@ void function SurfPurgatoryFinishDoor_OnAreaEnter( entity trigger, entity player
 
 void function SurfPurgatoryFinishFinished_OnAreaEnter( entity trigger, entity player )
 {
-    Message( player, "地图已完成", "恭喜你完成了surf_purgatory", 5.0 )
+    Message( player, "Map Finished", "Congrats you finished surf_purgatory", 5.0 )
 }
 
 //////////////////SURF KITSUNE BY ECKO
@@ -495,27 +489,28 @@ void function SurfKitsuneFinishDoor_OnAreaEnter( entity trigger, entity player )
 
 void function SurfKitsuneFinishFinished_OnAreaEnter( entity trigger, entity player )
 {
-    Message( player, "地图已完成", "恭喜你完成了surf_kitsune", 5.0 )
+    Message( player, "Map Finished", "Congrats you finished surf_kitsune", 5.0 )
 }
 
-
-bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 //Thanks Archtux#9300
 //Modified by Retículo Endoplasmático#5955 and michae\l/#1125
+bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 {
-if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin1 || player.GetPlayerName() == surf.admin2 || player.GetPlayerName() == surf.admin3 || player.GetPlayerName() == surf.admin4) {
-	
-    if (args.len()) {
+    if ( !IsValid( player ) )
+        return true
+    
+    if ( player.GetPlayerName() != surf.Hoster && player.GetPlayerName() != surf.admin1 && player.GetPlayerName() != surf.admin2 && player.GetPlayerName() != surf.admin3 && player.GetPlayerName() != surf.admin4 )
+        return false
 
-        try{
-            string now = args[0]
-            if (now == "now")
-            {
-               surf.tdmState = eTDMState.NEXT_ROUND_NOW
-			   surf.mapIndexChanged = false
-			   return true
-            }
-        } catch(e1) {}
+    if ( args.len() )
+    {
+        string now = args[0]
+        if (now == "now")
+        {
+            surf.tdmState = eTDMState.NEXT_ROUND_NOW
+            surf.mapIndexChanged = false
+            return true
+        }
 
         try{
             int mapIndex = int(args[0])
@@ -524,17 +519,14 @@ if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin
         } catch (e) {}
 
         try{
-            string now = args[1]
+            now = args[1]
             if (now == "now")
             {
-               surf.tdmState = eTDMState.NEXT_ROUND_NOW
+                surf.tdmState = eTDMState.NEXT_ROUND_NOW
             }
         } catch(e2) {}
     }
-	}
-	else {
-	return false
-	}
+	
 	return true
 }
 
@@ -702,7 +694,7 @@ void function SurfNoNameFinishDoor_OnAreaEnter( entity trigger, entity player )
 
 void function SurfNoNameFinishFinished_OnAreaEnter( entity trigger, entity player )
 {
-    Message( player, "地图已完成", "恭喜你完成了", 5.0 )
+    Message( player, "Map Finished", "Congrats you finished surf_purgatory", 5.0 )
 }
 
 #if SERVER

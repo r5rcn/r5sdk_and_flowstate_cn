@@ -36,9 +36,10 @@ struct
 	table<var, ButtonData > spectateButtonData
 	table<var, ButtonData > respawnButtonData
 	table<var, ButtonData > hubButtonData
-	table<var, ButtonData > invisButtonData
+	table<var, ButtonData > MGsettingsButtonData
 	table<var, ButtonData > SetHunterButtonData
 	table<var, ButtonData > ToggleScoreboardFocus
+	table<var, ButtonData > Toggle1v1ScoreboardFocus
 	InputDef& qaFooter
 	bool SETHUNTERALLOWED
 } file
@@ -137,21 +138,22 @@ void function InitSystemPanel( var panel )
 	file.spectateButtonData[ panel ] <- clone data
 	file.respawnButtonData[ panel ] <- clone data
 	file.hubButtonData[ panel ] <- clone data
-	file.invisButtonData[ panel ] <- clone data
+	file.MGsettingsButtonData[ panel ] <- clone data
 	file.TDM_ChangeWeapons[ panel ] <- clone data
 	file.SetHunterButtonData[ panel ] <- clone data
 	file.ToggleScoreboardFocus[ panel ] <- clone data
+	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
 	
-	file.ExitChallengeButtonData[ panel ].label = "结束挑战"
+	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
 	
-	file.SetHunterButtonData[ panel ].label = "设置猎人"
+	file.SetHunterButtonData[ panel ].label = "SET HUNTER"
 	file.SetHunterButtonData[ panel ].activateFunc = SetHunterFunct
 		
-	file.TDM_ChangeWeapons[ panel ].label = "更换武器"
+	file.TDM_ChangeWeapons[ panel ].label = "CHANGE WEAPON"
 	file.TDM_ChangeWeapons[ panel ].activateFunc = OpenWeaponSelector
 	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
@@ -175,27 +177,30 @@ void function InitSystemPanel( var panel )
 	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
 	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
 	
-	file.thirdPersonButtonData[ panel ].label = "切换第三人称"
+	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
 	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
 
-	file.endmatchButtonData[ panel ].label = "关闭游戏大厅"
+	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
 	
-	file.hubButtonData[ panel ].label = "返回HUB"
+	file.hubButtonData[ panel ].label = "HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
-	
-	file.invisButtonData[ panel ].label = "切换隐藏其他玩家"
-	file.invisButtonData[ panel ].activateFunc = RunInvis
-	
+
+	file.MGsettingsButtonData[ panel ].label = "GYM SETTINGS"
+	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
+
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
 	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand
 	
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
-	file.ToggleScoreboardFocus[ panel ].label = "切换计分板"
+	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
+	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
+	file.Toggle1v1ScoreboardFocus[ panel ].activateFunc = Toggle1v1Scoreboard_System
+
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -219,7 +224,7 @@ void function UpdateSystemPanel( var panel )
 	if( IsConnected() && GetCurrentPlaylistName() != "fs_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
 	else if( IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer" )
-		file.lobbyReturnButtonData[ panel ].label = "退出练枪挑战"
+		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	foreach ( index, button in file.buttons[ panel ] )
@@ -232,11 +237,16 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" || GetCurrentPlaylistName() == "fs_1v1" )
+		if( GetCurrentPlaylistName() == "flowstate_snd" || GetCurrentPlaylistName() == "fs_dm" )
 		{
 			SetButtonData( panel, buttonIndex++, file.ToggleScoreboardFocus[ panel ] )
 		}
-		
+
+		if( GetCurrentPlaylistName() == "fs_1v1" )
+		{
+			SetButtonData( panel, buttonIndex++, file.Toggle1v1ScoreboardFocus[ panel ] )
+		}
+
 		if( GetCurrentPlaylistName() != "fs_aimtrainer" )
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
@@ -265,7 +275,7 @@ void function UpdateSystemPanel( var panel )
 		}
 		if( GetCurrentPlaylistName() == "fs_movementgym" )
 		{
-			SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.MGsettingsButtonData[ panel ] )
 			SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
 		}
 
@@ -302,7 +312,7 @@ void function UpdateSystemPanel( var panel )
 	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
-		Hud_SetText( dataCenterElem, "R5Reloaded 服务器: " + MyPing() + " ms.")
+		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
 }
 
 void function ToggleSetHunter(bool enable)
@@ -368,7 +378,9 @@ void function OpenSettingsMenu()
 
 void function HostEndMatch()
 {
+	#if LISTEN_SERVER
 	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	#endif // LISTEN_SERVER
 }
 
 void function RunSpectateCommand()
@@ -381,6 +393,11 @@ void function ShowScoreboard_System()
 	ClientCommand( "scoreboard_toggle_focus" )
 }
 
+void function Toggle1v1Scoreboard_System()
+{
+	RunClientScript( "Toggle1v1Scoreboard" )
+}
+
 void function RunKillSelf()
 {
 	ClientCommand( "kill_self" )
@@ -391,9 +408,9 @@ void function RunHub()
 	ClientCommand( "hub" )
 }
 
-void function RunInvis()
+void function RunMGsettings()
 {
-	ClientCommand( "invis" )
+	RunClientScript("MG_Settings_UI")
 }
 
 #if CONSOLE_PROG

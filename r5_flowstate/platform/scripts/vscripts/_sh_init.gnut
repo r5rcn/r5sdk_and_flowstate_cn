@@ -169,11 +169,11 @@ void function SV_CL_Init()
 
 	ShLootDrones_Init()
 
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
+	//if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
 	ShLootRollers_Init()
-	} else if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
-	ShFlyersDeathboxes_Init()
-	}	
+	//} else if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
+	//ShFlyersDeathboxes_Init()
+	//}	
 
 
 	CharacterSelectNewMenu_Init()
@@ -210,7 +210,20 @@ void function SV_CL_Init()
 	#if DEVSCRIPTS
 	Dev_RemoteFunctions_Init()
 	#endif
+
+	#if CLIENT	
+	if( GetCurrentPlaylistVarBool( "enable_oddball_gamemode", false ) )
+	{
+		RegisterNetworkedVariableChangeCallback_ent( "FSDM_Oddball_BallOrCarrierEntity", Oddball_BallOrCarrierEntityChanged )
+		if( GameRules_GetGameMode() == "fs_dm" )
+			RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSDM_GameStateChanged )		
+	}
 	
+	if( GameRules_GetGameMode() == "custom_ctf" )
+	{
+		RegisterNetworkedVariableChangeCallback_int( "FSDM_GameState", FSCTF_GameStateChanged )
+	}
+	#endif
 	RemoteFunctions_Init_Finish()
 }
 
@@ -325,6 +338,7 @@ void function Server_Init()
 	PilotsPassage_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
+	ObjectiveResourceSystem_ServerInit()
 
     // ReMap Live
     if ( GetCurrentPlaylistName() == "survival_dev" )

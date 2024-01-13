@@ -1,11 +1,10 @@
 untyped
 globalize_all_functions
 
-
 // Made by Loy. 
-// Type ' script thread grapplemap_init() ' in Worlds Edge to load the map
 
 void function grapplemap_precache() {
+    PrecacheModel( $"mdl/desertlands/desertlands_cafeteria_table_02.rmdl" )
     PrecacheModel( $"mdl/desertlands/construction_bldg_platform_01.rmdl" )
     PrecacheModel( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_pillar_64.rmdl" )
     PrecacheModel( $"mdl/desertlands/desertlands_city_slanted_building_01_wall_corner_Lshape.rmdl" )
@@ -32,7 +31,6 @@ void function grapplemap_precache() {
     PrecacheModel( $"mdl/desertlands/desertlands_train_station_interior_light_04.rmdl" )
     PrecacheModel( $"mdl/beacon/construction_scaff_segment_128_64.rmdl" )
     PrecacheModel( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl" )
-    PrecacheModel( $"mdl/vehicles_r5/air/dropship_goblin/veh_air_dship_goblin_prk_opn_v1_static.rmdl" )
     PrecacheModel( $"mdl/industrial/zipline_arm.rmdl" )
     PrecacheModel( $"mdl/industrial/security_fence_post.rmdl" )
     PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
@@ -48,54 +46,59 @@ struct {
 file
 
 void function grapplemap_init() {
-    thread grapplemap_precache()
-    wait 1
-    thread grapplemap_load()
-    wait 1
-    thread grapplemap_SpawnInfoText()
-    wait 1
-    thread grapplemap_testDualButton()
-    wait 2
-    thread grapplemap_player_setup()
+	AddCallback_OnClientConnected( grapplemap_player_setup )
+	AddCallback_EntitiesDidLoad( GrappleMapEntitiesDidLoad )
+    grapplemap_precache()
 }
 
-void function grapplemap_SpawnInfoText() {
-    foreach (player in GetPlayerArray()) {
-        CreatePanelText(player, "1", "Hint: over the bubble, slide jump in the ring", < -6.1387, -58.8598, 20134.77 >, < 0, -89.9999, 0 >, false, 1)
-        CreatePanelText(player, "2", "Hint: over the wall and forward", < 2927.562, -46.2098, 19912.18 >, < 0, -89.9999, 0 >, false, 1)
-        CreatePanelText(player, "3", "Hint: over the wall and forward", < 5188.162, -46.2098, 20924.24 >, < 0, -89.9999, 0 >, false, 1)
-        CreatePanelText(player, "4", "Hint: around the bubble from the right", < 7453.562, -49.6098, 21938.04 >, < 0, -89.9999, 0 >, false, 1)
-        CreatePanelText(player, "5", "Hint: slide down, grapple up", < 8874.461, 1932.34, 21943.77 >, < 0, -89.9999, 0 >, false, 1)
-        CreatePanelText(player, "6", "Hint: slide jump, grapple up", < 9909.262, 2341.19, 22534.64 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "7", "Hint: slide jump, grapple up", < 9178.661, 2005.08, 23534.5 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "8", "Hint: slide jump, grapple up", < 9909.722, 2340.67, 24577.46 >, < 0, 90, 0 >, false, 1)
-        CreatePanelText(player, "9", "Hint: run off the platform, looking forward", < 9169.692, 2005.39, 25571.64 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "10", "Hint: superglide", < 18458.53, 1988.69, 17881.73 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "11", "Hint: slide off the platform", < 19521.96, -2243.96, 17875.57 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "12", "Hint: wait a little before the 2nd jump", < 19521.96, -5500.86, 17586.67 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "13", "Hint: Hyper Jump", < 19521.96, -9014.359, 17761.67 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "14", "Hint: be like Spiderman", < 19605.36, -9854.76, 18216.32 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "15", "Hint: Slide Grapple", < 18976.06, -15287.31, 18308.34 >, < 0, -90, 0 >, false, 1)
-        CreatePanelText(player, "Loy", "Made by:", < -6.1387, 55.8902, 20134.77 >, < 0, 90, 0 >, false, 1)
-    }
-
+void function GrappleMapEntitiesDidLoad()
+{
+	thread grapplemap_load()
+	thread grapplemap_testDualButton()
 }
 
-void function grapplemap_player_setup()
+void function grapplemap_SpawnInfoText( entity player ) {
+	FlagWait( "EntitiesDidLoad" )
+	wait 1
+	CreatePanelText(player, "1", "Hint: over the bubble, slide jump in the ring", < -6.1387, -58.8598, 20134.77 >, < 0, -89.9999, 0 >, false, 1)
+	CreatePanelText(player, "2", "Hint: over the wall and forward", < 2927.562, -46.2098, 19912.18 >, < 0, -89.9999, 0 >, false, 1)
+	CreatePanelText(player, "3", "Hint: over the wall and forward", < 5188.162, -46.2098, 20924.24 >, < 0, -89.9999, 0 >, false, 1)
+	CreatePanelText(player, "4", "Hint: around the bubble from the right", < 7453.562, -49.6098, 21938.04 >, < 0, -89.9999, 0 >, false, 1)
+	CreatePanelText(player, "5", "Hint: slide down, grapple up", < 8874.461, 1932.34, 21943.77 >, < 0, -89.9999, 0 >, false, 1)
+	CreatePanelText(player, "6", "Hint: slide jump, grapple up", < 9909.262, 2341.19, 22534.64 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "7", "Hint: slide jump, grapple up", < 9178.661, 2005.08, 23534.5 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "8", "Hint: slide jump, grapple up", < 9909.722, 2340.67, 24577.46 >, < 0, 90, 0 >, false, 1)
+	CreatePanelText(player, "9", "Hint: run off the platform, looking forward", < 9169.692, 2005.39, 25571.64 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "10", "Hint: superglide", < 18458.53, 1988.69, 17881.73 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "11", "Hint: slide off the platform", < 19521.96, -2243.96, 17875.57 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "12", "Hint: wait a little before the 2nd jump", < 19521.96, -5500.86, 17586.67 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "13", "Hint: Hyper Jump", < 19521.96, -9014.359, 17761.67 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "14", "Hint: be like Spiderman", < 19605.36, -9854.76, 18216.32 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "15", "Hint: Slide Grapple", < 18976.06, -15287.31, 18308.34 >, < 0, -90, 0 >, false, 1)
+	CreatePanelText(player, "Loy", "Made by:", < -6.1387, 55.8902, 20134.77 >, < 0, 90, 0 >, false, 1)
+}
+
+void function grapplemap_player_setup( entity player )
 {
     array<ItemFlavor> characters = GetAllCharacters()
-    foreach (player in GetPlayerArray()) {
-        player.SetOrigin(file.first_cp)
-        CharacterSelect_AssignCharacter(ToEHI(player), characters[7])
-		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-        player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-        player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-        player.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
-	    player.SetSuitGrapplePower(100)
-        player.SetAngles(< 0, -90, 0 >)
-        player.SetPersistentVar("gen", 0)
-        Message(player, "Welcome to the Grapple Map!")
-    }
+
+	player.SetOrigin(file.first_cp)
+	CharacterSelect_AssignCharacter(ToEHI(player), characters[7])
+
+	TakeAllPassives( player )
+	TakeAllWeapons( player )
+	player.GiveWeapon("mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
+	player.GiveOffhandWeapon("melee_pilot_emptyhanded", OFFHAND_MELEE, [])
+	player.SetPlayerNetBool("pingEnabled", false)
+
+	player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
+	player.GetOffhandWeapon(OFFHAND_LEFT).SetWeaponPrimaryClipCount(300)
+	player.SetSuitGrapplePower(100)
+	player.SetAngles(< 0, -90, 0 >)
+	player.SetPersistentVar("gen", 0)
+	Message(player, "Welcome to the Grapple Map!", "Made by LoyTakian.")
+
+	thread grapplemap_SpawnInfoText( player )
 }
 
 
@@ -723,7 +726,6 @@ void function grapplemap_load() {
     MapEditor_CreateProp( $"mdl/industrial/security_fence_post.rmdl", < 19953.7, -9669, 17685 >, < 0, -180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 19954.7, -9669.8, 17885 >, < 0, 90, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_platform_01.rmdl", < 19224.7, -16165.5, 18236 >, < 0, -90, 0 >, true, 50000, -1, 1 )
-    NoGrappleArray.append( MapEditor_CreateProp( $"mdl/vehicles_r5/air/dropship_goblin/veh_air_dship_goblin_prk_opn_v1_static.rmdl", < 19043, -17883, 17895 >, < 0, -90, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/beacon/construction_scaff_segment_128_64.rmdl", < 19127.4, -16156.1, 18232.7 >, < 0, 0.0001, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/beacon/construction_scaff_128_64_64.rmdl", < 18906.7, -15992.6, 18229.9 >, < 0, 0, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl", < 18899.4, -15877.3, 18235.7 >, < 0, 0, 0 >, true, 50000, -1, 1 )
@@ -844,6 +846,10 @@ void function grapplemap_load() {
     NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl", < 19522.5, -2244.35, 17803.83 >, < 0, 0, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/barriers/guard_rail_01_128.rmdl", < 19816.8, -2895.188, 17810.9 >, < 0, -180, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/barriers/guard_rail_01_256.rmdl", < 19492, -2685, 17810 >, < 0, 0, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/desertlands_cafeteria_table_02.rmdl", < 19038.9, -17656.8, 17871.9 >, < 0, -180, 30 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/beacon/beacon_fence_sign_01.rmdl", < 19041.8, -17850.3, 17928.7 >, < 0, 90, 90.0001 >, true, 50000, -1, 1 )
+
+
 
     foreach ( entity ent in InvisibleArray ) ent.MakeInvisible()
     foreach ( entity ent in NoGrappleArray ) ent.kv.contents = CONTENTS_SOLID | CONTENTS_NOGRAPPLE
@@ -877,7 +883,7 @@ if (user.GetPersistentVar("gen") == 0) {
 }
     })
 
-    AddCallback_OnUseEntity( CreateFRButton(< 19042.76, -17991.25, 17932.54 >, < 0, 180, 0 >, "%use% Finish Run"), void function(entity panel, entity user, int input)
+    AddCallback_OnUseEntity( CreateFRButton(< 19042.76, -17991.25, 17932.54 >, < 0, 180, 0 >, "%use% Finish"), void function(entity panel, entity user, int input)
     {
 int reset = 0
 file.cp_table[user] <- file.first_cp
@@ -894,6 +900,9 @@ if (user.GetPersistentVarAsInt("gen") != reset) {
         Message(user, "Your Final Time: " + seconds + " seconds")
         user.SetPersistentVar("gen", reset)
     }
+} else {
+    Message(user, "Congratulations!", "You finished the map!")
+    user.SetOrigin(file.first_cp)
 }
     })
 

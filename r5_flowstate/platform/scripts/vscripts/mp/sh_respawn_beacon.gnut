@@ -3,6 +3,8 @@ global function Sh_RespawnBeacon_Init
 global function RespawnBeacons_RegisterNetworking
 
 global function GetRespawnStyle
+global function IsRespawnBeacon
+global function CountTeammatesWaitingToBeRespawned
 
 #if SERVER
 global function RespawnBeacons_OnSquadEliminated
@@ -211,6 +213,17 @@ void function RespawnBeacons_RegisterNetworking()
 void function ShRespawnBeacon_RegisterAinAnalysisFuncs()
 {
 	AddDropshipFlightAnalysis( eFlightPathAnalysisIndex.RESPAWN_DROPSHIP_FLYIN_MOVE, RESPAWN_DROPSHIP_MODEL, ANIM_FLYIN_MOVE, AnaylsisFuncDropshipTestJumpout, "dropship_deploy" )
+}
+
+bool function IsRespawnBeacon( entity ent )
+{
+	switch ( ent.GetTargetName() )
+	{
+		case RESPAWN_CHAMBER_TARGETNAME:
+		case MOBILE_RESPAWN_BEACON_TARGETNAME:
+			return true
+	}
+	return false
 }
 
 #if CLIENT
@@ -1166,7 +1179,6 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	player.StopObserverMode()
 	ClearPlayerEliminated( player )
 	player.p.respawnPodLanded = true
-	
 	DecideRespawnPlayer( player )
 	ResetPlayerInventory( player )
 	player.SetOrigin( ship.GetOrigin() )
@@ -1189,6 +1201,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	player.SetAngles( player.GetAngles() ) // this works don't change it	
 	player.ClearInvulnerable()
 	player.UnfreezeControlsOnServer() //once jumped, return controls
+	GiveBasicSurvivalItems( player )
 
 	FallTempAirControl( player )
 	

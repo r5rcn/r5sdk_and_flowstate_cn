@@ -52,7 +52,7 @@ void function OpenCTFRespawnMenu(string classname1, string classname2, string cl
 	file.newcharacter = character
 
 	RuiSetImage(Hud_GetRui(Hud_GetChild(file.menu, "PlayerImage")), "basicImage", classIcon)
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "ChangeLegend" )), "buttonText", "更换传奇" )
+	RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "ChangeLegend" )), "buttonText", "Change Legend" )
 
 	array<ItemFlavor> characters = clone GetAllCharacters()
 
@@ -150,7 +150,7 @@ void function DeleteLegendButtonsCallBacks()
 void function UpdateObjectiveText(int score)
 {
 	var rui = Hud_GetChild( file.menu, "ObjectiveText" )
-	Hud_SetText(rui, "夺取 " + score.tostring() + " 旗帜来取得胜利!")
+	Hud_SetText(rui, "Capture " + score.tostring() + " Flags To Win!")
 }
 
 void function UpdateRespawnTimer(int timeleft)
@@ -174,8 +174,8 @@ void function SetCTFScores(int imc, int mil, int maxscore)
 	Hud_SetWidth( Hud_GetChild( file.menu, "IMCScoreBar" ), imcscorewidth )
 	Hud_SetWidth( Hud_GetChild( file.menu, "MilScoreBar" ), milscorewidth )
 
-	Hud_SetText(Hud_GetChild( file.menu, "IMCScoreInt" ), imc + " 夺取")
-	Hud_SetText(Hud_GetChild( file.menu, "MilScoreInt" ), mil + " 夺取")
+	Hud_SetText(Hud_GetChild( file.menu, "IMCScoreInt" ), imc + " Captures")
+	Hud_SetText(Hud_GetChild( file.menu, "MilScoreInt" ), mil + " Captures")
 }
 
 void function InitCTFRespawnMenu( var newMenuArg )

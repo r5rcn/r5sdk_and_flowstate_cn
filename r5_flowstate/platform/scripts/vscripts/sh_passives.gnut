@@ -16,6 +16,8 @@ global function RemoveCallback_OnPassiveChanged
 global function GivePassive
 global function TakePassive
 global function TakeAllPassives
+
+global function GetAllPassivesForPlayer
 #endif
 
 #if (SERVER || CLIENT) && DEVELOPER
@@ -83,7 +85,15 @@ global enum ePassives
 	PAS_FORTIFIED,
 	PAS_LOWPROFILE,
 	PAS_PILOT_BLOOD
-
+	//new
+	PAS_BONUS_SMALL_HEAL,
+	PAS_EXTRA_MED_INV,
+	
+	//custom
+	PAS_ARMOR_5,
+	PAS_ARMOR_6,
+	PAS_ARMOR_7,
+	
 	_count,
 }
 #endif
@@ -99,6 +109,13 @@ global const table<int, string> PASSIVE_NAME_MAP = {
 	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED",
 	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE",
 	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD",
+	//new
+	[ePassives.PAS_BONUS_SMALL_HEAL] = "#PAS_BONUS_SMALL_HEAL",
+	[ePassives.PAS_EXTRA_MED_INV] = "#PAS_EXTRA_MED_INV",
+
+	[ePassives.PAS_ARMOR_5] = "",
+	[ePassives.PAS_ARMOR_6] = "",
+	[ePassives.PAS_ARMOR_7] = ""
 
 }
 global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
@@ -110,6 +127,13 @@ global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
 	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED_DESC",
 	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE_DESC",
 	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD_DESC",
+	//new
+	[ePassives.PAS_BONUS_SMALL_HEAL] = "#PAS_BONUS_SMALL_HEAL_DESC",
+	[ePassives.PAS_EXTRA_MED_INV] = "#PAS_EXTRA_MED_INV_DESC",
+
+	[ePassives.PAS_ARMOR_5] = "",
+	[ePassives.PAS_ARMOR_6] = "",
+	[ePassives.PAS_ARMOR_7] = ""
 }
 #endif
 
@@ -145,6 +169,8 @@ void function PassivesShared_Init()
 
 	#if SERVER
 		// specific passive stuff (should perhaps be moved out of this generic passive file)
+		RegisterSignal( "EndPilotBloodThread" )
+		RegisterSignal( "EndSparkOfGeniusThread" )
 		AddCallback_OnPlayerKilled( Passives_OnPlayerKilled )
 		AddCallback_OnPlayerAssist( Passives_OnPlayerAssist )
 		Bleedout_AddCallback_OnPlayerStartBleedout( Passives_OnPlayerStartBleedout )
@@ -153,6 +179,8 @@ void function PassivesShared_Init()
 		AddCallback_OnPassiveChanged( ePassives.PAS_MEDIC, Lifeline_PassiveToggle )
 		AddCallback_OnPassiveChanged( ePassives.PAS_PILOT_BLOOD, PilotBlood_Passive )
 		AddCallback_OnPassiveChanged( ePassives.PAS_PATHFINDER, Pathfinder_PassiveToggle )
+		AddCallback_OnPassiveChanged( ePassives.PAS_TRACKING_VISION, Bloodhound_PassiveToggle )
+		AddCallback_OnPassiveChanged( ePassives.PAS_BATTERY_POWERED, Wattson_PassiveToggle )
 	#endif
 
 	#if CLIENT
@@ -197,10 +225,7 @@ void function GivePassive( entity player, int passive )
 	foreach( void functionref( entity, int, bool, bool ) callback in file.passiveChangedCallbackListMap[passive] )
 		callback( player, passive, didHavePassive, true )
 }
-#endif
 
-
-#if SERVER
 void function TakePassive( entity player, int passive )
 {
 	bool didHavePassive = player.HasPassive( passive )
@@ -214,10 +239,7 @@ void function TakePassive( entity player, int passive )
 	foreach( void functionref( entity, int, bool, bool ) callback in file.passiveChangedCallbackListMap[passive] )
 		callback( player, passive, didHavePassive, false )
 }
-#endif
 
-
-#if SERVER
 void function TakeAllPassives( entity player )
 {
 	for ( int passiveIdx = 0; passiveIdx < ePassives._count; passiveIdx++ )
@@ -226,26 +248,37 @@ void function TakeAllPassives( entity player )
 			TakePassive( player, passiveIdx )
 	}
 }
+
+array<int> function GetAllPassivesForPlayer( entity player )
+{
+	array<int> passives
+	for( int i = 0; i < ePassives._count; i++ )
+	{
+		if( player.HasPassive( i ) )
+		{
+			// printt(" player has passive ", i )
+			passives.append( i )
+		}
+	}
+	return passives
+}
 #endif
 
 
 #if SERVER || CLIENT
 bool function PlayerHasPassive( entity player, int passive )
 {
+	if( !IsValid( player ) )
+		return false
+	
 	return player.HasPassive( passive )
 }
-#endif
 
-
-#if SERVER || CLIENT
 bool function PlayerHasStealthMovement( entity player )
 {
 	return false
 }
-#endif
 
-
-#if SERVER || CLIENT
 void function AddCallback_OnPassiveChanged( int passive, void functionref( entity, int, bool, bool ) callback )
 {
 	Assert( !file.passiveChangedCallbackListMap[ passive ].contains( callback ), "Tried to add a callback that was already added" )
@@ -312,10 +345,7 @@ void function Passives_OnPlayerKilled( entity victim, entity attacker, var damag
 		return
 
 }
-#endif
 
-
-#if SERVER
 void function Passives_OnPlayerAssist( entity assister, entity victim )
 {
 	if ( !IsAlive( assister ) )
@@ -328,10 +358,7 @@ void function Passives_OnPlayerAssist( entity assister, entity victim )
 		return
 
 }
-#endif
 
-
-#if SERVER
 void function Passives_OnPlayerStartBleedout( entity player, entity attacker, var damageInfo )
 {
 	if ( PlayerHasPassive( player, ePassives.PAS_MIRAGE ) )
@@ -345,10 +372,7 @@ void function Passives_OnPlayerStartBleedout( entity player, entity attacker, va
 		EnableCloak( player, 5.0 )
 	}
 }
-#endif
 
-
-#if SERVER
 void function AttemptDecoyDrop( entity player )
 {
 	if ( player.p.skydiveDecoysFired < 2 )
@@ -359,10 +383,7 @@ void function AttemptDecoyDrop( entity player )
 			Remote_CallFunction_NonReplay( player, "ServerCallback_Mirage_DecoysDeployed", true )
 	}
 }
-#endif
 
-
-#if SERVER
 void function DecoyDropThink( entity player )
 {
 	player.EndSignal( "OnDestroy" )
@@ -501,22 +522,33 @@ void function PassiveToggleFastHeal( entity player, int passive, bool didHave, b
 	}
 }
 
-void function PilotBlood_Passive( entity player, int passive, bool didHave, bool nowHas )
+void function Wattson_PassiveToggle(  entity player, int passive, bool didHave, bool nowHas )
 {
-	thread PilotBlood_Passive_Body(player, passive, didHave, nowHas)
+	if ( !IsAlive( player ) )
+		return
+
+	if ( didHave )
+	{
+		printt( "Spark of Genius passive removed for player" + player )
+		Signal( player, "EndSparkOfGeniusThread" )
+	}
+
+	if ( nowHas )
+	{
+		printt( "Spark of Genius passive enabled for player" + player )
+		thread SparkOfGenius_Passive_Body( player )
+	}
 }
 
-void function PilotBlood_Passive_Body(entity player, int passive, bool didHave, bool nowHas)
+void function SparkOfGenius_Passive_Body( entity player )
 {
-	float healthRegenStartDelay = 5.0
+	float healthRegenStartDelay = 6.0
 	float healthRegenRate = 1.0
+	EndSignal( player, "EndSparkOfGeniusThread" )
 	
-	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
+	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_BATTERY_POWERED ) )
 	{
-		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_infection")
-			wait( 0.05 )
-		else
-			wait( HEALTH_REGEN_TICK_TIME )
+		wait 2
 		
 		if ( !IsAlive( player ) || Bleedout_IsBleedingOut(player) || Time() - player.p.lastDamageTime < healthRegenStartDelay || player.IsPhaseShifted())
 		{
@@ -524,21 +556,68 @@ void function PilotBlood_Passive_Body(entity player, int passive, bool didHave, 
 			continue
 		}
 		
-		healthRegenRate = 1.0
-		if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "flowstate_infection")
-			healthRegenRate = 2.0
+		if(player.GetShieldHealth() != player.GetShieldHealthMax())
+		{
+			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate ) )
+		}
+	}
+}
+
+void function PilotBlood_Passive( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( !IsAlive( player ) )
+		return
+
+	if ( didHave )
+	{
+		#if DEVELOPER
+		printt( "Pilot Blood passive removed for player" + player )
+		#endif
+		Signal( player, "EndPilotBloodThread" )
+	}
+
+	if ( nowHas )
+	{
+		#if DEVELOPER
+		printt( "Pilot Blood passive enabled for player" + player )
+		#endif
+		thread PilotBlood_Passive_Body( player )
+	}
+}
+
+void function PilotBlood_Passive_Body( entity player )
+{
+	float healthRegenStartDelay = 5.0
+	float healthRegenRate = 1.0
+	float tickTime = HEALTH_REGEN_TICK_TIME
+
+	EndSignal( player, "EndPilotBloodThread" )
+	
+	if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_infected" || GetCurrentPlaylistVarBool( "is_halo_gamemode", false ) || GetCurrentPlaylistName() == "fs_movementgym" )
+		tickTime = 0.05
+	
+	if(GameRules_GetGameMode() == "fs_duckhunt" || GameRules_GetGameMode() == "fs_infected" || GetCurrentPlaylistName() == "fs_movementgym" )
+		healthRegenRate = 2.0
+
+	while ( IsValid( player ) && PlayerHasPassive( player, ePassives.PAS_PILOT_BLOOD ) )
+	{
+		wait tickTime
 		
+		if ( !IsAlive( player ) || Bleedout_IsBleedingOut(player) || Time() - player.p.lastDamageTime < healthRegenStartDelay || player.IsPhaseShifted())
+		{
+			WaitFrame()
+			continue
+		}
+
 		if ( player.GetHealth() != player.GetMaxHealth() )
 		{
 			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
 
 		}
-		else if(player.GetShieldHealth() != player.GetShieldHealthMax())
+		else if( player.GetShieldHealth() != player.GetShieldHealthMax() )
 		{
 			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate * 5 ) )
 		}
-
-		
 	}
 }
 
@@ -550,7 +629,7 @@ void function PassiveToggleFortified( entity player, int passive, bool didHave, 
 	if ( didHave )
 	{
 		#if DEVELOPER
-		printt("[DEBUG] removed fortified perk for player ", player)
+		printt("Fortified passive granted! ", player)
 		#endif
 		RemoveEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
 	}
@@ -558,7 +637,7 @@ void function PassiveToggleFortified( entity player, int passive, bool didHave, 
 	if ( nowHas )
 	{
 		#if DEVELOPER
-		printt("[DEBUG] player has fortified perk ", player)
+		printt("Fortified passive granted! ", player)
 		#endif
 		AddEntityCallback_OnDamaged( player, OnFortifiedPlayerDamaged )
 	}
@@ -598,6 +677,28 @@ void function Pathfinder_PassiveToggle( entity player, int passive, bool didHave
 	{
 		foreach( p in teamPlayers )
 			thread SetSurveyBaconMinimapVisibility( player, true )
+	}
+}
+
+void function Bloodhound_PassiveToggle( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( !IsValid( player ) )
+		return
+
+	if ( didHave )
+	{
+		#if DEVELOPER
+		printt("Tracking Vision passive removed ", player)
+		#endif
+		StatusEffect_StopAllOfType( player, eStatusEffect.tracking_vision)
+	}
+
+	if ( nowHas )
+	{
+		#if DEVELOPER
+		printt("Tracking Vision passive granted! ", player)
+		#endif
+		StatusEffect_AddEndless( player, eStatusEffect.tracking_vision, 1 )
 	}
 }
 #endif

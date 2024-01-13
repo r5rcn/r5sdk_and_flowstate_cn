@@ -277,9 +277,13 @@ void function IncapShield_OnDamaged( entity ent, var damageInfo )
 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, 0 )
 				entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( INCAP_SHIELD_FX_BREAK ), player.GetAttachmentOrigin( player.LookupAttachment( "PROPGUN" )), player.GetAttachmentAngles( player.LookupAttachment( "PROPGUN" )) )
 				EffectSetControlPointVector( fx, 2, GetIncapShieldTriLerpColor( 1.0, IncapShield_GetShieldTier( player ) ) )
-				//EmitSoundOnEntityExceptToPlayer( player, player, SOUND_PILOT_INCAP_SHIELD_3P )
-				//EmitSoundOnEntityOnlyToPlayer( player, player, SOUND_PILOT_INCAP_SHIELD_1P )
+				
+				EmitSoundOnEntityExceptToPlayer( player, player, SOUND_PILOT_INCAP_SHIELD_END_3P )
+				EmitSoundOnEntityOnlyToPlayer( player, player, SOUND_PILOT_INCAP_SHIELD_END_1P )
+				
 				ent.Destroy()
+				
+				//todo find why viewmodel is not being removed if player don't release attack key
 			}
 		}
 	}
@@ -303,7 +307,7 @@ entity function CreateIncapShieldEntity( entity player, entity vortexWeapon )
 	gs.useFxColorOverride = true
 	gs.fxColorOverride = GetIncapShieldColorFromInventory( player )
 	gs.model = INCAP_SHIELD_FX_COL
-	gs.modelHide = false
+	gs.modelHide = true
 	gs.modelOverrideAngles = <90, 0, 0>
 	gs.fxOverrideAngles = forward
 

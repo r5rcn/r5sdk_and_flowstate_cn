@@ -311,12 +311,12 @@ void function WeaponUtility_Init()
 		}
 		//AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_tesla_trap, EMP_DamagedPlayerOrNPC )
 		
-		AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
-		AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
-		AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
-		AddCallback_OnPlayerRespawned( WeaponAllowLogic_OnPlayerRespawed )
-		AddCallback_OnPlayerInventoryChanged( WeaponAllowLogic_OnPlayerInventoryChanged )
+		//AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
+		//AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
+		//AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
+		//AddCallback_OnPlayerKilled( OnPlayerKilled )
+		//AddCallback_OnPlayerRespawned( WeaponAllowLogic_OnPlayerRespawed )
+		//AddCallback_OnPlayerInventoryChanged( WeaponAllowLogic_OnPlayerInventoryChanged )
 
 		file.activeThermiteBurnsManagedEnts = CreateScriptManagedEntArray()
 
@@ -1195,7 +1195,7 @@ var function OnWeaponPrimaryAttack_GenericMissile_NPC( entity weapon, WeaponPrim
 bool function PlantStickyEntityOnWorldThatBouncesOffWalls( entity ent, table collisionParams, float bounceDot, vector angleOffset = <0, 0, 0> )
 {
 	entity hitEnt = expect entity( collisionParams.hitEnt )
-	if ( hitEnt && (hitEnt.IsWorld() || hitEnt.HasPusherAncestor()) )
+	if ( hitEnt && ( hitEnt.IsWorld() || hitEnt.HasPusherAncestor() || hitEnt.GetScriptName() == "editor_placed_prop" ) )
 	{
 		float dot = expect vector( collisionParams.normal ).Dot( <0, 0, 1> )
 
@@ -3973,7 +3973,16 @@ void function SetPlayerCooldowns( entity player, array<int> offhandIndices = [ O
 						float regenRefillRate  = weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate )
 
 						if ( regenRefillRate == 0 )
+						{
+							if( weapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
+							{
+								weapon.SetWeaponPrimaryClipCount( 0 )
+								if( weapon.HasMod( "grapple_regen_stop" ) )
+									weapon.RemoveMod( "grapple_regen_stop" )
+								weapon.RegenerateAmmoReset()
+							}
 							continue
+						}
 
 						int startingClipCount = int( lastClipFrac * maxAmmo )
 						int ammoToRestore     = maxAmmo - startingClipCount

@@ -75,7 +75,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					50
 			visible					1
 			fontHeight				60
-			labelText				"挑战总结"
+			labelText				"CHALLENGE RESULTS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -242,7 +242,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"击杀假人"
+			labelText				"DUMMIES KILLED"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -284,7 +284,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"命中率"
+			labelText				"ACCURACY"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -322,7 +322,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"命中数"
+			labelText				"SHOTS HIT"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -360,7 +360,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"造成伤害"
+			labelText				"DAMAGE DONE"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -398,7 +398,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			tall					30
 			visible					1
 			fontHeight				30
-			labelText				"爆头数"
+			labelText				"CRITICAL SHOTS"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -442,7 +442,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "返回主菜单"
+				buttonText "MAIN MENU"
 				basicImageColor     "255 255 255"
                 basicImageAlpha     1
 			}
@@ -472,7 +472,7 @@ scripts/resource/ui/menus/FRChallenges/challenges_results.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "重新开始"
+				buttonText "RESTART"
 				basicImageColor     "255 255 255"
                 basicImageAlpha     1
 			}

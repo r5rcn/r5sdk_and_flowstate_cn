@@ -59,27 +59,27 @@ global table<string, asset> MapAssets = {
 
 //Map to readable name
 global table<string, string> MapNames = {
-	[ "mp_rr_canyonlands_staging" ] = "射击场",
-	[ "mp_rr_aqueduct" ] = "熔岩流",
-	[ "mp_rr_aqueduct_night" ] = "熔岩流 - 黑夜",
-	[ "mp_rr_ashs_redemption" ] = "艾许的救赎",
-	[ "mp_rr_canyonlands_64k_x_64k" ] = "诸王峡谷S1",
-	[ "mp_rr_canyonlands_mu1" ] = "诸王峡谷S2",
-	[ "mp_rr_canyonlands_mu1_night" ] = "诸王峡谷S2 - 黑夜",
-	[ "mp_rr_desertlands_64k_x_64k" ] = "世界尽头",
-	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "世界尽头 - 黑夜",
-	[ "mp_rr_desertlands_64k_x_64k_tt" ] = "世界尽头 - 幻象游轮",
-	[ "mp_rr_arena_composite" ] = "原料厂",
-	[ "mp_rr_arena_skygarden" ] = "再来一次",
-	[ "mp_rr_party_crasher" ] = "派对破坏者",
-	[ "mp_lobby" ] = "大厅"
+	[ "mp_rr_canyonlands_staging" ] = "Firing Range",
+	[ "mp_rr_aqueduct" ] = "Overflow",
+	[ "mp_rr_aqueduct_night" ] = "Overflow After Dark",
+	[ "mp_rr_ashs_redemption" ] = "Ash's Redemption",
+	[ "mp_rr_canyonlands_64k_x_64k" ] = "Kings Canyon S1",
+	[ "mp_rr_canyonlands_mu1" ] = "Kings Canyon S2",
+	[ "mp_rr_canyonlands_mu1_night" ] = "Kings Canyon S2 After Dark",
+	[ "mp_rr_desertlands_64k_x_64k" ] = "Worlds Edge",
+	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark",
+	[ "mp_rr_desertlands_64k_x_64k_tt" ] = "Worlds Edge Mirage Voyage",
+	[ "mp_rr_arena_composite" ] = "Drop Off",
+	[ "mp_rr_arena_skygarden" ] = "Encore",
+	[ "mp_rr_party_crasher" ] = "Party Crasher",
+	[ "mp_lobby" ] = "Lobby"
 }
 
 //Vis to readable name
 global table<int, string> VisibilityNames = {
-	[ eServerVisibility.OFFLINE ] = "离线",
-	[ eServerVisibility.HIDDEN ] = "隐藏",
-	[ eServerVisibility.PUBLIC ] = "公开"
+	[ eServerVisibility.OFFLINE ] = "Offline",
+	[ eServerVisibility.HIDDEN ] = "Hidden",
+	[ eServerVisibility.PUBLIC ] = "Public"
 }
 
 void function InitR5RLobbyMenu( var newMenuArg )
@@ -178,9 +178,9 @@ void function CreateNavButtons()
 		Play_SetupUI()
 	} )
 
-	AddNavButton("服务器", Hud_GetChild(file.menu, "ServerBrowserPanel"), ePresentationType.COLLECTION_EVENT, void function( var button ) { } )
+	AddNavButton("Servers", Hud_GetChild(file.menu, "ServerBrowserPanel"), ePresentationType.COLLECTION_EVENT, void function( var button ) { } )
 
-	AddNavButton("创建服务器", Hud_GetChild(file.menu, "CreatePanel"), ePresentationType.CHARACTER_SELECT, void function( var button ) {
+	AddNavButton("Create", Hud_GetChild(file.menu, "CreatePanel"), ePresentationType.CHARACTER_SELECT, void function( var button ) {
 		OnCreateMatchOpen()
 	} )
 

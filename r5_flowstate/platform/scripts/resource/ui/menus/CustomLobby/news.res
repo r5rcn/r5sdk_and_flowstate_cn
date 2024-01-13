@@ -65,7 +65,7 @@ resource/ui/menus/dialog.menu
 			ruiArgs
 			{
 				isSelected 1
-				buttonText "新闻"
+				buttonText "News"
 			}
 
 			"pin_to_sibling"			"MainButtonsFrame"
@@ -84,7 +84,7 @@ resource/ui/menus/dialog.menu
 			"wrap"					"0"
 			"fontHeight"			"20"
 			"zpos"					"5"
-			"labelText"				"%weaponcycle% 下一个/上一个"
+			"labelText"				"%weaponcycle% NEXT/PREV"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"255 255 255 255"
@@ -106,7 +106,7 @@ resource/ui/menus/dialog.menu
 			"fontHeight"			"28"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"此项目可以让您用mod游玩APEX Legends. 这意味着您创建自定义的游戏模式、关卡、武器等等. 此项目可以让您用mod游玩APEX Legends. 这意味着您创建自定义的游戏模式、关卡、武器等等."
+			"labelText"				"This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more. This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more. This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more. This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more."
 			"font"					"DefaultBold_41"
 			"allcaps"				"0"
 			"fgcolor_override"		"255 255 255 255"

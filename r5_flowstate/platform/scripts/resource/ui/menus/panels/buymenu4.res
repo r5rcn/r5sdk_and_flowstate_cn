@@ -103,7 +103,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			tall					30
 			visible					0
 			fontHeight				30
-			labelText				"手枪 霰弹枪 冲锋枪"
+			labelText				"Pistols, Shotguns & SMGs"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -152,7 +152,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"检视"
+			labelText				"Hitscan"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -200,7 +200,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"自动检视"
+			labelText				"Hitscan Auto"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"

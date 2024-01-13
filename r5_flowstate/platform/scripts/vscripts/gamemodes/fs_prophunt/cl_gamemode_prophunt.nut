@@ -127,20 +127,20 @@ void function PROPHUNT_EnableControlsUI(bool isAttacker, float starttime)
 		Hud_SetEnabled(HudElement( "ProphuntHint5" ), true)
 		Hud_SetVisible(HudElement( "ProphuntHint5" ), true)
 		
-		Hud_SetText( HudElement( "ProphuntHint0"), "%attack% 更换模型 x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring() )
-		Hud_SetText( HudElement( "ProphuntHint1"), "%zoom% 锁定方向")
-		Hud_SetText( HudElement( "ProphuntHint2"), "%reload% 匹配地面斜度")
-		Hud_SetText( HudElement( "ProphuntHint3"), "%offhand1% 兴奋剂")
-		Hud_SetText( HudElement( "ProphuntHint4"), "%melee% 放置诱饵 x" + ( PROPHUNT_DECOYS_USAGE_LIMIT - player.p.PROPHUNT_DecoysPropUsageLimit ).tostring() )
-		Hud_SetText( HudElement( "ProphuntHint5"), "%offhand4% 闪光弹 x" + PROPHUNT_FLASH_BANG_USAGE_LIMIT.tostring())
+		Hud_SetText( HudElement( "ProphuntHint0"), "%attack% Change Prop x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring() )
+		Hud_SetText( HudElement( "ProphuntHint1"), "%zoom% Lock Angles")
+		Hud_SetText( HudElement( "ProphuntHint2"), "%reload% Match Surface")
+		Hud_SetText( HudElement( "ProphuntHint3"), "%offhand1% Stim Tactical")
+		Hud_SetText( HudElement( "ProphuntHint4"), "%melee% Place Decoy x" + ( PROPHUNT_DECOYS_USAGE_LIMIT - player.p.PROPHUNT_DecoysPropUsageLimit ).tostring() )
+		Hud_SetText( HudElement( "ProphuntHint5"), "%offhand4% Flash Grenade x" + PROPHUNT_FLASH_BANG_USAGE_LIMIT.tostring())
 		
 		player.p.isAttackerProphunt = false
 		var screenSize = Hud.GetScreenSize()
 		
 		HudElement( "ScreenBlur2" ).SetSize( 238*screenSize[0]/1760, 275*screenSize[1]/990 )		
 		HudElement( "ScreenBlur1" ).SetPos( -35, -35 )
-		Hud_SetText( HudElement( "RoundTimer"), "正在等待猎人")
-		Hud_SetText( HudElement( "PropControlsTitle"), "躲藏者控制键位")
+		Hud_SetText( HudElement( "RoundTimer"), "WAITING FOR HUNTERS")
+		Hud_SetText( HudElement( "PropControlsTitle"), "PROP CONTROLS")
 		GetLocalClientPlayer().p.isRoundTimerEnabled = false
 	} else
 	{
@@ -170,7 +170,7 @@ void function PROPHUNT_EnableControlsUI(bool isAttacker, float starttime)
 	
 		player.p.isAttackerProphunt = true
 		
-		Hud_SetText( HudElement( "PropControlsTitle"), "猎人控制键位")
+		Hud_SetText( HudElement( "PropControlsTitle"), "HUNTER CONTROLS")
 		Signal(player, "PROPHUNT_ShutdownPropsHidingTimer")
 		Signal(player, "PROPHUNT_ShutdownWhistleAndRoundTimer")
 		thread Thread_PROPHUNT_HuntersAbilityTimer(true)
@@ -193,7 +193,7 @@ void function Thread_PROPHUNT_Timer()
         int elapsedtime = clientgametimer.endingtime - Time().tointeger()
 
 		DisplayTime dt = SecondsToDHMS( elapsedtime )
-		Hud_SetText( HudElement( "RoundTimer"), "回合结束时间" + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
+		Hud_SetText( HudElement( "RoundTimer"), "ROUND ENDS IN " + format( "%.2d:%.2d", dt.minutes, dt.seconds ))
 		
 		wait 1
 	}
@@ -207,7 +207,7 @@ void function Thread_PROPHUNT_HuntersAbilityTimer(bool isroundstart = false, boo
 	OnThreadEnd(
 		function() : ( player )
 		{
-			Hud_SetText( HudElement( "ProphuntHint0"), "%offhand4% 改变所有躲藏者模型" )
+			Hud_SetText( HudElement( "ProphuntHint0"), "%offhand4% Change All Props" )
 		}
 	)
 
@@ -223,7 +223,7 @@ void function Thread_PROPHUNT_HuntersAbilityTimer(bool isroundstart = false, boo
 	{
 		if(player.p.savedAbilityTimer == 0)
 			break
-		Hud_SetText( HudElement( "ProphuntHint0"), "  %offhand4% 下次可用 " + player.p.savedAbilityTimer + "秒" )
+		Hud_SetText( HudElement( "ProphuntHint0"), "  %offhand4% Available In " + player.p.savedAbilityTimer + "s" )
 		wait 1
 		player.p.savedAbilityTimer --
 	}
@@ -238,7 +238,7 @@ void function ForceDisableHuntersAbilityHint()
 void function EnableHuntersAbility()
 {
 	Signal(GetLocalClientPlayer(), "PROPHUNT_ShutdownHuntersAbilityTimer")
-	Hud_SetText( HudElement( "ProphuntHint0"), "%offhand4% 改变所有躲藏者模型" )
+	Hud_SetText( HudElement( "ProphuntHint0"), "%offhand4% Change All Props" )
 	GetLocalClientPlayer().p.savedAbilityTimer = 0
 	GetLocalClientPlayer().p.isAttackersAbilityEnabled = true
 }
@@ -285,15 +285,15 @@ void function PROPHUNT_StartMiscTimer(bool isPropTeam)
 			{
 				time = PROPHUNT_WHISTLE_TIMER
 				if(isPropTeam)
-					text = "猎人即将进场 " + time.tostring()
+					text = "HUNTERS ARRIVING " + time.tostring()
 				else
-					text = "躲藏者正在躲藏 " + time.tostring()
+					text = "PROPS ARE HIDING " + time.tostring()
 			} else
 			{
 				if(isPropTeam)
-					text = "猎人即将进场 " + time.tostring()
+					text = "HUNTERS ARRIVING " + time.tostring()
 				else
-					text = "躲藏者正在躲藏 " + time.tostring()
+					text = "PROPS ARE HIDING " + time.tostring()
 			}
 			
 			Hud_SetText( HudElement( "MiscTimer"), text)
@@ -348,23 +348,23 @@ void function PROPHUNT_QuickText(int index, int duration)
 		switch(index)
 		{
 			case 0:
-			msg = "剩余一半时间"
+			msg = "HALF TIME"
 			EmitSoundOnEntity(player, "UI_InGame_HalftimeText_Enter")
 			break
 			case 1:
-			msg = "剩余30秒"
+			msg = "30 SECONDS REMAINING"
 			EmitSoundOnEntity(player, "diag_ap_aiNotify_circleMoves30sec")
 			break
 			case 2:
-			msg = "躲藏者揭示"
+			msg = "PROP REVEAL"
 			//EmitSoundOnEntity(player, "ui_ingame_transitiontokillreplay")
 			break
 			case 3:
-			msg = "躲藏者胜利"
+			msg = "PROPS VICTORY"
 			//EmitSoundOnEntity(player, "diag_ap_aiNotify_winnerFound")
 			break
 			case 4:
-			msg = "猎人胜利"
+			msg = "HUNTERS VICTORY"
 			EmitSoundOnEntity(player, "diag_ap_aiNotify_winnerFound")
 			break
 		}
@@ -392,15 +392,15 @@ void function UpdateWhistleTimer(bool fromChangedResolution = false)
 		if(time == 0)
 		{
 			player.ClientCommand("EmitWhistle")
-			text = "发出噪音"
+			text = "MAKING NOISE"
 			
 		}else if(time == -1)
 		{
 			time = PROPHUNT_WHISTLE_TIMER
-			text = "下一次发出噪音剩余 " + time.tostring()
+			text = "NOISE IN " + time.tostring()
 		} else
 		{
-			text = "下一次发出噪音剩余 " + time.tostring()
+			text = "NOISE IN " + time.tostring()
 		}
 		
         Hud_SetText( HudElement( "WhistleTimer"), text)
@@ -432,7 +432,7 @@ void function PROPHUNT_DoScreenFlashFX(entity player, entity propAttacker)
 	
 	if(player == propAttacker) return
 	
-	Obituary_Print_Localized( "敌方躲藏者 " + propAttacker.GetPlayerName() + " 使用了闪光弹!", GetChatTitleColorForPlayer( player ), BURN_COLOR )
+	Obituary_Print_Localized( "Enemy prop " + propAttacker.GetPlayerName() + " used flashbang!", GetChatTitleColorForPlayer( player ), BURN_COLOR )
 }
 
 void function ShellShock_ScreenFXThink( entity player, int fxHandle, int smokes) // , int fxHandle2
@@ -509,17 +509,17 @@ void function ReloadMenuRUI()
 		Hud_SetEnabled(HudElement( "ProphuntHint5" ), true)
 		Hud_SetVisible(HudElement( "ProphuntHint5" ), true)	
 		
-		Hud_SetText( HudElement( "ProphuntHint0"), "%attack% 更换模型 x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring() )
+		Hud_SetText( HudElement( "ProphuntHint0"), "%attack% Change Prop x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring() )
 		
 		if(player.p.PROPHUNT_AreAnglesLocked)
-			Hud_SetText( HudElement( "ProphuntHint1"), "%zoom% 解锁视角")
+			Hud_SetText( HudElement( "ProphuntHint1"), "%zoom% Unlock Angles")
 		else
-			Hud_SetText( HudElement( "ProphuntHint1"), "%zoom% 锁定视角")
+			Hud_SetText( HudElement( "ProphuntHint1"), "%zoom% Lock Angles")
 		
-		Hud_SetText( HudElement( "ProphuntHint2" ), "%reload% 匹配地面斜度")
-		Hud_SetText( HudElement( "ProphuntHint3" ), "%offhand1% 兴奋剂")
-		Hud_SetText( HudElement( "ProphuntHint4" ), "%melee% 放置诱饵 x" + ( PROPHUNT_DECOYS_USAGE_LIMIT - player.p.PROPHUNT_DecoysPropUsageLimit ).tostring() )
-		Hud_SetText( HudElement( "ProphuntHint5" ), "%offhand4% 闪光弹 x" + PROPHUNT_FLASH_BANG_USAGE_LIMIT.tostring())
+		Hud_SetText( HudElement( "ProphuntHint2" ), "%reload% Match Surface")
+		Hud_SetText( HudElement( "ProphuntHint3" ), "%offhand1% Stim Tactical")
+		Hud_SetText( HudElement( "ProphuntHint4" ), "%melee% Place Decoy x" + ( PROPHUNT_DECOYS_USAGE_LIMIT - player.p.PROPHUNT_DecoysPropUsageLimit ).tostring() )
+		Hud_SetText( HudElement( "ProphuntHint5" ), "%offhand4% Flash Grenade x" + PROPHUNT_FLASH_BANG_USAGE_LIMIT.tostring())
 		
 		thread UpdateWhistleTimer(true)
 	} else
@@ -551,7 +551,7 @@ void function ReloadMenuRUI()
 		HudElement( "ScreenBlur1" ).SetPos( -39, -301 )
 		Signal(player, "PROPHUNT_ShutdownPropsHidingTimer")
 		thread Thread_PROPHUNT_HuntersAbilityTimer(true, true)
-		Hud_SetText( HudElement( "PropControlsTitle"), "猎人控制键位")
+		Hud_SetText( HudElement( "PropControlsTitle"), "HUNTER CONTROLS")
 		
 		thread Thread_PROPHUNT_Timer()
 	}
@@ -612,29 +612,29 @@ void function ChangeInputHintString( int index )
 	switch(index)
 	{
 		case 0:
-			messageText = "更改自身模型 x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring()
+			messageText = "Change Prop x" + ( PROPHUNT_CHANGE_PROP_USAGE_LIMIT - player.p.PROPHUNT_ChangePropUsageLimit ).tostring()
 			hintButton = "%attack%"
 			Hud_SetText( HudElement( "ProphuntHint0"), hintButton + " " + messageText)
 		break
 		case 3:
-			messageText = "放置诱饵 x" + ( PROPHUNT_DECOYS_USAGE_LIMIT - player.p.PROPHUNT_DecoysPropUsageLimit ).tostring()
+			messageText = "Place Decoy x" + ( PROPHUNT_DECOYS_USAGE_LIMIT - player.p.PROPHUNT_DecoysPropUsageLimit ).tostring()
 			hintButton = "%melee%"
 			Hud_SetText( HudElement( "ProphuntHint4"), hintButton + " " + messageText)
 		break
 		case 4:
-			messageText = "闪光弹 x" + ( PROPHUNT_FLASH_BANG_USAGE_LIMIT - player.p.PROPHUNT_FlashbangPropUsageLimit ).tostring()
+			messageText = "Flash Grenade x" + ( PROPHUNT_FLASH_BANG_USAGE_LIMIT - player.p.PROPHUNT_FlashbangPropUsageLimit ).tostring()
 			hintButton = "%offhand4%"
 			Hud_SetText( HudElement( "ProphuntHint5"), hintButton + " " + messageText)
 		break
 		case 1:
 			if(player.p.PROPHUNT_AreAnglesLocked)
 			{
-				messageText = "锁定方向"
+				messageText = "Lock Angles"
 				player.p.PROPHUNT_AreAnglesLocked = false
 			}
 			else
 			{
-				messageText = "解锁方向"
+				messageText = "Unlock Angles"
 				player.p.PROPHUNT_AreAnglesLocked = true
 			}
 			hintButton = "%zoom%"
@@ -651,34 +651,34 @@ void function PROPHUNT_CustomHint(int index, int eHandle)
 	switch(index)
 	{
 		case 0:
-		QuickHint("", "方向已锁定")
+		QuickHint("", "Angles locked")
 		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_Menu_SelectMode_Close")
 		break
 		case 1:
-		QuickHint("", "方向已解锁", true)
+		QuickHint("", "Angles unlocked", true)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_InGame_FD_SliderExit" )
 		break
 		case 2:
-		QuickHint("", "已达到限制!")
+		QuickHint("", "Limit reached!")
 		EmitSoundOnEntity(GetLocalViewPlayer(), "Survival_UI_Ability_NotReady")
 		break
 		case 3:
-		QuickHint("", "将模型的角度与地面匹配")
+		QuickHint("", "Prop angles matched with surface")
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		case 4:
-		QuickHint("", "诱饵已放置!", true)
+		QuickHint("", "Decoy placed!", true)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides" )	
 		break
 		case 5:
-		QuickHint("", "猎人进场!")
+		QuickHint("", "Hunters arrived!")
 		EmitSoundOnEntity(GetLocalViewPlayer(), "UI_PostGame_TitanSlideIn")
 		
 		GetLocalClientPlayer().p.isRoundTimerEnabled = true
 		thread Thread_PROPHUNT_Timer()
 		break
 		case 6:
-		QuickHint("", "已使用闪光弹!", true)
+		QuickHint("", "Flashbang used!", true)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "explo_proximityemp_impact_1p" )
 		break
 		case 7:
@@ -686,23 +686,23 @@ void function PROPHUNT_CustomHint(int index, int eHandle)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		case 8:
-		QuickHint("", "已有足够的玩家. 正在开始.", true, 4)
+		QuickHint("", "We have enough players. Starting now.", true, 4)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		case 9:
-		QuickHint("", "正在等待其他玩家.", false, 3)
+		QuickHint("", "Waiting another player to start. Please wait.", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break		
 		case 10:
-		QuickHint("", "你是躲藏者 将在5秒后传送", true, 4)
+		QuickHint("", "You're a prop. Teleporting in 5 seconds.", true, 4)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		case 11:
-		Obituary_Print_Localized( "猎人 " + EHI_GetName(eHandle) + " 改变了所有躲藏者模型", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
+		Obituary_Print_Localized( "Hunter " + EHI_GetName(eHandle) + " changed all props form!", GetChatTitleColorForPlayer( GetLocalViewPlayer() ), BURN_COLOR )
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		case 12:
-		QuickHint("", "猎人将在5秒后可以更改你的模型.", true, 4)
+		QuickHint("", "Hunters will be able to change your prop in 5 seconds.", true, 4)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 	}
@@ -774,9 +774,9 @@ void function RemoveAllHints(bool wasResolutionChanged = false)
 	
 	
 	if(!GetLocalClientPlayer().p.isRoundTimerEnabled)
-		Hud_SetText( HudElement( "RoundTimer"), "正在等待猎人")
+		Hud_SetText( HudElement( "RoundTimer"), "WAITING FOR HUNTERS")
 	else
-		Hud_SetText( HudElement( "RoundTimer"), "回合即将结束 00:00")
+		Hud_SetText( HudElement( "RoundTimer"), "ROUND ENDS IN 00:00")
 	
 	SetConVarFloat("c_thirdpersonshoulderaimdist", 100)
 	SetConVarFloat("c_thirdpersonshoulderheight", 30)

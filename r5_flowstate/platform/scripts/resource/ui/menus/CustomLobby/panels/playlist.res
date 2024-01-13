@@ -67,7 +67,7 @@
 	"PanelTopText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"游戏模式"
+		"labelText"				"Playlists"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"

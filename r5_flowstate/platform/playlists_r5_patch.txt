@@ -363,10 +363,10 @@ playlists
 				solo_mode 1
 				
 				visible                                        1
-				name                               "FS 练枪挑战"
-				description                        "FS 练枪挑战"
-				abbreviation                       "FS 练枪挑战"
-				lobbytitle                         "FS 练枪挑战"
+				name                               "AimTrainer"
+				description                        "AimTrainer"
+				abbreviation                       "AimTrainer"
+				lobbytitle                         "AimTrainer"
 
 				waiting_for_players_spawning_enabled           1
 				jump_from_plane_enabled                        0
@@ -435,10 +435,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "躲猫猫"
-				description                        "躲猫猫"
-				abbreviation                       "躲猫猫"
-				lobbytitle                         "躲猫猫"
+				name                               "PropHunt"
+				description                        "PropHunt"
+				abbreviation                       "PropHunt"
+				lobbytitle                         "PropHunt"
 				enable_nessies                     0
 				
    				//Flowstate By CaféDeColombiaFPS.
@@ -627,10 +627,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "团队死斗/个人死斗"
-				description                        "具有多种设置的DM或FFA，自定义您自己的服务器"
-				abbreviation                       "团队死斗/个人死斗"
-				lobbytitle                         "团队死斗/个人死斗"
+				name                               "TDM/FFA"
+				description                        "DM or FFA with multiple settings, customize your own server"
+				abbreviation                       "TDM/FFA"
+				lobbytitle                         "TDM/FFA"
 				enable_nessies                     0
 				
 				max_team_size						3 // above 1 will enable tdm
@@ -776,10 +776,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS 1v1"
-				description                        "具有多种设置的DM或FFA，自定义您自己的服务器"
-				abbreviation                       "FS 1v1"
-				lobbytitle                         "FS 1v1"
+				name                               "1v1"
+				description                        "DM or FFA with multiple settings, customize your own server"
+				abbreviation                       "1v1"
+				lobbytitle                         "1v1"
 				enable_nessies                     0
 				
    				//Flowstate By CaféDeColombiaFPS.
@@ -846,10 +846,10 @@ playlists
 				panel_image                        panel_worlds_edge
 				visible                            1
 				battlechatter_enabled              1
-				name                               "FS 身法训练"
-				description                        "在定制的地图中练习apex的身法"
-				abbreviation                       "FS 身法训练"
-				lobbytitle                         "FS 身法训练"
+				name                               "FS Movement Gym"
+				description                        "Train your apex movement with custom designed maps"
+				abbreviation                       "FS Movement Gym"
+				lobbytitle                         "FS Movement Gym"
 				pin_match_type                     survival
 				enable_nessies                     0
 				
@@ -935,6 +935,7 @@ playlists
 			}
 			gamemodes { fs_dm { maps {
 				mp_rr_desertlands_64k_x_64k                    	1
+				mp_rr_desertlands_64k_x_64k_nx                 	1
 			} } }
 		}
 
@@ -945,9 +946,9 @@ playlists
 			{
 				visible                                        1
 				battlechatter_enabled                          1
-				name                                           "三人赛"
-				description                                    "三人赛"
-				abbreviation                                   "三人赛"
+				name                                           "TRIOS"
+				description                                    "TRIOS"
+				abbreviation                                   "TRIOS"
 
 				enable_nessies                                 0
 				
@@ -994,9 +995,9 @@ playlists
 			{
 				visible                                        1
 				battlechatter_enabled                          1
-				name                                           "双人赛"
-				description                                    "双人赛"
-				abbreviation                                   "双人赛"
+				name                                           "DUOS"
+				description                                    "DUOS"
+				abbreviation                                   "DUOS"
 
 				enable_nessies                                 0
 				
@@ -1043,9 +1044,9 @@ playlists
 			{
 				visible                                        1
 				battlechatter_enabled                          1
-				name                                           "单人赛"
-				description                                    "单人赛"
-				abbreviation                                   "单人赛"
+				name                                           "SOLOS"
+				description                                    "SOLOS"
+				abbreviation                                   "SOLOS"
 
 				enable_nessies                                 0
 				max_team_size									1
@@ -1094,9 +1095,9 @@ playlists
 			{
 				visible                                        1
 				battlechatter_enabled                          1
-				name                                           "单人赛 EVOS"
-				description                                    "单人赛 EVOS"
-				abbreviation                                   "单人赛 EVOS"
+				name                                           "SOLOS EVOS"
+				description                                    "SOLOS EVOS"
+				abbreviation                                   "SOLOS EVOS"
 
 				enable_nessies                                 0
 				max_team_size									1
@@ -1150,9 +1151,9 @@ playlists
 			{
 				visible                                        1
 				battlechatter_enabled                          1
-				name                                           "三人赛 A&D"
-				description                                    "三人赛 A&D"
-				abbreviation                                   "三人赛 A&D"
+				name                                           "TRIOS A&D"
+				description                                    "TRIOS A&D"
+				abbreviation                                   "TRIOS A&D"
 
 				enable_nessies                                 0
 				max_team_size									3
@@ -1377,7 +1378,7 @@ playlists
 				visible                                        1
 				ui_slot                                        firing_range
 				image                                          firing_range
-				name                                           "射击场"
+				name                                           "Firing Range"
 				description                                    #PL_FIRINGRANGE_DESC
 				video                                          _temp
 
@@ -1494,7 +1495,7 @@ playlists
 		{
 			vars
 			{
-				name                                           "大厅"
+				name                                           "Lobby"
 				visible                                        0
 				menu_fall_ltm                                  1
 
@@ -1695,34 +1696,34 @@ playlists
 			"Tokens"
 			{
 				"MP_FLOWSTATE"						  "CREATIVE"
-				"MP_RR_DESERTLANDS_64K_X_64K_NX"      "世界尽头-黑夜"
-				"MP_RR_DESERTLANDS_64K_X_64K"         "世界尽头"
-				"MP_RR_DESERTLANDS_64K_X_64K_TT"      "世界尽头-幻象游轮"
-				"MP_RR_ASHS_REDEMPTION"               "艾许竞技场"
-				"MP_RR_AQUEDUCT"                      "熔岩流"
-				"MP_RR_AQUEDUCT_NIGHT"                "熔岩流-黑夜"
-				"MP_RR_ARENA_COMPOSITE"               "原料厂"
-				"MP_RR_ARENA_SKYGARDEN"               "再来一次"
-				"mp_rr_party_crasher" 		  		  "派对破坏者"
+				"MP_RR_DESERTLANDS_64K_X_64K_NX"      "World's Edge After Dark"
+				"MP_RR_DESERTLANDS_64K_X_64K"         "World's Edge"
+				"MP_RR_DESERTLANDS_64K_X_64K_TT"      "World's Edge Mirage Voyage"
+				"MP_RR_ASHS_REDEMPTION"               "Ash's Redemption"
+				"MP_RR_AQUEDUCT"                      "Overflow"
+				"MP_RR_AQUEDUCT_NIGHT"                "Overflow After Dark"
+				"MP_RR_ARENA_COMPOSITE"               "Drop-Off"
+				"MP_RR_ARENA_SKYGARDEN"               "Encore"
+				"MP_RR_PARTY_CRASHER" 		  		  "Party Crasher"
 	
-				"Kings_Canyon_OG"                     "诸王峡谷"
-				"KC_MU1"                              "诸王峡谷-第二赛季"
-				"KCAD"                                "诸王峡谷-黑夜"
+				"MP_RR_CANYONLANDS_64K_X_64K"         "Kings Canyon"
+				"MP_RR_CANYONLANDS_MU1"               "Kings Canyon MU1"
+				"MP_RR_CANYONLANDS_MU1_NIGHT"         "Kings Canyon After Dark"
 				"Playtest"                            "Playtest"
 				"Playtest_Only"                       "Playtest"
 				"PLAYER_KILLSTREAK"                   "`1%s1`0 is on a `1%s2`0 player killstreak"
 				"PLAYER_ENDED_KILLSTREAK"             "`1%s1`0 ended `1%s2`0's killstreak"
 				"PLAYER_ENDED_OWN_KILLSTREAK"         "`1%s1`0 ended their own killstreak"
 
-                "VALVE_REJECT_BANNED"                 "您已被此服务器封禁."
-                "DISCONNECT_BANNED"                   "客户端内的游戏账户已被封禁."
+                "VALVE_REJECT_BANNED"                 "You have been banned from this server."
+                "DISCONNECT_BANNED"                   "The client's game account has been banned."
 
                 "DISCONNECT_SEND_RELIABLEOVERFLOW"    "Connection to server overflowed (code:river)."
                 "DISCONNECT_SEND_OVERFLOW"            "Connection to server overflowed (code:dam)."
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
-				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和\n社区制作的独家内容,\n如技能,游戏模式或地图"
-				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot [230729]"
+				"MOTD"								  "Flowstate is a package of scripts for R5Reloaded (Modded Apex Legends) that includes new features and exclusive content made by the community like abilities, gamemodes or maps! See full changelog on github release https://github.com/ColombianGuy/r5_flowstate"
+				"BETA_BUILD_WATERMARK" 				  ""
 			}
 		}
 	}

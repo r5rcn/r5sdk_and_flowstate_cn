@@ -103,7 +103,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "开始挑战"
+				buttonText "CHALLENGES"
 			}
 
 			"pin_to_sibling"			"Line"
@@ -123,7 +123,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			ruiArgs
 			{
 				isSelected 1
-				buttonText "挑战历史"
+				buttonText "HISTORY"
 			}
 
 			"pin_to_sibling"			"Challenges"
@@ -143,7 +143,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "设置"
+				buttonText "SETTINGS"
 			}
 
 			"pin_to_sibling"			"History"
@@ -173,7 +173,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.3 | Made by @CafeFPS"
+			labelText				"v1.31 | %$rui/flowstate_custom/colombia_flag_papa% Made in Colombia by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -288,7 +288,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"Pages"
 		{
 			"ControlName"			"Label"
-			"labelText"				"  页数: 1/1  "
+			"labelText"				"  Page: 1/1  "
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			"wide"					"120"
@@ -348,7 +348,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"NoChallengesLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"尚未进行过挑战"
+			"labelText"				"No Challenges Played"
 			"xpos"					"0"
 			"ypos"					"-15"
 			"auto_wide_tocontents"	"1"
@@ -363,7 +363,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ChallengeNameLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"挑战项目"
+			"labelText"				"Challenge Name"
 			"xpos"					"-50"
 			"ypos"					"0"
 			"auto_wide_tocontents"	"1"
@@ -378,7 +378,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"DummiesKilledLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"击杀"
+			"labelText"				"Kills"
 			"xpos"					"-250"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -395,7 +395,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ChallengeScoreLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"命中次数"
+			"labelText"				"Shots Hit"
 			"xpos"					"-400"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -412,7 +412,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ChallengeWeaponLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"武器"
+			"labelText"				"Weapon"
 			"xpos"					"-540"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -428,7 +428,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ChallengeAccuracyLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"命中率"
+			"labelText"				"Accuracy"
 			"xpos"					"-685"
 			"ypos"					"0"
 			"zpos"					"6"

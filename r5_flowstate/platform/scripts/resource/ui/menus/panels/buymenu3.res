@@ -122,7 +122,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 			tall					30
 			visible					0
 			fontHeight				30
-			labelText				"神射手武器 狙击步枪"
+			labelText				"Marksman & Snipers"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -168,7 +168,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"G7侦查枪"
+			labelText				"G7 Scout"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -216,7 +216,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"长弓精确步枪"
+			labelText				"Longbow"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -264,7 +264,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"三重式狙击枪"
+			labelText				"Triple Take"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -311,7 +311,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"充能步枪"
+			labelText				"Charge Rifle"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -357,7 +357,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"克雷贝尔狙击枪"
+			labelText				"Kraber"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -365,53 +365,6 @@ scripts/resource/ui/menus/panels/buymenu3.res
 			xpos					90
 			fontHeight				35
 			pin_to_sibling          Kraber
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		
-		RepeaterButton
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          KraberButton
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
-		Repeater
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          RepeaterButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		Repeater_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"30-30连发枪"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					50
-			fontHeight				35
-			pin_to_sibling          Repeater
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
@@ -1051,7 +1004,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"瞄准镜"
+			labelText				"OPTICS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1077,7 +1030,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"枪管"
+			labelText				"BARRELS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1103,7 +1056,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"即用配件"
+			labelText				"HOPUP"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1129,7 +1082,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"枪托"
+			labelText				"STOCKS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1154,7 +1107,7 @@ scripts/resource/ui/menus/panels/buymenu3.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"弹匣"
+			labelText				"MAGS"
 			visible                 0
 			zpos 25
 			tall					40

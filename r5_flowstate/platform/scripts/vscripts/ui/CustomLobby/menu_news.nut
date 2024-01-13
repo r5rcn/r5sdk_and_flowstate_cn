@@ -145,8 +145,8 @@ void function GetR5RNews()
     for(int i = 0; i < 1; i++)
 	{
 		NewsPage page
-		page.title = "欢迎游玩R5Reloaded!"
-		page.desc = "这个新闻面板暂时还没啥用, 但万一有用呢."
+		page.title = "Welcome to R5Reloaded!"
+		page.desc = "This news panel isnt currently used for much, but maybe one day."
 		page.image = GetAssetFromString( $"rui/promo/S3_General_" + (i + 1).tostring() )
 		file.newspages.append(page)
 	}

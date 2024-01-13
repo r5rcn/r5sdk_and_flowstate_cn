@@ -17,11 +17,11 @@ void function OpenFRChallengesMainMenu(int dummiesKilled)
 	CloseAllMenus()
 	ISAIMTRAINER = true
 	PlayerKillsForChallengesUI = dummiesKilled.tostring()
-	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "本次会话击杀假人数: " + dummiesKilled.tostring())
+	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "Dummies killed this session: " + dummiesKilled.tostring())
 	if(PlayerCurrentWeapon == "") 
-		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "当前武器: 辅助手枪")
+		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "Current weapon: Wingman")
 	else
-		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "当前武器: " + PlayerCurrentWeapon)
+		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "Current weapon: " + PlayerCurrentWeapon)
 	EmitUISound("UI_Menu_SelectMode_Extend")
 	AdvanceMenu( file.menu )
 }

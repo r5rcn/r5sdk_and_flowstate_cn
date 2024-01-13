@@ -70,7 +70,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"BtnSearchLabel"
 	{
 		"ControlName"			"Label"
-		"labelText"				"搜索:"
+		"labelText"				"Search:"
 		"xpos"					"-23"
 		"ypos"					"-16"
 		"auto_wide_tocontents"	"1"
@@ -79,7 +79,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 
 		ruiArgs
 		{
-			buttonText "搜索:"
+			buttonText "Search:"
 		}
 
 		pin_to_sibling 			ServerBrowserBGBottom
@@ -127,7 +127,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 
 		ruiArgs
 		{
-			buttonText "游戏模式"
+			buttonText "Playlist Filter"
 		}
 
 		pin_to_sibling BtnSearchLabel
@@ -149,7 +149,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 
 		ruiArgs
 		{
-			buttonText "地图"
+			buttonText "Map Filter"
 		}
 
 		pin_to_sibling SwtBtnSelectGamemode
@@ -171,7 +171,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 
 		ruiArgs
 		{
-			buttonText "隐藏无人游玩的服务器"
+			buttonText "Hide Empty Servers"
 		}
 
 		list
@@ -190,7 +190,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"NoServersLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"未找到服务器"
+		"labelText"				"No Servers Found"
 		"xpos"					"0"
 		"ypos"					"-15"
 		"auto_wide_tocontents"	"1"
@@ -229,7 +229,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"RefreshServersText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"刷新服务器列表"
+		"labelText"				"Refresh Servers"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
@@ -272,7 +272,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ClearFlitersText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"清除筛选"
+		"labelText"				"Clear Filters"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
@@ -437,7 +437,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ServersCount"
 	{
 		"ControlName"			"Label"
-		"labelText"				"服务器: 0"
+		"labelText"				"Servers: 0"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
@@ -455,7 +455,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"PlayersCount"
 	{
 		"ControlName"			"Label"
-		"labelText"				"玩家: 0"
+		"labelText"				"Players: 0"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
@@ -474,7 +474,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ServerNameLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"服务器名称"
+		"labelText"				"Server Name"
 		"xpos"					"-15"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -492,7 +492,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"PlayerCountLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"玩家"
+		"labelText"				"Players"
 		"xpos"					"-670"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -510,7 +510,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"PlaylistLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"游戏模式"
+		"labelText"				"Playlist"
 		"xpos"					"-800"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -527,7 +527,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"MapLbl"
 	{
 		"ControlName"			"Label"
-		"labelText"				"地图"
+		"labelText"				"Map"
 		"xpos"					"-1050"
 		"ypos"					"0"
 		"zpos"					"6"
@@ -839,7 +839,7 @@ scripts/resource/ui/menus/CustomLobby/panels/serverbrowser.res
 	"ConnectButtonText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"连接服务器"
+		"labelText"				"Connect"
 		"font"					"Default_27_Outline"
 		"allcaps"				"1"
 		"wide"					"200"

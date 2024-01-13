@@ -65,7 +65,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			ruiArgs
 			{
 				isSelected 1
-				buttonText "快速游玩"
+				buttonText "Quick Play"
 			}
 
 			"pin_to_sibling"			"MainButtonsFrame"
@@ -153,7 +153,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"30"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"快速遊玩"
+			"labelText"				"Quick Play"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -182,8 +182,8 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "练枪挑战"
-                modeDescText "在Flowstate练枪模式中挑战自己"
+                modeNameText "Aim Trainer"
+                modeDescText "Challenge yourself in the Flowstate Aim Trainer"
                 modeImage "rui/menu/gamemode/firing_range"
             }
 
@@ -211,8 +211,8 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "自由漫游"
-                modeDescText "在任何地图随便走走"
+                modeNameText "Free Roam"
+                modeDescText "Run around any map"
                 modeImage "rui/menu/maps/mp_rr_desertlands_64k_x_64k"
             }
 
@@ -233,7 +233,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"30"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"热门服务器"
+			"labelText"				"Top Servers"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -351,7 +351,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"30"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"快速加入"
+			"labelText"				"Quick Join"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -381,8 +381,8 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "随机游戏模式"
-                modeDescText "快速加入任何服务器"
+                modeNameText "Random Playlist"
+                modeDescText "Quickly Join any kind of server"
                 modeImage "rui/menu/gamemode/ranked_1"
             }
 
@@ -526,7 +526,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"30"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"选择地图"
+			"labelText"				"Select Map"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -710,7 +710,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"wrap"					"0"
 			"fontHeight"			"20"
 			"zpos"					"150"
-			"labelText"				"%weaponcycle% 下一个/上一个"
+			"labelText"				"%weaponcycle% NEXT/PREV"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"255 255 255 255"

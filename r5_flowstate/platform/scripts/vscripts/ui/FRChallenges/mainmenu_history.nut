@@ -61,7 +61,7 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 		Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerListRightArrow"), true )		
 		Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerListLeftArrow"), true )
 		Hud_SetVisible( Hud_GetChild( file.menu, "Pages"), true )
-		Hud_SetText (Hud_GetChild( file.menu, "Pages" ), "  页数: 1/" + (m_vPages.pAmount + 1) + "  ")
+		Hud_SetText (Hud_GetChild( file.menu, "Pages" ), "  Page: 1/" + (m_vPages.pAmount + 1) + "  ")
 		Hud_SetVisible( Hud_GetChild( file.menu, "PrintToConsole"), true )
 		
 		for( int i=0; i < ChallengesHistory.len() && i < AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE; i++ )
@@ -102,7 +102,7 @@ void function PrevPage(var button)
 		m_vPages.pEnd = ChallengesHistory.len()
 
 	// Set current page ui
-	Hud_SetText(Hud_GetChild( file.menu, "Pages" ), "  页数:" + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1) + "  ")
+	Hud_SetText(Hud_GetChild( file.menu, "Pages" ), "  Page:" + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1) + "  ")
 
 	// "id" is diffrent from "i" and is used for setting UI elements
 	// "i" is used for server id

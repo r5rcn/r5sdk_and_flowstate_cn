@@ -186,9 +186,9 @@ void function OnR5RSB_Open()
 	{
 		TabData tabData = GetTabDataForPanel( file.menu )
 		tabData.centerTabs = true
-		AddTab( file.menu, file.buymenu1, "手枪 霰弹枪 冲锋枪" )
-		AddTab( file.menu, file.buymenu2, "突击步枪 轻机枪" )
-		AddTab( file.menu, file.buymenu3, "神射手 狙击枪" )
+		AddTab( file.menu, file.buymenu1, "Pistols, Shotguns & SMGs" )
+		AddTab( file.menu, file.buymenu2, "Assault Rifles & LMGs" )
+		AddTab( file.menu, file.buymenu3, "Marksman & Snipers" )
 		file.tabsInitialized = true
 	}
 

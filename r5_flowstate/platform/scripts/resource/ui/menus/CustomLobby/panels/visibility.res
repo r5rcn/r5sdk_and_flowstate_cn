@@ -53,7 +53,7 @@
 	"PanelTopText"
 	{
 		"ControlName"			"Label"
-		"labelText"				"可见性"
+		"labelText"				"Visibility"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"

@@ -103,7 +103,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			ruiArgs
 			{
 				isSelected 1
-				buttonText "开始挑战"
+				buttonText "CHALLENGES"
 			}
 
 			"pin_to_sibling"			"Line"
@@ -123,7 +123,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "挑战历史"
+				buttonText "HISTORY"
 			}
 
 			"pin_to_sibling"			"Challenges"
@@ -143,7 +143,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "设置"
+				buttonText "SETTINGS"
 			}
 
 			"pin_to_sibling"			"History"
@@ -173,7 +173,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					60
 			visible					1
 			fontHeight				32
-			labelText				"选择一项挑战开始"
+			labelText				"SELECT A CHALLENGE TO START"
 			font					TitleBoldFont
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -191,7 +191,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					60
 			visible					1
 			fontHeight				30
-			labelText				"当前已击杀假人: 0"
+			labelText				"Dummies killed this session: 0"
 			font					Default
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -209,7 +209,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					60
 			visible					1
 			fontHeight				30
-			labelText				"当前武器: "
+			labelText				"Current weapon: "
 			font					Default
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -226,7 +226,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.3 | Made by @CafeFPS"
+			labelText				"v1.31 | %$rui/flowstate_custom/colombia_flag_papa% Made in Colombia by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -269,7 +269,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "变向目标练习"
+				buttonText "Strafing Dummy"
 			}
 			wide					233
 			tall					50
@@ -313,7 +313,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "切换目标练习"
+				buttonText "Target Switching"
 			}
 			wide					235
 			tall					50
@@ -357,7 +357,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "空中目标练习"
+				buttonText "Floating Target"
 			}
 			wide					215
 			tall					50
@@ -401,7 +401,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "跳板目标练习"
+				buttonText "Popcorn Targets"
 			}
 			wide					235
 			tall					50
@@ -445,7 +445,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "打靶定位练习"
+				buttonText "Tile Frenzy"
 			}
 			wide					166
 			tall					50
@@ -489,7 +489,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "贴脸目标练习"
+				buttonText "Close Fast Strafes"
 			}
 			wide					260
 			tall					50
@@ -532,7 +532,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "空中跟枪练习"
+				buttonText "Smoothbot"
 			}			
 			wide					160
 			tall					50
@@ -620,7 +620,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "快速变向目标练习"
+				buttonText "Fast Jumps Strafes"
 			}		
 			wide					275
 			tall					50
@@ -664,7 +664,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "投掷电弧星练习"
+				buttonText "Arc Stars Practice"
 			}		
 			wide					259
 			tall					50
@@ -707,7 +707,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "投掷碎片手雷练习"
+				buttonText "Grenades Practice"
 			}	
 			wide					260
 			tall					50
@@ -751,7 +751,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "空摘瓦鸡大招练习"
+				buttonText "Shooting Valk's Ult"
 			}	
 			wide					265
 			tall					50
@@ -795,7 +795,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "重力电梯射击练习"
+				buttonText "Shooting From Lift"
 			}	
 			wide					270
 			tall					50
@@ -839,7 +839,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "跳伞目标练习"
+				buttonText "Skydiving Targets"
 			}
 			wide					265
 			tall					50
@@ -883,7 +883,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "跑动目标练习"
+				buttonText "Running Targets"
 			}
 			wide					245
 			tall					50
@@ -927,7 +927,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "换甲训练"
+				buttonText "Armor Swap Trainer"
 			}
 			wide					270
 			tall					50
@@ -969,7 +969,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"全新!"
+			labelText				"New!"
 			visible                 1
 			xpos 					45
 			zpos 					3
@@ -991,7 +991,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "弹跳模式"
+				buttonText "Bounces Simulator"
 			}
 			wide					270
 			tall					50
@@ -1015,7 +1015,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"全新!"
+			labelText				"New!"
 			visible                 1
 			xpos 					45
 			zpos 					3

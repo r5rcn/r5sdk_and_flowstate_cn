@@ -197,7 +197,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 
 	SetLaunchState( eLaunchState.WORKING )
 
-	SetLaunchState( eLaunchState.CANT_CONTINUE, "按下F10打开服务器浏览器" )
+	SetLaunchState( eLaunchState.CANT_CONTINUE, "Press F10 to access the Server Browser" )
 
 	return
 #if SPINNER_DEBUG_INFO

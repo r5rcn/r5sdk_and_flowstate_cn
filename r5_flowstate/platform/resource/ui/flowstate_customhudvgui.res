@@ -346,7 +346,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				28
-			labelText				"躲藏队控制"
+			labelText				"PROP CONTROLS"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 79 161 255"
@@ -367,7 +367,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				20
-			labelText				"回合结束 00:00"
+			labelText				"ROUND ENDS IN 00:00"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -388,7 +388,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 0
 			fontHeight				23
-			labelText				"下一次发出噪音 30"
+			labelText				"NOISE IN 30"
 			font					"TitleBoldFont"
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -574,7 +574,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 1
 			fontHeight				33
-			labelText				"训练数据"
+			labelText				"TRAINING STATS"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -625,7 +625,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"击杀数:"
+				labelText				"Kills:"
 				visible                 0
 				enabled 1
 				zpos 1
@@ -665,7 +665,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"命中率:"
+				labelText				"Accuracy:"
 				visible                 0
 				enabled 1
 				zpos 1
@@ -705,7 +705,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"造成伤害:"
+				labelText				"Damage:"
 				visible                 0
 				enabled 1
 				zpos 1
@@ -745,7 +745,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"爆头数"
+				labelText				"Headshots"
 				visible                 0
 				enabled 1
 				zpos 1
@@ -2561,7 +2561,7 @@ Resource/UI/flowstate_customhudvgui.res
 			visible					0
 			enabled 1
 			fontHeight				33
-			labelText				"换甲训练"
+			labelText				"ARMOR SWAP"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"252 198 3 255"
@@ -2574,7 +2574,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"上次用时:"
+				labelText				"Last Time:"
 				visible                 0
 				enabled 1
 				zpos 1
@@ -2614,7 +2614,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"最佳时间:"
+				labelText				"Best Time:"
 				visible                 0
 				enabled 1
 				zpos 1
@@ -2654,7 +2654,7 @@ Resource/UI/flowstate_customhudvgui.res
 		{
 				ControlName				Label
 				auto_wide_tocontents    0
-				labelText				"成功率:"
+				labelText				"Average:"
 				visible                 0
 				enabled 1
 				zpos 1

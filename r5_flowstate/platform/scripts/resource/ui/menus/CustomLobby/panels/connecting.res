@@ -35,7 +35,7 @@
 	TopMessage
 	{
 		ControlName				Label
-		labelText				"连接中..."
+		labelText				"Connecting..."
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1

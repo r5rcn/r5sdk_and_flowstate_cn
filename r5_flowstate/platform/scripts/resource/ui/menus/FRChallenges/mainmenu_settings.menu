@@ -103,7 +103,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "开始挑战"
+				buttonText "CHALLENGES"
 			}
 
 			"pin_to_sibling"			"Line"
@@ -123,7 +123,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ruiArgs
 			{
 				isSelected 0
-				buttonText "挑战历史"
+				buttonText "HISTORY"
 			}
 
 			"pin_to_sibling"			"Challenges"
@@ -143,7 +143,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ruiArgs
 			{
 				isSelected 1
-				buttonText "设置"
+				buttonText "SETTINGS"
 			}
 
 			"pin_to_sibling"			"History"
@@ -173,7 +173,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.25 | Made by @CafeFPS"
+			labelText				"v1.31 | %$rui/flowstate_custom/colombia_flag_papa% Made in Colombia by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -236,7 +236,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"更换武器"
+			labelText				"CHANGE WEAPON"
 			visible                 1
 			zpos 3
 			tall					60
@@ -352,7 +352,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"更换传奇"
+			labelText				"CHANGE CHARACTER"
 			visible                 1
 			zpos 3
 			tall					60
@@ -449,7 +449,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人护盾等级*"
+				labelText				"Dummies shield level*"
 				visible                 1
 				zpos 0
 				tall					60
@@ -474,11 +474,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ConVar "hud_setting_minimapRotate"
 			
 			list{
-				"无护盾"      0
-				"等级 1 (白)"      1
-				"等级 2 (蓝)"  2
-				"等级 3 (紫)"      3
-				"等级 4 (红)"  4
+				"No shields"      0
+				"Level 1 (White)"      1
+				"Level 2 (Blue)"  2
+				"Level 3 (Purple)"      3
+				"Level 4 (Red)"  4
 			}
 			childGroupAlways        MultiChoiceButtonAlways
 			pin_to_sibling			ShieldSelectorButtonText
@@ -489,7 +489,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人生命值"
+				labelText				"Dummies health"
 				visible                 1
 				zpos 0
 				tall					60
@@ -541,7 +541,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人移动速度*"
+				labelText				"Dummies strafing speed*"
 				visible                 1
 				zpos 0
 				tall					60
@@ -566,11 +566,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ConVar "hud_setting_accessibleChat"				
 			list
 			{
-				"静止"	0
-				"较慢"	1
-				"正常"	2
-				"较快"	3
-				"极快"	4	
+				"Static"	0
+				"Slow"      1
+				"Normal"    2
+				"Fast"  	3
+				"Demon"     4		
 			}
 
 			pin_to_sibling          SpeedTargetsText
@@ -582,7 +582,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人生成距离"
+				labelText				"Dummies spawn distance"
 				visible                 1
 				zpos 0
 				tall					60
@@ -609,7 +609,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			classname				"SettingsBtn"
 			conCommand				"net_minimumPacketLossDC"
 			minValue				1
-			maxValue				10
+			maxValue				20
 			stepSize				1
 			showConVarAsFloat		0
 			pin_to_sibling          SpawnDistanceText
@@ -635,7 +635,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人无敌"
+				labelText				"Invincible targets"
 				visible                 1
 				zpos 0
 				tall					60
@@ -665,8 +665,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			
 			list
 			{
-				"关闭"  0
-				"启用"   1
+				"Disable"  0
+				"Enable"   1
 			}
 
 			pin_to_sibling          InmortalTargetsText
@@ -679,7 +679,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"命中时自动装填子弹"
+				labelText				"AutoReload on hit"
 				visible                 1
 				zpos 0
 				tall					60
@@ -709,8 +709,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			"classname"					"SettingsBtn"			
 			list
 			{
-				"关闭"  0
-				"启用"   1
+				"Disable"  0
+				"Enable"   1
 			}
 
 			pin_to_sibling          InfiniteAmmoText
@@ -722,7 +722,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"击杀时自动装填子弹"
+				labelText				"AutoReload on kill"
 				visible                 1
 				zpos 0
 				tall					60
@@ -751,8 +751,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			wide 360
 			list
 			{
-				"关闭"  0
-				"启用"   1
+				"Disable"  0
+				"Enable"   1
 			}
 
 			pin_to_sibling          InfiniteAmmo2Text
@@ -785,7 +785,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		"Pages"
 		{
 			"ControlName"			"Label"
-			"labelText"				"  页: 1/2  "
+			"labelText"				"  Page: 1/2  "
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			"wide"					"120"
@@ -827,7 +827,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"RGB HUD"
+				labelText				"Rgb hud"
 				visible                 0
 				zpos 0
 				tall					60
@@ -858,8 +858,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			wide 360
 			list
 			{
-				"关闭"  0
-				"启用"   1
+				"Disable"  0
+				"Enable"   1
 			}
 
 			pin_to_sibling          RGBHudText
@@ -871,7 +871,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"假人颜色"
+				labelText				"Dummies color (!FIXME)"
 				visible                 0
 				zpos 0
 				tall					60
@@ -897,12 +897,12 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ConVar "noise_filter_scale"				
 			list
 			{
-				"灰色"      0
-				"红色"      1
-				"绿色"  2
-				"蓝色"      3
-				"黄色"      4
-				"随机"	5
+				"Grey"      0
+				"Red"      1
+				"Green"  2
+				"Blue"      3
+				"Yellow"      4
+				"Random"	5
 			}
 
 			pin_to_sibling          DummiesColorText
@@ -914,7 +914,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"以假人模型游玩"
+				labelText				"Play as dummy"
 				visible                 0
 				zpos 0
 				tall					60
@@ -944,8 +944,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			wide 360
 			list
 			{
-				"关闭"  2
-				"启用"   3
+				"Disable"  2
+				"Enable"   3
 			}
 
 			pin_to_sibling          UseDummyModelText
@@ -957,7 +957,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"无限时长训练"
+				labelText				"Infinite training"
 				visible                 0
 				zpos 0
 				tall					60
@@ -987,8 +987,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			visible 0
 			list
 			{
-				"关闭"  0
-				"启用"   1
+				"Disable"  0
+				"Enable"   1
 			}
 
 			pin_to_sibling          InfiniteTrainingText
@@ -1001,7 +1001,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 		{
 				ControlName				Label
 				auto_wide_tocontents    1
-				labelText				"训练时长设定(秒)"
+				labelText				"Challenges duration"
 				visible                 0
 				zpos 0
 				tall					60

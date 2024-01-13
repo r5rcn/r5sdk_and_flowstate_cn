@@ -90,7 +90,7 @@ void function Set_FSDM_ScoreboardScreen()
 		SetVoteHudElems(false, true, false, false, false, false, false, false, false, false, false, true)
 
 		if(GetCurrentPlaylistName() == "fs_prophunt")
-			Hud_SetText( Hud_GetChild( file.menu, "ScoreboardText" ), "躲猫猫计分板")
+			Hud_SetText( Hud_GetChild( file.menu, "ScoreboardText" ), "PROPHUNT SCOREBOARD")
 		
 		while(file.FSDM_Scoreboard.len() == 0) //defensive fix
 			WaitFrame()
@@ -131,7 +131,7 @@ void function Set_FSDM_VoteMenuNextRound()
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true, false, false, false)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "开始下一局!")
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "Starting Next Round!")
 }
 
 //Update current maps up for vote
@@ -166,10 +166,10 @@ void function UpdateVoteTimer_FSDM(int timeleft)
 //Update current votes for each map
 void function UpdateVotesUI_FSDM(int map1, int map2, int map3, int map4)
 {
-	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes1" ), "总票数: " + map1 )
-	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes2" ), "总票数: " + map2 )
-	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes3" ), "总票数: " + map3 )
-	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes4" ), "总票数: " + map4 )
+	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes1" ), "Votes: " + map1 )
+	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes2" ), "Votes: " + map2 )
+	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes3" ), "Votes: " + map3 )
+	Hud_SetText(Hud_GetChild( file.menu, "MapVoteLabelVotes4" ), "Votes: " + map4 )
 }
 
 //Lock Buttons and update the map player voted for
@@ -188,7 +188,7 @@ void function UpdateVotedLocation_FSDM(string map)
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true, false, false, false)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "下一地点: " + map)
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "Next Location: " + map)
 }
 
 //Sets and updates tied voting screen
@@ -196,8 +196,8 @@ void function UpdateVotedLocation_FSDMTied(string map)
 {
 	SetVoteHudElems(false, true, true, true, false, false, false, true, true, false, false, false)
 
-	Hud_SetText( Hud_GetChild( file.menu, "TimerText" ), "从票数相等的位置中随机选择")
-	Hud_SetText( Hud_GetChild( file.menu, "TimerText2" ), "票数相等!")
+	Hud_SetText( Hud_GetChild( file.menu, "TimerText" ), "Picking a random location from tied locations")
+	Hud_SetText( Hud_GetChild( file.menu, "TimerText2" ), "Votes Tied!")
 	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), map)
 }
 

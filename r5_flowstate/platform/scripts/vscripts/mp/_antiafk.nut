@@ -42,7 +42,7 @@ int function GetAfkState( entity player )
 
 void function AfkWarning( entity player )
 {
-    Message( player, "挂机警告", "\n 你已进入挂机状态, 如果你在接下来 " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " 秒内不移动 将会被服务器踢出" )
+    Message( player, "AFK WARNING", "\n You're afk, server will kick you if you don't move in the next " + GetCurrentPlaylistVarFloat( "Flowstate_antiafk_warn", 15.0 ) + " seconds." )
 }
 
 void function CheckAfkKickThread(entity player)
@@ -72,7 +72,7 @@ void function CheckAfkKickThread(entity player)
 				break
 
 			case eAntiAfkPlayerState.AFK:
-				KickPlayerById( player.GetPlatformUID(), "你挂机了太长时间." )
+				KickPlayerById( player.GetPlatformUID(), "You were AFK for too long" )
 				break
 		}
     }

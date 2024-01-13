@@ -127,7 +127,7 @@
 		"KillReplayText"
 		{
 			"ControlName"			"Label"
-			"labelText"				"击杀回放"
+			"labelText"				"Kill Replay"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"	
 			"auto_wide_tocontents"	"1"
@@ -146,7 +146,7 @@
 		"ControlsText"
 		{
 			"ControlName"			"Label"
-			"labelText"				"击杀回放"
+			"labelText"				"Kill Replay"
 			"font"					"DefaultBold_41"
 			"allcaps"				"0"	
 			"auto_wide_tocontents"	"1"
@@ -165,7 +165,7 @@
 		"ControlsText2"
 		{
 			"ControlName"			"Label"
-			"labelText"				"击杀回放"
+			"labelText"				"Kill Replay"
 			"font"					"DefaultBold_41"
 			"allcaps"				"0"	
 			"auto_wide_tocontents"	"1"
@@ -235,7 +235,7 @@
 		"KillReplayKilledBy"
 		{
 			"ControlName"			"Label"
-			"labelText"				"杀死你的人:"
+			"labelText"				"Killed By:"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			"auto_wide_tocontents"	"1"
@@ -377,7 +377,7 @@
 		"KillReplayPlayerName"
 		{
 			"ControlName"			"Label"
-			"labelText"				"玩家名称"
+			"labelText"				"Player Name Here"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			"auto_wide_tocontents"	"1"

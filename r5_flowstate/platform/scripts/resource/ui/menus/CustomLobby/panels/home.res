@@ -41,7 +41,7 @@
 
 		ruiArgs
         {
-            headerText     "欢迎来到"
+            headerText     "Welcome To"
 			subText		   "R5Reloaded - Flowstate"
         }
 
@@ -96,7 +96,7 @@
 		"fontHeight"			"25"
 		"zpos"					"5"
 		"textAlignment"			"north-west"
-		"labelText"				"此项目可以让您用mod游玩APEX Legends. 这意味着您创建自定义的游戏模式、关卡、武器等等. "
+		"labelText"				"This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more."
 		"font"					"DefaultBold_41"
 		"allcaps"				"0"
 		"fgcolor_override"		"200 200 200 255"

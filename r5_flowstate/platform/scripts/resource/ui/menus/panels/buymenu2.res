@@ -124,7 +124,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			tall					30
 			visible					0
 			fontHeight				30
-			labelText				"突击步枪 轻机枪"
+			labelText				"Assault Rifles & LMGs"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -169,7 +169,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"哈沃克步枪"
+			labelText				"Havoc"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -216,7 +216,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"L-STAR"
+			labelText				"L-Star"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -263,7 +263,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"专注轻机枪"
+			labelText				"Devotion"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -311,7 +311,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"赫姆洛克连发步枪"
+			labelText				"Hemlok"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -359,7 +359,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"平行步枪"
+			labelText				"Flatline"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -407,7 +407,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"喷火轻机枪"
+			labelText				"Spitfire"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -455,7 +455,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"R-301卡宾枪"
+			labelText				"R-301"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -463,53 +463,6 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			xpos					100
 			fontHeight				35
 			pin_to_sibling          R301
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		RampageButton
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          R301Button
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
-		
-		Rampage
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          RampageButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		Rampage_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"暴走轻机枪"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					95
-			fontHeight				35
-			pin_to_sibling          Rampage
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
@@ -1108,7 +1061,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"瞄准镜"
+			labelText				"OPTICS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1132,7 +1085,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"枪管"
+			labelText				"BARRELS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1156,7 +1109,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"即用配件"
+			labelText				"HOPUP"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1180,7 +1133,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"枪托"
+			labelText				"STOCKS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1204,7 +1157,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"弹匣"
+			labelText				"MAGS"
 			visible                 0
 			zpos 25
 			tall					40

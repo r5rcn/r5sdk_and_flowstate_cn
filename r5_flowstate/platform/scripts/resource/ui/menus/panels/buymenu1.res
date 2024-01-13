@@ -124,7 +124,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			tall					30
 			visible					0
 			fontHeight				30
-			labelText				"手枪 霰弹枪 冲锋枪"
+			labelText				"Pistols, Shotguns & SMGs"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -217,7 +217,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"莫桑比克"
+			labelText				"Mozambique"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -264,7 +264,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"辅助手枪"
+			labelText				"Wingman"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -408,7 +408,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"獒犬"
+			labelText				"Mastiff"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -456,7 +456,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"和平捍卫者"
+			labelText				"Peacekeeper"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
@@ -1139,7 +1139,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"瞄准镜"
+			labelText				"OPTICS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1163,7 +1163,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"激光瞄准器"
+			labelText				"LASER"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1187,7 +1187,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"枪托"
+			labelText				"BOLTS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1211,7 +1211,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"枪栓"
+			labelText				"STOCKS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1235,7 +1235,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"弹匣"
+			labelText				"MAGS"
 			visible                 0
 			zpos 25
 			tall					40

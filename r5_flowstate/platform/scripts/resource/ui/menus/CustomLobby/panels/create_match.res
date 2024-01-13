@@ -60,7 +60,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"服务器设置"
+			labelText				"Server Settings"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -169,7 +169,7 @@
 		ChatRoomText
 		{
 			ControlName				Label
-			labelText				"聊天室"
+			labelText				"Chat Room"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -225,7 +225,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"开始游戏"
+			labelText				"Start Game"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -392,7 +392,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"服务器名称"
+			labelText				"Server Name"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -448,7 +448,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"服务器简介"
+			labelText				"Server Description"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -504,7 +504,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"选择地图"
+			labelText				"Select Map"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -560,7 +560,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"选择游戏模式"
+			labelText				"Select Playlist"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1
@@ -616,7 +616,7 @@
 		{
 			ControlName				Label
 			"classname"				"CreateServerUI"
-			labelText				"设置可见性"
+			labelText				"Select Visibility"
 			"font"					"DefaultBold_41"
 			"allcaps"				"1"
 			auto_wide_tocontents	1

@@ -41,7 +41,7 @@
 			"tall"						"30"
 			"visible"					"1"
 			"fontHeight"				"35"
-			"labelText"					"APEX 躲猫猫"
+			"labelText"					"APEX PROPHUNT"
 			"font"						"TitleBoldFont"
 			"allcaps"					1
 			"fgcolor_override"			"255 0 119 255"
@@ -154,7 +154,7 @@
 			"tall"						"40"
 			"visible"					"1"
 			"fontHeight"				"30"
-			"labelText"					"躲藏队计分板"
+			"labelText"					"PROPS SCOREBOARD"
 			"font"						"DefaultBold_41"
 			"allcaps"					"1"
 			"fgcolor_override"			"255 255 255 255"
@@ -186,7 +186,7 @@
 		{
 			"classname"				"ScoreboardPropsUI"
 			"ControlName"			"Label"
-			"labelText"				"玩家名称"
+			"labelText"				"Player Name"
 			"xpos"					"-50"
 			"ypos"					"0"
 			"auto_wide_tocontents"	"1"
@@ -202,7 +202,7 @@
 		{
 			"classname"					"ScoreboardPropsUI"
 			"ControlName"			"Label"
-			"labelText"				"幸存次数"
+			"labelText"				"Survived"
 			"xpos"					"-250"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -220,7 +220,7 @@
 		{
 			"classname"					"ScoreboardPropsUI"
 			"ControlName"			"Label"
-			"labelText"				"存活时间"
+			"labelText"				"Time Alive"
 			"xpos"					"-400"
 			"ypos"					"0"
 			"zpos"					"6"
@@ -1147,7 +1147,7 @@
 			"tall"						"40"
 			"visible"					"1"
 			"fontHeight"				"30"
-			"labelText"					"猎人计分板"
+			"labelText"					"HUNTERS SCOREBOARD"
 			"font"						"DefaultBold_41"
 			"allcaps"					"1"
 			"fgcolor_override"			"255 255 255 255"
@@ -1178,7 +1178,7 @@
 		{
 			"classname"				"ScoreboardHuntersUI"
 			"ControlName"			"Label"
-			"labelText"				"玩家名称"
+			"labelText"				"Player Name"
 			"xpos"					"-50"
 			"ypos"					"0"
 			"auto_wide_tocontents"	"1"
@@ -1194,7 +1194,7 @@
 		{
 			"classname"				"ScoreboardHuntersUI"
 			"ControlName"			"Label"
-			"labelText"				"击杀数"
+			"labelText"				"Kills"
 			"xpos"					"-250"
 			"ypos"					"0"
 			"zpos"					"6"

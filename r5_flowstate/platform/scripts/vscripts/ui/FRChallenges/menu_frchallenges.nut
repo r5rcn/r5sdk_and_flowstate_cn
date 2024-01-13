@@ -51,19 +51,19 @@ void function UpdateResultsData(string challengeName, int shothits, int dummiesk
 	if(isNewRecord) 
 	{
 		Hud_SetText(Hud_GetChild( file.menu, "WasNotNewPersonalBest"), "")
-		Hud_SetText(Hud_GetChild( file.menu, "WasNewPersonalBest"), "新高分!")
+		Hud_SetText(Hud_GetChild( file.menu, "WasNewPersonalBest"), "NEW BEST SCORE")
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinalWasNotNew"), "")
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal"), shothits.tostring())
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2WasNotNew"), "")
-		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2"), "命中数")
+		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2"), "Hits")
 	}
 	else
 	{
-		Hud_SetText(Hud_GetChild( file.menu, "WasNotNewPersonalBest"), "再试一次!")
+		Hud_SetText(Hud_GetChild( file.menu, "WasNotNewPersonalBest"), "TRY AGAIN!")
 		Hud_SetText(Hud_GetChild( file.menu, "WasNewPersonalBest"), "")
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinalWasNotNew"), shothits.tostring())
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal"), "")
-		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2WasNotNew"), "命中数")
+		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2WasNotNew"), "Hits")
 		Hud_SetText(Hud_GetChild( file.menu, "ShotsHitResultFinal2"), "")
 	}
 }

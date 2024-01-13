@@ -69,8 +69,8 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             allowSpecialCharacters	0
             unicode					0
 
-            keyboardTitle			"输入服务器名称"
-            keyboardDescription		"输入服务器名称"
+            keyboardTitle			"Enter Server Name"
+            keyboardDescription		"Enter Server Name"
 
             visible					1
             enabled					1
@@ -100,7 +100,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"25"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"服务器名称:"
+			"labelText"				"Server Name:"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -123,8 +123,8 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             allowSpecialCharacters	0
             unicode					0
 
-            keyboardTitle			"输入服务器名称"
-            keyboardDescription		"输入服务器名称"
+            keyboardTitle			"Enter Server Name"
+            keyboardDescription		"Enter Server Name"
 
             visible					1
             enabled					1
@@ -154,7 +154,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"25"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"服务器名称:"
+			"labelText"				"Server Name:"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -177,7 +177,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 
             ruiArgs
             {
-                buttonText "服务器可见性"
+                buttonText "Server Visibility"
             }
 
             list
@@ -206,7 +206,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"30"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"服务器设定"
+			"labelText"				"Server Settings"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"
@@ -234,7 +234,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "创建私人比赛"
+                modeNameText "Create Private Match"
                 modeDescText ""
                 modeImage "rui/menu/store/feature_background_square"
             }
@@ -305,7 +305,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -335,7 +335,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -365,7 +365,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -396,7 +396,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -426,7 +426,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -456,7 +456,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -487,7 +487,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -517,7 +517,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -547,7 +547,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "地图名称"
+                modeNameText "Map Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -600,7 +600,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -630,7 +630,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -660,7 +660,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -691,7 +691,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -721,7 +721,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -751,7 +751,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -782,7 +782,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -812,7 +812,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -842,7 +842,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
             ruiArgs
             {
                 lockIconEnabled 0
-                modeNameText "游戏模式名称"
+                modeNameText "Playlist Name"
                 modeDescText ""
                 //modeImage "rui/menu/gamemode/firing_range"
             }
@@ -864,7 +864,7 @@ resource/ui/menus/dialog_gamemode_select_v2.menu
 			"fontHeight"			"30"
 			"zpos"					"5"
 			"textAlignment"			"north-west"
-			"labelText"				"选择游戏模式"
+			"labelText"				"Select Playlist"
 			"font"					"TitleBoldFont"
 			"allcaps"				"1"
 			"fgcolor_override"		"200 200 200 255"

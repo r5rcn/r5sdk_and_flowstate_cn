@@ -35,7 +35,7 @@
 	SetServerDescTxt
 	{
 		ControlName				Label
-		labelText				"设置服务器简介"
+		labelText				"Set Server Description"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1
@@ -99,8 +99,8 @@
 		allowSpecialCharacters	0
 		unicode					0
 
-		keyboardTitle			"输入服务器名称"
-		keyboardDescription		"输入服务器名称"
+		keyboardTitle			"Enter Server Name"
+		keyboardDescription		"Enter Server Name"
 
 		visible					1
 		enabled					1
@@ -155,7 +155,7 @@
 	BtnDescText
 	{
 		ControlName				Label
-		labelText				"保存"
+		labelText				"Save"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
 		auto_wide_tocontents	1

@@ -305,7 +305,7 @@ string function ReturnChallengeName(int index)
 			final = "空中跟枪练习"
 			break
 		case 13:
-			final = "弹跳模拟器"
+			final = "跳板模拟"
 			break
 		case 14:
 			final = "投掷碎片手雷练习"

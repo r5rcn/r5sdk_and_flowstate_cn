@@ -291,7 +291,7 @@ while( Time() <= endTime )
 			{
 				if(IsValid(player))
 				{
-					Message(player,"ATTENTION","Surf map changing in 2 minutes.", 10)
+					Message(player,"注意","滑翔地图两分钟后更换", 10)
 				}
 			}
 		}
@@ -301,7 +301,7 @@ while( Time() <= endTime )
 			{
 				if(IsValid(player))
 				{
-					Message(player,"ATTENTION","Surf map changing in 15 seconds.", 10)
+					Message(player,"注意","滑翔地图15秒后更换", 10)
 				}
 			}
 		}
@@ -489,7 +489,7 @@ void function SurfKitsuneFinishDoor_OnAreaEnter( entity trigger, entity player )
 
 void function SurfKitsuneFinishFinished_OnAreaEnter( entity trigger, entity player )
 {
-    Message( player, "Map Finished", "Congrats you finished surf_kitsune", 5.0 )
+    Message( player, "地图已完成", "恭喜你完成了surf_kitsune", 5.0 )
 }
 
 //Thanks Archtux#9300
@@ -694,7 +694,7 @@ void function SurfNoNameFinishDoor_OnAreaEnter( entity trigger, entity player )
 
 void function SurfNoNameFinishFinished_OnAreaEnter( entity trigger, entity player )
 {
-    Message( player, "Map Finished", "Congrats you finished surf_purgatory", 5.0 )
+    Message( player, "地图已完成", "恭喜你完成了", 5.0 )
 }
 
 #if SERVER

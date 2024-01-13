@@ -3067,13 +3067,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	if(GameRules_GetGameMode() != fs_aimtrainer && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
 	{
-		Message(player, "WEAPON WHITELISTED")
+		Message(player, "武器列入白名单")
 		return false
 	}
 
 	if(GameRules_GetGameMode() != fs_aimtrainer && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
 	{
-		Message(player, "ABILITY WHITELISTED")
+		Message(player, "技能列入白名单")
 		return false
 	}
 

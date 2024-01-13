@@ -238,52 +238,52 @@ string function ReturnChallengeName(int index)
 	string final
 	switch(index){
 		case 1:
-			final = "STRAFING DUMMY"
+			final = "变向目标练习"
 			break		
 		case 2:
-			final = "TARGET SWITCHING"
+			final = "切换目标练习"
 			break
 		case 3:
-			final = "FLOATING TARGET"
+			final = "空中目标练习"
 			break
 		case 4:
-			final = "POPCORN TARGETS"
+			final = "跳板目标练习"
 			break
 		case 6:
-			final = "FAST JUMPS STRAFES"
+			final = "快速变向目标练习"
 			break
 		case 7:
-			final = "ARC STARS PRACTICE"
+			final = "投掷电弧星练习"
 			break
 		case 8:
-			final = "SHOOTING FROM LIFT"
+			final = "重力电梯射击练习"
 			break
 		case 9:
-			final = "SHOOTING VALK'S ULT"
+			final = "空摘瓦鸡练习"
 			break
 		case 10:
-			final = "TILE FRENZY"
+			final = "打靶定位练习"
 			break
 		case 11:
-			final = "CLOSE FAST STRAFES"
+			final = "贴脸目标练习"
 			break
 		case 12:
-			final = "SMOOTHBOT"
+			final = "空中跟枪练习"
 			break
 		case 13:
-			final = "BOUNCES SIMULATOR"
+			final = "跳板模拟"
 			break
 		case 14:
-			final = "GRENADES PRACTICE"
+			final = "投掷碎片手雷练习"
 			break
 		case 15:
-			final = "SKYDIVING TARGETS"
+			final = "跳伞目标练习"
 			break
 		case 16:
-			final = "RUNNING TARGETS"
+			final = "跑动目标练习"
 			break
 		case 17:
-			final = "ARMOR SWAP"
+			final = "换甲训练"
 			break
 		case 0:
 		default: 

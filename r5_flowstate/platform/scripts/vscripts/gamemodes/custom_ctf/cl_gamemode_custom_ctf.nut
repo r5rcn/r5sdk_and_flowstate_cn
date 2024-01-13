@@ -409,7 +409,7 @@ void function ServerCallback_CTF_PickedUpFlag(entity player, bool pickedup)
 		RuiSetGameTime( file.dropflagrui, "startTime", Time() )
 		RuiSetGameTime( file.dropflagrui, "endTime", 9999999 )
 		RuiSetBool( file.dropflagrui, "commsMenuOpen", false )
-		RuiSetString( file.dropflagrui, "msg", "Press %scriptCommand5% to drop the flag" )
+		RuiSetString( file.dropflagrui, "msg", "按下 %scriptCommand5% 扔下旗帜" )
 
         file.baseiconmdl = CreateClientSidePropDynamic( emptymdlloc + <0,0,100>, <0,0,0>, $"mdl/dev/empty_model.rmdl" )
         file.baseicon = AddCaptureIcon( file.baseiconmdl, icon, false, $"ui/overhead_icon_generic.rpak")
@@ -447,8 +447,8 @@ void function ServerCallback_CTF_DoAnnouncement(float duration, int type, float 
         case eCTFAnnounce.ROUND_START:
         {
             ShowScoreRUI( true )
-            message = "Match Start"
-            subtext = "Score 5 points to win!"
+            message = "比赛开始"
+            subtext = "取得五分来获得胜利!"
             break
         }
         case eCTFAnnounce.VOTING_PHASE:
@@ -527,10 +527,10 @@ void function ServerCallback_CTF_FlagCaptured(entity player, int messageid)
     switch(messageid)
     {
         case eCTFMessage.PickedUpFlag:
-            message = "Your team has captured the enemy flag!"
+            message = "你的队伍夺取了敌方旗帜!"
             break
         case eCTFMessage.EnemyPickedUpFlag:
-            message = "Enemy team has captured your flag!"
+            message = "敌方队伍夺取了你们的旗帜!"
             break
     }
 
@@ -550,13 +550,13 @@ void function ServerCallback_CTF_CustomMessages(entity player, int messageid)
     switch(messageid)
     {
         case eCTFMessage.PickedUpFlag:
-            message = "You picked up the flag"
+            message = "你捡起了旗帜"
             break
         case eCTFMessage.EnemyPickedUpFlag:
-            message = "Enemy team picked up your flag"
+            message = "敌人捡起了我方的旗帜"
             break
         case eCTFMessage.TeamReturnedFlag:
-            message = "Your teams flag has been returned to base"
+            message = "我方的旗帜已被送回"
     }
 
     switch(GetLocalClientPlayer().GetTeam())
@@ -607,15 +607,15 @@ void function ServerCallback_CTF_OpenCTFRespawnMenu(vector campos, int IMCscore,
     if(attacker != null)
     {
         if (attacker == GetLocalClientPlayer())
-            RunUIScript( "UpdateKillerName", "Suicide")
+            RunUIScript( "UpdateKillerName", "自杀")
         else if(attacker.IsPlayer() && attacker != null)
             RunUIScript( "UpdateKillerName", attacker.GetPlayerName())
         else
-            RunUIScript( "UpdateKillerName", "Mysterious Forces")
+            RunUIScript( "UpdateKillerName", "神秘的力量")
     }
     else
     {
-        RunUIScript( "UpdateKillerName", "Mysterious Forces")
+        RunUIScript( "UpdateKillerName", "神秘的力量")
     }
 
     RunUIScript("SetCTFScores", IMCscore, MILscore, CTF_SCORE_GOAL_TO_WIN)
@@ -624,7 +624,7 @@ void function ServerCallback_CTF_OpenCTFRespawnMenu(vector campos, int IMCscore,
     {
         if(player == localplayer)
         {
-            AddTeamIcons(player, $"rui/pilot_loadout/mods/hopup_skullpiercer", <25,25,0>, "Death Location")
+            AddTeamIcons(player, $"rui/pilot_loadout/mods/hopup_skullpiercer", <25,25,0>, "死亡地点")
         }
         else
         {
@@ -882,13 +882,13 @@ string function GetWinningTeamText(int team)
     switch(team)
     {
         case TEAM_IMC:
-            teamwon = "IMC has won"
+            teamwon = "IMC队胜利"
             break
         case TEAM_MILITIA:
-            teamwon = "MILITIA has won"
+            teamwon = "反抗军队胜利"
             break
         case 69:
-            teamwon = "Winner couldn't be decided"
+            teamwon = "无法决定获胜者"
             break
     }
 

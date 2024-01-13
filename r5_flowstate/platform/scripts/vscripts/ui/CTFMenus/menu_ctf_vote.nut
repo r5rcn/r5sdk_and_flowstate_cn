@@ -109,8 +109,8 @@ void function UpdateVotedLocationTied(string map)
 {
 	SetVoteHudElems(false, true, true, true, false, false, false, true, true)
 
-	Hud_SetText( Hud_GetChild( file.menu, "TimerText" ), "Picking a random location from tied locations")
-	Hud_SetText( Hud_GetChild( file.menu, "TimerText2" ), "Votes Tied!")
+	Hud_SetText( Hud_GetChild( file.menu, "TimerText" ), "正在从票数相等的地点随机选择")
+	Hud_SetText( Hud_GetChild( file.menu, "TimerText2" ), "票数相等!")
 	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), map)
 }
 

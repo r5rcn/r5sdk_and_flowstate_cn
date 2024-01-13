@@ -143,16 +143,16 @@ void function Play_SetupUI()
 
 	var playersButton = Hud_GetChild( file.panel, "PlayersButton" )
 	ToolTipData playersToolTip
-	playersToolTip.titleText = "Players Online"
-	playersToolTip.descText = MS_GetPlayerCount() + " Players Online"
+	playersToolTip.titleText = "在线玩家"
+	playersToolTip.descText = MS_GetPlayerCount() + " 名玩家在线"
 	Hud_SetToolTipData( playersButton, playersToolTip )
 	HudElem_SetRuiArg( playersButton, "buttonText", "" + MS_GetPlayerCount() )
 	Hud_SetWidth( playersButton, Hud_GetBaseWidth( playersButton ) * 2 )
 
 	var serversButton = Hud_GetChild( file.panel, "ServersButton" )
 	ToolTipData serversToolTip
-	serversToolTip.titleText = "Servers Running"
-	serversToolTip.descText = MS_GetServerCount() + " Servers Running"
+	serversToolTip.titleText = "在线服务器"
+	serversToolTip.descText = MS_GetServerCount() + " 个服务器正在运行"
 	Hud_SetToolTipData( serversButton, serversToolTip )
 	HudElem_SetRuiArg( serversButton, "buttonText", "" + MS_GetServerCount() )
 	Hud_SetWidth( serversButton, Hud_GetBaseWidth( serversButton ) * 2 )
@@ -166,7 +166,7 @@ void function Play_SetupUI()
 
 	if(!file.firststart)
 	{
-		g_SelectedPlaylist = "Random Server"
+		g_SelectedPlaylist = "随机服务器"
 		R5RPlay_SetSelectedPlaylist(JoinType.QuickServerJoin)
 		file.firststart = true
 	}
@@ -228,20 +228,20 @@ void function R5RPlay_SetSelectedPlaylist(int quickPlayType)
 				if(g_SelectedTopServer.svServerName.len() > 30)
 					servername = g_SelectedTopServer.svServerName.slice(0, 30) + "..."
 
-				SetGamemodeButtonRUI(servername, "Not Ready", true, GetUIMapAsset(g_SelectedTopServer.svMapName ))
+				SetGamemodeButtonRUI(servername, "未准备", true, GetUIMapAsset(g_SelectedTopServer.svMapName ))
 			break;
 		case JoinType.QuickServerJoin:
 			quickplay.quickPlayType = JoinType.QuickServerJoin
 
 			asset image = $"rui/menu/gamemode/play_apex"
-			if(g_SelectedPlaylist == "Random Server")
+			if(g_SelectedPlaylist == "随机服务器")
 				image = $"rui/menu/gamemode/ranked_1"
 
-			SetGamemodeButtonRUI(GetUIPlaylistName(g_SelectedPlaylist), "Not Ready", true, image)
+			SetGamemodeButtonRUI(GetUIPlaylistName(g_SelectedPlaylist), "未准备", true, image)
 			break;
 		case JoinType.QuickPlay:
 			quickplay.quickPlayType = JoinType.QuickPlay
-			SetGamemodeButtonRUI(GetUIMapName(g_SelectedQuickPlayMap), "Not Ready", true, g_SelectedQuickPlayImage)
+			SetGamemodeButtonRUI(GetUIMapName(g_SelectedQuickPlayMap), "未准备", true, g_SelectedQuickPlayImage)
 			break;
 	}
 }
@@ -311,13 +311,13 @@ void function JoinMatch( var button, string v )
 			#if LISTEN_SERVER
 			// Amos: rework this?
 			case JoinType.QuickPlay:
-				SetSearchingText("Starting Match")
+				SetSearchingText("启动服务器")
 				wait 2
 				CreateServer(GetUIMapName(g_SelectedQuickPlayMap), "", g_SelectedQuickPlayMap, g_SelectedQuickPlay, eServerVisibility.OFFLINE)
 				break;
 			#endif // LISTEN_SERVER
 			case JoinType.TopServerJoin:
-				SetSearchingText("Joining Match")
+				SetSearchingText("正在连接至比赛")
 				wait 2
 				ConnectToListedServer(g_SelectedTopServer.svServerID)
 				break;
@@ -365,18 +365,18 @@ void function UpdateQuickJoinButtons(var button)
 	{
 		EmitUISound( "UI_Menu_Deny" )
 		file.noservers = true
-		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "Not Ready" )
+		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "未准备" )
 		waittime = 0
 	}
 	else if(file.noservers)
 	{
 		EmitUISound( "UI_Menu_Deny" )
-		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "No servers found" )
+		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "未找到服务器" )
 	}
 	else if(!file.noservers)
 	{
 		EmitUISound( "UI_Menu_Apex_Launch" )
-		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "Joining Match" )
+		RuiSetString( Hud_GetRui( file.gamemodeSelectV2Button ), "modeDescText", "正在连接至比赛" )
 	}
 
 	wait waittime
@@ -436,7 +436,7 @@ void function FindServer(bool refresh = false)
 		if ( file.m_vServerList[i].svCurrentPlayers == file.m_vServerList[i].svMaxPlayers )
 			continue;
 
-		if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "Random Server")
+		if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "随机服务器")
 			continue;
 
 		// Server fits our requirements, add it to the list
@@ -451,7 +451,7 @@ void function FindServer(bool refresh = false)
 			if ( file.m_vServerList[i].svCurrentPlayers == file.m_vServerList[i].svMaxPlayers )
 				continue;
 
-			if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "Random Server")
+			if(file.m_vServerList[i].svPlaylist != g_SelectedPlaylist && g_SelectedPlaylist != "随机服务器")
 				continue;
 
 			// Server fits our requirements, add it to the list

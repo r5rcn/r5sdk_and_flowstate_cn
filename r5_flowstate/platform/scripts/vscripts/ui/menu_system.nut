@@ -144,16 +144,16 @@ void function InitSystemPanel( var panel )
 	file.ToggleScoreboardFocus[ panel ] <- clone data
 	file.Toggle1v1ScoreboardFocus[ panel ] <- clone data
 	
-	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
+	file.ExitChallengeButtonData[ panel ].label = "结束挑战"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
 	
-	file.SetHunterButtonData[ panel ].label = "SET HUNTER"
+	file.SetHunterButtonData[ panel ].label = "设置猎人"
 	file.SetHunterButtonData[ panel ].activateFunc = SetHunterFunct
 		
-	file.TDM_ChangeWeapons[ panel ].label = "CHANGE WEAPON"
+	file.TDM_ChangeWeapons[ panel ].label = "更换武器"
 	file.TDM_ChangeWeapons[ panel ].activateFunc = OpenWeaponSelector
 	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
@@ -177,17 +177,17 @@ void function InitSystemPanel( var panel )
 	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
 	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
 	
-	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
+	file.thirdPersonButtonData[ panel ].label = "切换第三人称"
 	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
 
-	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
+	file.endmatchButtonData[ panel ].label = "关闭游戏大厅"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
 	
-	file.hubButtonData[ panel ].label = "HUB"
+	file.hubButtonData[ panel ].label = "返回HUB"
 	file.hubButtonData[ panel ].activateFunc = RunHub
 
-	file.MGsettingsButtonData[ panel ].label = "GYM SETTINGS"
-	file.MGsettingsButtonData[ panel ].activateFunc = RunMGsettings
+	file.invisButtonData[ panel ].label = "切换隐藏其他玩家"
+	file.invisButtonData[ panel ].activateFunc = RunInvis
 
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
 	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand
@@ -195,7 +195,7 @@ void function InitSystemPanel( var panel )
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
-	file.ToggleScoreboardFocus[ panel ].label = "TOGGLE SCOREBOARD"
+	file.ToggleScoreboardFocus[ panel ].label = "切换计分板"
 	file.ToggleScoreboardFocus[ panel ].activateFunc = ShowScoreboard_System
 	
 	file.Toggle1v1ScoreboardFocus[ panel ].label = "TOGGLE VS UI"
@@ -224,7 +224,7 @@ void function UpdateSystemPanel( var panel )
 	if( IsConnected() && GetCurrentPlaylistName() != "fs_aimtrainer" )
 		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
 	else if( IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer" )
-		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
+		file.lobbyReturnButtonData[ panel ].label = "退出练枪挑战"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	foreach ( index, button in file.buttons[ panel ] )
@@ -312,7 +312,7 @@ void function UpdateSystemPanel( var panel )
 	if(IsConnected() && GetCurrentPlaylistName() == "fs_aimtrainer")
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
-		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
+		Hud_SetText( dataCenterElem, "R5Reloaded 服务器: " + MyPing() + " ms.")
 }
 
 void function ToggleSetHunter(bool enable)

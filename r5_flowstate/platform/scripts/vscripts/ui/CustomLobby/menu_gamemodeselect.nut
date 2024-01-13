@@ -137,7 +137,7 @@ void function PlaylistButton_Activated(var button)
 void function SetupPlaylistQuickSearch()
 {
 	array<string> playlists = Servers_GetActivePlaylists()
-	playlists.insert(0, "Random Server")
+	playlists.insert(0, "随机服务器")
 
 	file.m_vPlaylists = playlists
 
@@ -177,10 +177,10 @@ void function SetupPlaylistQuickSearch()
 		if(i + file.pageoffset >= playlists.len())
 			break
 		
-		if(playlists[i + file.pageoffset] == "Random Server")
+		if(playlists[i + file.pageoffset] == "随机服务器")
 		{
-			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeNameText", "Random Server" )
-			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeDescText", "Quickly Join any kind of server" )
+			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeNameText", "随机服务器" )
+			RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeDescText", "快速加入任何类型的服务器" )
 			RuiSetImage( Hud_GetRui( Hud_GetChild( file.menu, "GameModeButton" + i ) ), "modeImage", $"rui/menu/gamemode/ranked_1" )
 		}
 		else

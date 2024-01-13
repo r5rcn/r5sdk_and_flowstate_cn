@@ -184,17 +184,56 @@
         // list is populated by code
         childGroupAlways        MultiChoiceButtonAlways
     }
+	
+    SwchVSync // mat_vsync, mat_triplebuffered
+    {
+        ControlName				RuiButton
+        InheritProperties		SwitchButton
+        classname				"AdvancedVideoButtonClass"
+        style					DialogListButton
+        pin_to_sibling			ImgAdvVideoSubheaderBackground
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+        navUp					SwchSprintCameraSmoothing
+        navDown					SwchReflex//SldAdaptiveRes
+        // list is populated by code
+        childGroupAlways        MultiChoiceButtonAlways
+    }
+
+	SwchReflex
+	{
+		ControlName				RuiButton
+		InheritProperties		SwitchButton
+		style					DialogListButton
+
+		ConVar "settings_reflex"				
+		list
+		{
+			"Off"      		0
+			"On"      		1
+			"On + Boost"  	2
+		}
+
+        navUp					SwchVSync
+        navDown					SldAdaptiveRes
+
+        pin_to_sibling			SwchVSync
+        pin_corner_to_sibling	TOP_LEFT
+        pin_to_sibling_corner	BOTTOM_LEFT
+		childGroupAlways        MultiChoiceButtonAlways
+	}
+
     SldAdaptiveRes
     {
         ControlName				SliderControl
         InheritProperties		SliderControl
         classname				"AdvancedVideoButtonClass"
-        pin_to_sibling			SwchVSync
+        pin_to_sibling			SwchReflex
         pin_corner_to_sibling	TOP_LEFT
         pin_to_sibling_corner	BOTTOM_LEFT
         minValue				0
         stepSize				1
-        navUp					SwchVSync
+        navUp					SwchReflex
         navDown					SwchAdaptiveSupersample
     }
     TextEntryAdaptiveRes

@@ -614,7 +614,7 @@ Resource/UI/menus/panels/survival_main_inventory.res
     {
         ControlName             RuiPanel
 
-        wide					720
+        wide					816
 		tall					220
 
         rui                     "ui/basic_image.rpak"

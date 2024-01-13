@@ -252,12 +252,12 @@ Resource/UI/HudScripted_mp.res
 			wide					300
 			tall					40
 			ypos					-150
-			xpos					-350
+			xpos					-50
 			visible					0
 			drawColor				"0 0 255 100"
 			pin_to_sibling				Screen
-			pin_corner_to_sibling			BOTTOM
-			pin_to_sibling_corner			BOTTOM
+			pin_corner_to_sibling			BOTTOM_LEFT
+			pin_to_sibling_corner			BOTTOM_LEFT
 	}
 	
 	
@@ -391,7 +391,7 @@ Resource/UI/HudScripted_mp.res
 			ControlName				Label
 			wide					300
 			tall					40
-			ypos					-250
+			ypos					-150
 			visible					0
 			drawColor				"0 0 255 100"
 			pin_to_sibling				Screen
@@ -402,13 +402,13 @@ Resource/UI/HudScripted_mp.res
 	MG_StopWatch
 	{
 			ControlName				Label
-			xpos                    		140
+			xpos                    		105
 			ypos					0
 			zpos 					0
 			auto_wide_tocontents			1
-			tall					40
+			tall					30
 			visible					0
-			fontHeight				40
+			fontHeight				30
 			labelText				"0:00"
 			font					"DefaultBold_62_DropShadow"
 			allcaps					1
@@ -425,9 +425,9 @@ Resource/UI/HudScripted_mp.res
 			ypos					0
 			zpos 					0
 			auto_wide_tocontents			1
-			tall					40
+			tall					30
 			visible					0
-			fontHeight				40
+			fontHeight				30
 			labelText				"Current Time: "
 			font					"DefaultBold_62_DropShadow"
 			allcaps					1
@@ -440,8 +440,8 @@ Resource/UI/HudScripted_mp.res
 	MG_StopWatch_Frame
 	{
 			ControlName				RuiPanel
-			wide					500
-			tall					60
+			wide					375
+			tall					45
 			ypos					0
 			visible					0
 			rui                     "ui/basic_image.rpak"
@@ -460,14 +460,14 @@ Resource/UI/HudScripted_mp.res
 	MG_StopWatch_Icon
 	{
 		ControlName				RuiPanel
-		wide					45
-		tall					45
+		wide					33
+		tall					33
 		visible					0
 		enabled					0
 		rui                     "ui/basic_image.rpak"
 		
 		ypos 					0
-		xpos 					-140
+		xpos 					-105
 		zpos					0
 		
 		ruiArgs
@@ -562,14 +562,14 @@ Resource/UI/HudScripted_mp.res
 		ControlName				Label
 		wide					100
 		tall					100
-		ypos					-175
-		xpos					-50
+		ypos					-50
+		xpos					13
 		zpos					0
 		visible					0
 		drawColor				"0 0 0 0"
 		pin_to_sibling				Screen
-		pin_corner_to_sibling			BOTTOM_LEFT
-		pin_to_sibling_corner			BOTTOM_LEFT
+		pin_corner_to_sibling			BOTTOM
+		pin_to_sibling_corner			BOTTOM
 	}
 
 	MG_MO_W

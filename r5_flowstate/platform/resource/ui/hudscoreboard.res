@@ -15,9 +15,9 @@
 	{
 		ControlName				RuiPanel
 		pin_to_sibling			Screen
-		pin_corner_to_sibling	TOP_RIGHT
-		pin_to_sibling_corner	TOP_RIGHT
-		xpos 					-96
+		pin_corner_to_sibling	TOP_CENTER
+		pin_to_sibling_corner	TOP_CENTER
+		xpos 					-700
 		ypos					-176
 		zpos					1012
 		wide					513

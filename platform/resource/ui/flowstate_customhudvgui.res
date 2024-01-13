@@ -1126,7 +1126,7 @@ Resource/UI/flowstate_customhudvgui.res
 		tall					100
 		visible					0
 		enabled					0
-		labelText				"An infected is near"
+		labelText				"一个感染者靠近了"
 		textAlignment			center
 		fgcolor_override 		"255 169 48 255"
 		bgcolor_override 		"0 0 0 0"

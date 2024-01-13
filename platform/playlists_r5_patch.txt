@@ -562,10 +562,10 @@ playlists
 			inherit defaults
 			vars
 			{
-				name                               "Infected"
-				description                        "Infected"
-				abbreviation                       "Infected"
-				lobbytitle                         "Infected"
+				name                               "生化模式"
+				description                        "生化模式"
+				abbreviation                       "生化模式"
+				lobbytitle                         "生化模式"
 				visible                                        1
 
 				// Skip intros:
@@ -1197,7 +1197,7 @@ playlists
 			inherit fs_survival
 			vars
 			{
-				name                                           "Falling Forever [Practice Map]"
+				name                                           "下一百层(暂定) [练习图]"
 				visible                                        1
 
 				// Skip intros:
@@ -1241,7 +1241,7 @@ playlists
 			inherit fs_survival
 			vars
 			{
-				name                                           "Door Map [Practice Map]"
+				name                                           "用门飞跃(暂定) [练习图]"
 				visible                                        1
 
 				// Skip intros:
@@ -1286,7 +1286,7 @@ playlists
 			inherit fs_survival
 			vars
 			{
-				name                                           "Grapple Practice [Practice Map]"
+				name                                           "钩爪训练 [练习图]"
 				visible                                        1
 
 				// Skip intros:
@@ -1330,7 +1330,7 @@ playlists
 			inherit fs_survival
 			vars
 			{
-				name                                           "Mantle Jump Map [Practice Map]"
+				name                                           "Mantle Jump 练习 [练习图]"
 				visible                                        1
 
 				// Skip intros:
@@ -1543,7 +1543,7 @@ playlists
 			inherit defaults
 			vars
 			{
-				name											"Map Editor Deprecated"
+				name											"地图编辑器(已弃用)"
 				visible                                        1
 
 				// Skip intros:
@@ -1639,31 +1639,31 @@ playlists
 
 				////Respawn Classes
 				//Class 1
-				ctf_respawn_class1_name                        "Close-Quarters"
+				ctf_respawn_class1_name                        "近距离"
 				ctf_respawn_class1_primary                     "mp_weapon_r97 optic_cq_hcog_classic stock_tactical_l3 bullets_mag_l3"
 				ctf_respawn_class1_secondary                   "mp_weapon_autopistol optic_cq_hcog_classic bullets_mag_l3"
 				ctf_respawn_class1_tactical                    "mp_ability_area_sonar_scan"
 				ctf_respawn_class1_ultimate                    "mp_weapon_jump_pad"
 				//Class 2
-				ctf_respawn_class2_name                        "Heavy"
+				ctf_respawn_class2_name                        "重火力"
 				ctf_respawn_class2_primary                     "mp_weapon_lmg optic_cq_hcog_classic barrel_stabilizer_l4_flash_hider stock_tactical_l3 highcal_mag_l3"
 				ctf_respawn_class2_secondary                   "mp_weapon_energy_shotgun shotgun_bolt_l3"
 				ctf_respawn_class2_tactical                    "mp_weapon_bubble_bunker"
 				ctf_respawn_class2_ultimate                    "mp_weapon_grenade_gas"
 				//Class 3
-				ctf_respawn_class3_name                        "Assault"
+				ctf_respawn_class3_name                        "突击"
 				ctf_respawn_class3_primary                     "mp_weapon_vinson optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3"
 				ctf_respawn_class3_secondary                   "mp_weapon_wingman optic_cq_hcog_classic sniper_mag_l3"
 				ctf_respawn_class3_tactical                    "mp_ability_area_sonar_scan"
 				ctf_respawn_class3_ultimate                    "mp_weapon_jump_pad"
 				//Class 4
-				ctf_respawn_class4_name                        "Marksman"
+				ctf_respawn_class4_name                        "神射手"
 				ctf_respawn_class4_primary                     "mp_weapon_g2 optic_ranged_aog_variable barrel_stabilizer_l4_flash_hider stock_sniper_l3 bullets_mag_l3"
 				ctf_respawn_class4_secondary                   "mp_weapon_alternator_smg optic_cq_hcog_classic bullets_mag_l3 stock_tactical_l3"
 				ctf_respawn_class4_tactical                    "mp_weapon_dirty_bomb"
 				ctf_respawn_class4_ultimate                    "mp_weapon_grenade_defensive_bombardment"
 				//Class 5
-				ctf_respawn_class5_name                        "Sniper"
+				ctf_respawn_class5_name                        "狙击"
 				ctf_respawn_class5_primary                     "mp_weapon_doubletake optic_ranged_aog_variable stock_sniper_l3 energy_mag_l3"
 				ctf_respawn_class5_secondary                   "mp_weapon_shotgun optic_cq_hcog_classic shotgun_bolt_l3"
 				ctf_respawn_class5_tactical                    "mp_ability_grapple"
@@ -1722,7 +1722,7 @@ playlists
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和\n社区制作的独家内容,\n如技能,游戏模式或地图"
-				"BETA_BUILD_WATERMARK" 				  "Flowstate Scripts [v3.71]\nR5SDK [2.2.5]\nCN Depot [230729]"
+				"BETA_BUILD_WATERMARK" 				  "CN Depot [240113]"
 			}
 		}
 	}

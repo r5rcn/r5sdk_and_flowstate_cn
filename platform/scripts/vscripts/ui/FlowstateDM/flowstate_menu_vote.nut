@@ -316,7 +316,7 @@ void function UpdateVoteTimer_FSDM(int timeleft)
 
 void function UpdateVoteTimerHeader_FSDM()
 {
-	Hud_SetText(Hud_GetChild( file.menu, "TimerText2" ), "Voting Ends In")
+	Hud_SetText(Hud_GetChild( file.menu, "TimerText2" ), "投票剩余时间")
 }
 
 //Update current votes for each map
@@ -344,7 +344,7 @@ void function UpdateVotedLocation_FSDM(string map)
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true, false, false, false)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "Next Location: " + map)
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "下一个地点 : " + map)
 }
 
 //Sets and updates tied voting screen

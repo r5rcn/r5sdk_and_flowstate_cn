@@ -73,7 +73,7 @@ const int    MYSTERY_BOX_MAX_CAN_USE            = 15
 const int    MYSTERY_BOX_MIN_CAN_USE            = 6
 global const string MYSTERY_BOX_SCRIPT_NAME            = "MysteryBoxScriptName"
 //const string MYSTERY_BOX_USE                    = "to open Mystery Box\nCost: %i $"
-const string USE                                = "Press %use% to open Mystery Box"
+const string USE                                = "按 %use% to open 神秘补给箱"
 const vector MYSTERY_BOX_WEAPON_ANGLES_OFFSET   = < 0, 90, 0 >
 const vector MYSTERY_BOX_WEAPON_MOVE_TO         = < 0, 0, 30 >
 const vector MYSTERY_BOX_WEAPON_ORIGIN_OFFSET   = < 0, 0, 20 >
@@ -86,7 +86,7 @@ const asset NESSY_MODEL                         = $"mdl/domestic/nessy_doll.rmdl
 #if CLIENT
 const asset MYSTERY_BOX_DISPLAYRUI = $"ui/extended_use_hint.rpak"
 const string SCORE                            = "%i $"
-const string MYSTERY_BOX_PLAYER_GIVE_WEAPON   = "%s gives his weapon in the mystery box"
+const string MYSTERY_BOX_PLAYER_GIVE_WEAPON   = "%s 给他神秘补给箱"
 const asset WEAPON_WALL_DISPLAYRUI = $"ui/extended_use_hint.rpak"
 #endif // CLIENT
 
@@ -320,7 +320,7 @@ void function OnUseProcessingMysteryBox( entity mysteryBox, entity playerUser, i
 	settings.successFunc    = MysteryBoxUseSuccess
 
 	#if CLIENT
-	settings.hint               = "Processing Mystery box..."
+	settings.hint               = "正在处理神秘补给箱..."
 	settings.displayRui         = MYSTERY_BOX_DISPLAYRUI
 	settings.displayRuiFunc     = MysteryBox_DisplayRui
 	#endif // CLIENT

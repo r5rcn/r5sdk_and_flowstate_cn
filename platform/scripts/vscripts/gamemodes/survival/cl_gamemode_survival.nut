@@ -2576,12 +2576,12 @@ void function Survival_OnPlayerClassChanged( entity player )
 			{
 				EndSignal( player, "OnDeath" )
 
-				AddPlayerHint( 5.0, 0.25, $"", "Press %jump% to double jump" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
+				AddPlayerHint( 5.0, 0.25, $"", "按下 %jump% 二段跳" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
 
 				OnThreadEnd(
 					function () : ( player )
 					{
-						HidePlayerHint( "Press %jump% to double jump" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
+						HidePlayerHint( "按下 %jump% 二段跳" ) //#JUMP_PAD_DOUBLE_JUMP_HINT
 					}
 				)
 

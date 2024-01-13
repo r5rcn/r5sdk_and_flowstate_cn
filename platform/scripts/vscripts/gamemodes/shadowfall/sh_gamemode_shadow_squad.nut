@@ -966,28 +966,28 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 		
 		case eShadowSquadMessage.ALPHA_ZOMBIE_START:
 			array <string> dialogueChoices
-			dialogueChoices.append( "THE FIRST INFECTED" )
-			dialogueChoices.append( "HARBINGER OF THE APOCALYPSE" )
-			dialogueChoices.append( "CHOSEN TO LEAD THE HORDE" )
-			dialogueChoices.append( "INFECTED LEGION RISES" )
+			dialogueChoices.append( "第一个感染者" )
+			dialogueChoices.append( "世界末日的预兆" )
+			dialogueChoices.append( "被选择为引领" )
+			dialogueChoices.append( "感染军团崛起" )
 			dialogueChoices.randomize()
 			
 			messageText = dialogueChoices.getrandom()
-			subText = "Use your unique powers to lead the infected team to the victory"
+			subText = "用你独特的力量带领被感染者团队走向胜利"
 			leftIcon = ANNOUNCEMENT_SHADOW_ICON
 			rightIcon = ANNOUNCEMENT_SHADOW_ICON	
 		break
 
 		case eShadowSquadMessage.LAST_MAN_STANDING:
 			array <string> dialogueChoices
-			dialogueChoices.append( "FINAL SHOWDOWN" )
-			dialogueChoices.append( "ALONE IN THE APOCALYPSE" )
-			dialogueChoices.append( "AGAINST ALL ODDS" )
-			dialogueChoices.append( "OUTLASTING THE INFECTED" )
+			dialogueChoices.append( "最后时刻" )
+			dialogueChoices.append( "世界末日中的唯一一人" )
+			dialogueChoices.append( "困难重重" )
+			dialogueChoices.append( "比感染者活得更久" )
 			dialogueChoices.randomize()
 			
 			messageText = dialogueChoices.getrandom()
-			subText = "You're the Last Survivor Standing, don't die!"
+			subText = "你是最后的幸存者，不要死了!"
 		break
 		
 		case eShadowSquadMessage.RESPAWNING_AS_SHADOW:
@@ -995,11 +995,11 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 			if(GameRules_GetGameMode() == "fs_infected")
 			{
 				if(GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() == 1)
-					subText = "Infect the last Survivor"
+					subText = "感染最后一个幸存者"
 				else if(GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() > 1)
-					subText = "Infect the Survivors"
+					subText = "感染幸存者"
 				
-				messageText = "RESPAWNED ON THE INFECTED SQUAD"
+				messageText = "在被感染者的队伍中重生"
 			}
 			else
 			{
@@ -1026,11 +1026,11 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 			rightIcon = ANNOUNCEMENT_SHADOW_ICON
 			break
 		case eShadowSquadMessage.INFECTION_HAS_STARTED:
-			messageText = "AN INFECTION IS EMERGING"
-			subText = "Remain as survivor to win"
+			messageText = "一个感染者已出现"
+			subText = "存活下去以获胜"
 			
 			if( GameRules_GetGameMode() == "fs_infected" )
-				subText = "              Choosing Alpha Infected.\nSurvive and take the EVAC ship to win."
+				subText = "              母体感染者已经诞生.\n生存并乘坐撤离船以获胜"
 
 			leftIcon = ANNOUNCEMENT_SHADOW_ICON
 			rightIcon = ANNOUNCEMENT_SHADOW_ICON
@@ -1041,7 +1041,7 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 			dialogueChoices.append( "diag_ap_nocNotify_legendWin_02_3p" )
 			dialogueChoices.append( "diag_ap_nocNotify_legendWin_03_3p" )
 			dialogueChoices.randomize()
-			messageText = "YOU SURVIVED THIS TIME"
+			messageText = "你这次幸存了下来"
 			subText = ""
 			
 			soundAlias = dialogueChoices.getrandom()
@@ -1052,11 +1052,11 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 			dialogueChoices.append( "diag_ap_nocNotify_playerDeathFinal_01_02_3p" )
 			dialogueChoices.append( "diag_ap_nocNotify_playerDeathFinal_01_03_3p" )
 			dialogueChoices.randomize()
-			messageText = "Legends win"
+			messageText = "传奇获胜"
 			if(GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() == 1)
-				subText = "You failed to infect the last Survivor"
+				subText = "你没能感染最后一个幸存者"
 			else if(GetPlayerArrayOfTeam_Alive(TEAM_IMC).len() > 1)
-				subText = "You failed to infect the Survivors"
+				subText = "你没能感染幸存者"
 			
 			soundAlias = dialogueChoices.getrandom()
 			break			
@@ -1096,7 +1096,7 @@ void function ServerCallback_ModeShadowSquad_AnnouncementSplash( int messageInde
 			soundAlias = ""
 			if(GameRules_GetGameMode() == "fs_infected")
 			{
-				messageText = "INFECTED WIN"			
+				messageText = "感染者胜利"			
 			}
 			leftIcon = ANNOUNCEMENT_SHADOW_ICON
 			rightIcon = ANNOUNCEMENT_SHADOW_ICON

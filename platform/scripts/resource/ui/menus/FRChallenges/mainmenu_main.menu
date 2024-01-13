@@ -991,7 +991,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			"rui"					"ui/footer_button.rpak"
 			ruiArgs
 			{
-				buttonText "弹跳模式"
+				buttonText "跳板模拟"
 			}
 			wide					270
 			tall					50

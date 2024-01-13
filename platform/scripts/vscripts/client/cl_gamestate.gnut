@@ -152,15 +152,15 @@ void function SetCommonScoreRUIVars( var rui )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 			RuiSetString( rui, "squadsRemainingTextSingular", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
 			RuiSetString( rui, "squadsRemainingTextPlural", "#SHADOW_SQUAD_PLAYERS_REMAIN" )
-			RuiSetString( rui, "squadsRemaining2TextSingular", "INFECTED" )
-			RuiSetString( rui, "squadsRemaining2TextPlural", "INFECTED" )
+			RuiSetString( rui, "squadsRemaining2TextSingular", "感染者" )
+			RuiSetString( rui, "squadsRemaining2TextPlural", "感染者" )
 			return
 		
 		case "fs_prophunt":
 			RuiSetString( rui, "gameModeString", "FS PROPHUNT" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PROP ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PROPS ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "存活的躲藏者" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "存活的躲藏者" )
 			RuiSetVisible(rui, true)
 			return
 			
@@ -175,15 +175,15 @@ void function SetCommonScoreRUIVars( var rui )
 		case "flowstate_snd":
 			RuiSetString( rui, "gameModeString", "FS SEARCH AND DESTROY" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "ENEMY ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "ENEMIES ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "存活的敌人" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "存活的敌人" )
 			RuiSetVisible(rui, true)	
 			return
 		case "custom_ctf":
 			RuiSetString( rui, "gameModeString", "CAPTURE THE FLAG" )
 			RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-			RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-			RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+			RuiSetString( rui, "squadsRemainingTextSingular", "存活的玩家" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "存活的玩家" )
 			RuiSetVisible(rui, true)
 			return
 	}
@@ -192,8 +192,8 @@ void function SetCommonScoreRUIVars( var rui )
 	{
 		RuiSetString( rui, "gameModeString", "ODDBALL" )
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYER ALIVE" )
-		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ALIVE" )
+		RuiSetString( rui, "squadsRemainingTextSingular", "存活的玩家" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "存活的玩家" )
 		RuiSetVisible(rui, true)
 		return
 	}

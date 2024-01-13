@@ -101,7 +101,7 @@ void function UpdateVotedLocation(string map)
 {
 	SetVoteHudElems(false, false, false, false, false, false, false, true, true)
 
-	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "Next Location: " + map)
+	Hud_SetText( Hud_GetChild( file.menu, "VotedForLbl" ), "下一个地点 : " + map)
 }
 
 //Sets and updates tied voting screen

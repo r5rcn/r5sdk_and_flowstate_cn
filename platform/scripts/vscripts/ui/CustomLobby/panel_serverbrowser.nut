@@ -216,8 +216,8 @@ void function ServerBrowser_NoServersLabel(bool show)
 
 void function ServerBrowser_UpdateServerPlayerCount()
 {
-	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: " + file.m_vAllPlayers)
-	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: " + file.m_vAllServers)
+	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "在线玩家: " + file.m_vAllPlayers)
+	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "在线服务器: " + file.m_vAllServers)
 }
 
 void function OnBtnFiltersClear()

@@ -79,49 +79,49 @@ void function CleanUpInfectedClientEffects()
 array< string > InfectedQuoteCatalog = [ //this is so bad maybe change it to datatable?
 	$"",
 	$"",
-	"Double Kill!",
-	"Triple Kill!",
-	"Deadly Aim",
-	"Unstoppable Killing",
+	"双杀!",
+	"三杀!",
+	"致命一击",
+	"不可阻挡",
 	$"",
-	"Infected Massacre",
-	$"",
-	$"",
-	"Fury Unbridled",
-	$"",
-	"Decimating Onslaught",
+	"感染大屠杀",
 	$"",
 	$"",
-	"Bloodlust Unleashed",
+	"狂怒无缚",
+	$"",
+	"毁灭性的猛攻",
+	$"",
+	$"",
+	"血腥之欲释放",
 	$"",
 	$"",
 	$"",
 	$"",
-	"Total Annihilation"
+	"彻底歼灭"
 ]
 
 array< string > SurvivorQuoteCatalog = [ //this is so bad maybe change it to datatable?
 	$"",
 	$"",
-	"Double Kill!",
-	"Triple Kill!",
-	"Deadly Aim",
-	"Unstoppable Killing",
+	"双杀!",
+	"三杀!",
+	"致命一击",
+	"不可阻挡",
 	$"",
-	"Infected Massacre",
-	$"",
-	$"",
-	"Fury Unbridled",
-	$"",
-	"Decimating Onslaught",
+	"感染大屠杀",
 	$"",
 	$"",
-	"Bloodlust Unleashed",
+	"狂怒无缚",
+	$"",
+	"毁灭性的猛攻",
+	$"",
+	$"",
+	"血腥之欲释放",
 	$"",
 	$"",
 	$"",
 	$"",
-	"Total Annihilation"
+	"彻底歼灭"
 ]
 
 array< asset > SurvivorAssetCatalog = [ //this is so bad maybe change it to datatable?
@@ -191,107 +191,107 @@ void function INFECTION_QuickHint(int index, bool isInfectedPlayer, int eHandle)
 
 		case -3:
 		//QuickHint("", "Alpha Infected Killed", true, 3)
-		Obituary_Print_Localized( "Alpha Infected Killed", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( "已击杀母体感染者", BURN_COLOR, BURN_COLOR )
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break
 
 		case -4:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " took the Evac Ship.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 乘坐撤离船", BURN_COLOR, BURN_COLOR )
 		EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 
 		case -5:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Secondary Weapon Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得次要武器补给", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 
 		case -6:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Better Mags Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得更好的弹匣", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -7:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Quick Reload Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得快速装填能力", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 	
 		case -8:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Scan Ability Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得区域扫描能力", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -9:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Extra Speed Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得加速能力", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -10:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained 3Dash Ability Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得相位冲刺能力", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -11:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Hard To Kill Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得更难被击杀能力", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -12:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Health Regen Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得生命回复能力", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -13:
-		Obituary_Print_Localized( EHI_GetName(eHandle) + " obtained Satchel Ability Perk.", BURN_COLOR, BURN_COLOR )
+		Obituary_Print_Localized( EHI_GetName(eHandle) + " 获得更大的背包.", BURN_COLOR, BURN_COLOR )
 		//EmitSoundOnEntity(GetLocalViewPlayer(), "vdu_on")
 		break
 		
 		case -14:
-		QuickHint("", "You got Secondary Weapon Perk", false, 3)
+		QuickHint("", "你得到了次要武器补给", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break		
 
 		case -15:
-		QuickHint("", "You got Better Mags Perk", false, 3)
+		QuickHint("", "你得到了更好的弹匣", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -16:
-		QuickHint("", "You got Quick Reload Perk", false, 3)
+		QuickHint("", "你得到了快速装填能力", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -17:
-		QuickHint("", "You got Scan Ability Perk", false, 3)
+		QuickHint("", "你得到了区域扫描能力", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -18:
-		QuickHint("", "You got Extra Speed Perk", false, 3)
+		QuickHint("", "你得到了加速能力", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -19:
-		QuickHint("", "You got 3Dash Ability Perk", false, 3)
+		QuickHint("", "你得到了相位冲刺能力", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -20:
-		QuickHint("", "You got Hard To Kill Perk", false, 3)
+		QuickHint("", "你得到了更难被击杀能力", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -21:
-		QuickHint("", "You got Health Regen Perk", false, 3)
+		QuickHint("", "你得到了生命回复能力", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break	
 
 		case -22:
-		QuickHint("", "You got Satchel Ability Perk", false, 3)
+		QuickHint("", "你得到了更大的背包", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break
 
 		case -23:
-		QuickHint("", "Choosing Alpha Infected in 5 seconds.", false, 3)
+		QuickHint("", "将在五秒后确定母体感染者", false, 3)
 		EmitSoundOnEntity(GetLocalViewPlayer(), "ui_ingame_switchingsides")
 		break		
 	}
@@ -465,7 +465,7 @@ var function Infection_AddMinimapIcon( asset icon, float iconSize, vector iconSc
 	var rui = Minimap_CommonAdd( MINIMAP_SQUARE_SIMPLE_RUI, MINIMAP_Z_PING )
 	if ( rui == null )
 	{
-		Warning( "Couldn't add ping icon to minimap." )
+		Warning( "无法在小地图上添加标记图标" )
 		return
 	}
 
@@ -482,7 +482,7 @@ var function Infection_AddFullmapIcon( asset icon, float iconSize, vector object
 	var rui = FullMap_CommonAdd( $"ui/in_world_minimap_square_simple.rpak" )
 	if ( rui == null )
 	{
-		Warning( "Couldn't add ping icon to fullmap." )
+		Warning( "不能在地图上标记图标" )
 		return
 	}
 

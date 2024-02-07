@@ -3,7 +3,7 @@
 [English version of readme](/README_ENG.md)  
 r5sdk和flowstate的简体中文本地化仓库
 
-**翻译by：Pathfinder(R5RCN)**
+**翻译by：Pathfinder(R5RCN)**<br>
 融化的芒果CC <br>
 makimakimaaaaa <br>
 zzt <br>

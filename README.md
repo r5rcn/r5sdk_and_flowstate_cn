@@ -23,7 +23,7 @@ __[官方KOOK服务器](https://kook.top/MQLPDV "点击进入")__
 
 第一步：前往[Release](https://github.com/r5rcn/r5sdk_and_flowstate_cn/releases)下载最新版本的压缩包（一般来讲是最上面的那个） <br>
 第二步：将下载好的压缩包 解压至游戏的根目录(理应是含有r5apex.exe的目录) <br>
-第三步：此时您可以启动游戏 如果发现游戏设置里的语言已经是中文 则可以参考下面的内容 <br>
+第三步：此时您可以启动游戏 如果发现游戏设置和游戏UI(包括hud)里的语言不是中文 则可以参考下面的内容 <br>
 
 #### 游戏设置和其他文本未被汉化的解决方法
 第一步：打开ea app (ea desktop)并登录你的ea账号 <br>

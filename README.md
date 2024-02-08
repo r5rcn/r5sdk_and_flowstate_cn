@@ -10,7 +10,7 @@ zzt <br>
 钓鱼竿呀 <br>
 NNanfeng <br>
 momo <br>
-**(排名不分先后)**
+**(排名不分先后 仅列出了参加翻译的人员)**
 
 __[官方KOOK服务器](https://kook.top/MQLPDV "点击进入")__    
 

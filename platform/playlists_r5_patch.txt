@@ -1722,7 +1722,7 @@ playlists
                 "DISCONNECT_NETCHAN_OVERFLOW"         "Connection to server overflowed (code:vulkan)."
                 "DISCONNECT_STRINGCMD_OVERFLOW"       "Connection to server overflowed (code:skillissue)."
 				"MOTD"								  "Flowstate是R5Reloaded (Modded Apex Legends)的模组包\n其中包括bug修复,新功能和\n社区制作的独家内容,\n如技能,游戏模式或地图"
-				"BETA_BUILD_WATERMARK" 				  "CN Depot [240113]"
+				"BETA_BUILD_WATERMARK" 				  "CN Depot [240219]"
 			}
 		}
 	}
